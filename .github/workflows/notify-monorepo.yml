@@ -1,0 +1,32 @@
+# Template: place this in each mirror repo as .github/workflows/notify-monorepo.yml
+#
+# Uses the org-wide GIT_TOKEN secret (PAT with repo scope).
+#
+# Loop prevention: the mirror's .sync-commit file records the last monorepo
+# SHA that was synced down. The monorepo's sync-to-mirror script only replays
+# commits newer than that marker, so round-tripped changes converge to a
+# no-op and the cycle stops naturally.
+name: Notify Monorepo
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    name: Trigger monorepo sync
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch to monorepo
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: token ${{ secrets.GIT_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/xataio/frontend/dispatches" \
+            -d '{
+              "event_type": "mirror-push",
+              "client_payload": {
+                "mirror": "${{ github.event.repository.name }}",
+                "sha": "${{ github.sha }}"
+              }
+            }'
