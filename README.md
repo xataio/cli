@@ -6,20 +6,20 @@
   </picture>
 </p>
 
-# Xata CLI
+## Xata CLI
 
 The official command-line interface for [Xata](https://xata.io).
 
-## Installation
+### Installation
 
 ```bash
 npm install -g @xata.io/cli
 ```
 
-## Documentation
+### Documentation
 
 See the [Xata documentation](https://xata.io/docs/cli) for usage instructions.
 
-## License
+### License
 
 Apache-2.0 — see [LICENSE](LICENSE) for details.
