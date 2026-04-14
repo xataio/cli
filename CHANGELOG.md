@@ -1,5 +1,17 @@
 # xata-cli
 
+## 1.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`c34be69`](https://github.com/xataio/frontend/commit/c34be699fb81b2e199a3e5ea1ca38431560c4c87)]:
+  - @xata.io/pgstream@0.2.0
+  - @xata.io/pgroll@0.9.0
+  - @xata.io/utils@0.1.0
+  - @xata.io/ai@0.1.0
+  - @xata.io/sql@0.1.3
+  - @xata.io/config@0.0.0
+
 ## 1.1.1
 
 ### Patch Changes
