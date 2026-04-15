@@ -1,5 +1,13 @@
 # xata-cli
 
+## 1.1.3
+
+### Patch Changes
+
+- [#2267](https://github.com/xataio/frontend/pull/2267) [`d9e0ce6`](https://github.com/xataio/frontend/commit/d9e0ce6dea8c800f096f43feff4032b2479bf841) Thanks [@divyenduz](https://github.com/divyenduz)! - sort postgres versions DESC
+
+- [#2263](https://github.com/xataio/frontend/pull/2263) [`9d164a5`](https://github.com/xataio/frontend/commit/9d164a5e98056a01b117c0fe537aaf0356326472) Thanks [@divyenduz](https://github.com/divyenduz)! - hide pricing when environment is local, minor pricing UI improvements
+
 ## 1.1.2
 
 ### Patch Changes
