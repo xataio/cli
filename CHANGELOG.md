@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.1.4
+
+### Patch Changes
+
+- [#2272](https://github.com/xataio/frontend/pull/2272) [`93d5f05`](https://github.com/xataio/frontend/commit/93d5f057326635f04886ed4f263e1ee65702bd5c) Thanks [@divyenduz](https://github.com/divyenduz)! - default to latest postgres image available
+
 ## 1.1.3
 
 ### Patch Changes
