@@ -1,11 +1,6 @@
-import invariant from 'tiny-invariant';
 import { CLI_NAME } from '~/lib/constants';
 
 const targets = ['darwin-arm64', 'darwin-x64', 'linux-arm64', 'linux-x64', 'windows-x64'];
-
-invariant(Bun.env.PUBLIC_AUTH_CLIENT_SECRET_DEV, 'PUBLIC_AUTH_CLIENT_SECRET_DEV is not set');
-invariant(Bun.env.PUBLIC_AUTH_CLIENT_SECRET_STAGING, 'PUBLIC_AUTH_CLIENT_SECRET_STAGING is not set');
-invariant(Bun.env.PUBLIC_AUTH_CLIENT_SECRET_PROD, 'PUBLIC_AUTH_CLIENT_SECRET_PROD is not set');
 
 for (const target of targets) {
   const proc = Bun.spawnSync([
@@ -18,9 +13,7 @@ for (const target of targets) {
     '--outfile',
     `./dist/${CLI_NAME}-${target}`,
     '--target',
-    `bun-${target}`,
-    '--env',
-    `PUBLIC_*`
+    `bun-${target}`
   ]);
 
   if (proc.exitCode !== 0) {
