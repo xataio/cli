@@ -251,7 +251,7 @@ export async function getImage(
       return flags['postgres-version'];
     }
 
-    const defaultIndex = sortedImages.findIndex((image) => image.name === 'postgres:18.3');
+    const defaultIndex = sortedImages.findIndex((image) => image.name.startsWith('postgres:'));
     const initial = defaultIndex >= 0 ? defaultIndex : 0;
 
     const image = (await context.enquirer.selectPrompt(context.isCI, title, imageChoices, { initial })) as string;
