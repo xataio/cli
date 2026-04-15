@@ -7,6 +7,7 @@ import { branchConfig } from '~/lib/branch-config';
 import { CLI_NAME } from '~/lib/constants';
 
 import type { Types } from '@xata.io/api';
+import { sortPostgresImagesDesc } from '@xata.io/utils';
 import invariant from 'tiny-invariant';
 import type { ProjectOptions } from '~/lib/cli-utils';
 import { groupAndSortRegions } from '~/lib/cli-utils';
@@ -231,7 +232,9 @@ export async function getImage(
       context.process.exit(1);
     }
 
-    const imageChoices = images.images.map((image) => ({
+    const sortedImages = sortPostgresImagesDesc(images.images);
+
+    const imageChoices = sortedImages.map((image) => ({
       name: image.name,
       message: image.name
     }));
@@ -248,7 +251,10 @@ export async function getImage(
       return flags['postgres-version'];
     }
 
-    const image = (await context.enquirer.selectPrompt(context.isCI, title, imageChoices)) as string;
+    const defaultIndex = sortedImages.findIndex((image) => image.name === 'postgres:18.3');
+    const initial = defaultIndex >= 0 ? defaultIndex : 0;
+
+    const image = (await context.enquirer.selectPrompt(context.isCI, title, imageChoices, { initial })) as string;
     invariant(image, `Postgres version should exist`);
     return image;
   } catch {

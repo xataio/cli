@@ -45,7 +45,7 @@ export async function selectPrompt<T extends Choice>(
   isCI: boolean,
   message: string,
   choices: T[],
-  { flag }: { flag?: T['name'] } = {}
+  { flag, initial }: { flag?: T['name']; initial?: number } = {}
 ) {
   if (flag) {
     return flag;
@@ -59,7 +59,8 @@ export async function selectPrompt<T extends Choice>(
     type: 'select',
     name: 'value',
     message,
-    choices
+    choices,
+    initial
   });
 
   return selectPrompt.value;
