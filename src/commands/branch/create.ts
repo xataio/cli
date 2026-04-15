@@ -11,6 +11,7 @@ import invariant from 'tiny-invariant';
 import type { ProjectOptions } from '~/lib/cli-utils';
 import { groupAndSortRegions } from '~/lib/cli-utils';
 import { isCLIConfigInitialized } from '~/lib/cli-config';
+import { config } from '~/lib/config';
 import { implementation as checkout } from './checkout';
 import { implementation as waitReady } from './wait-ready';
 
@@ -45,12 +46,25 @@ export async function instanceTypes(context: LocalContext, organizationId: strin
   return instanceTypes.instanceTypes;
 }
 
-export function instanceTypeChoices(instances: Awaited<ReturnType<typeof instanceTypes>>) {
+export function shouldShowInstanceTypePricing(context: LocalContext) {
+  const activeProfile = context.getActiveProfile();
+  const environment = config.profiles[activeProfile]?.environment;
+  return environment === 'prod' || environment === 'staging';
+}
+
+export function buildInstanceTypeChoices(
+  instances: Awaited<ReturnType<typeof instanceTypes>>,
+  { showPricing }: { showPricing: boolean }
+) {
   return instances.map((instanceType) => {
-    const instanceMonthlyCost = monthlyComputeCost(instanceType, 1);
+    const parts = [`${instanceType.name} / ${instanceType.vcpus} milli-vCPU / ${instanceType.ram} GB RAM`];
+    if (showPricing) {
+      const instanceMonthlyCost = monthlyComputeCost(instanceType, 1);
+      parts.push(chalk.gray(`$${instanceMonthlyCost.display} per mo`));
+    }
     return {
       name: instanceType.name,
-      message: `${instanceType.name} / ${instanceType.vcpus} vCPU / ${instanceType.ram} RAM / ${chalk.gray(`$${instanceMonthlyCost.display} per mo`)}`
+      message: parts.join(' / ')
     };
   });
 }
@@ -171,7 +185,7 @@ export async function getInstanceType(
 ) {
   const title = options?.title || 'Please select the type of instance for this branch';
   const instances = await instanceTypes(context, options.organizationId, options.region);
-  const instanceChoices = instanceTypeChoices(instances);
+  const instanceChoices = buildInstanceTypeChoices(instances, { showPricing: shouldShowInstanceTypePricing(context) });
 
   if (flags['instance-type']) {
     if (!instances.some((instance) => flags['instance-type'] === instance.name)) {

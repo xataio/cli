@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
-import { instanceTypeChoices, instanceTypes, replicaChoices } from './create';
+import { buildInstanceTypeChoices, instanceTypes, replicaChoices, shouldShowInstanceTypePricing } from './create';
 import { validScaleToZeroValues, validInactivityPeriodValues, scaleToZeroChoices, timeChoices } from '~/lib/config';
 
 type Flags = {
@@ -64,7 +64,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
   const defaultInactivityPeriod = isRootBranch ? inactivityPeriodBase : inactivityPeriodChild;
 
   const instances = await instanceTypes(this, organizationId, branchRegion);
-  const instanceChoices = instanceTypeChoices(instances);
+  const instanceChoices = buildInstanceTypeChoices(instances, { showPricing: shouldShowInstanceTypePricing(this) });
 
   if (!value) {
     value = await match(field)
