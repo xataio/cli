@@ -6,7 +6,7 @@ import {
   TEST_XATA_ORG,
   TEST_XATA_PROJECT_ID
 } from '~/lib/test-utils';
-import type { BranchMetadata } from '../../../../../packages/api/src/generated/types';
+import type { Types } from '@xata.io/api';
 import { implementation } from './url';
 
 describe('branch url command tests', async () => {
@@ -73,7 +73,7 @@ describe('branch url command tests', async () => {
         status: {
           statusType: 'STATUS_TYPE_UNSPECIFIED'
         }
-      } as unknown as BranchMetadata);
+      } as unknown as Types.BranchMetadata);
     });
 
     await implementation.call(context, {
