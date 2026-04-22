@@ -1,4 +1,5 @@
 import { buildCommand } from '@stricli/core';
+import { filterUpgradeablePostgresImages, sortPostgresImagesDesc } from '@xata.io/utils';
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
@@ -13,7 +14,14 @@ type Flags = {
   json: boolean;
 };
 
-type Field = 'name' | 'replicas' | 'instance-type' | 'hibernate' | 'scale-to-zero' | 'inactivity-period';
+type Field =
+  | 'name'
+  | 'replicas'
+  | 'instance-type'
+  | 'hibernate'
+  | 'scale-to-zero'
+  | 'inactivity-period'
+  | 'postgres-version';
 type FieldArg = Field | '.catalog';
 
 export async function implementation(this: LocalContext, flags: Flags, fieldArg: string, value?: string) {
@@ -22,7 +30,15 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
   const projectId = await this.getProject(this, flags, { organizationId });
   const branchId = await this.getBranch(this, flags, { organizationId, projectId });
 
-  const validFields: Field[] = ['name', 'replicas', 'instance-type', 'hibernate', 'scale-to-zero', 'inactivity-period'];
+  const validFields: Field[] = [
+    'name',
+    'replicas',
+    'instance-type',
+    'hibernate',
+    'scale-to-zero',
+    'inactivity-period',
+    'postgres-version'
+  ];
   const excludedFields: Field[] = [];
 
   if (field === '.catalog') {
@@ -66,6 +82,34 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
   const instances = await instanceTypes(this, organizationId, branchRegion);
   const instanceChoices = buildInstanceTypeChoices(instances, { showPricing: shouldShowInstanceTypePricing(this) });
 
+  let upgradeableImageChoices: { name: string; message: string }[] = [];
+  if (field === 'postgres-version') {
+    const currentImage = branch.configuration.image;
+    if (!currentImage) {
+      this.process.stderr.write(chalk.red('Cannot determine current PostgreSQL version for this branch.\n'));
+      this.process.exit(1);
+    }
+
+    const images = await this.api.projects.listImages({
+      pathParams: { organizationID: organizationId },
+      queryParams: { region: branchRegion }
+    });
+
+    const upgradeable = sortPostgresImagesDesc(filterUpgradeablePostgresImages(images.images ?? [], currentImage));
+
+    if (upgradeable.length === 0) {
+      this.process.stderr.write(
+        chalk.red(`No new compatible PostgreSQL version available for current image ${currentImage}.\n`)
+      );
+      this.process.exit(1);
+    }
+
+    upgradeableImageChoices = upgradeable.map((image) => ({
+      name: image.name,
+      message: image.name
+    }));
+  }
+
   if (!value) {
     value = await match(field)
       .with('name', async () => {
@@ -103,6 +147,13 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
           this.isCI,
           `Please select inactivity period for the branch (current: ${defaultInactivityPeriod} minutes)`,
           [...timeChoices]
+        );
+      })
+      .with('postgres-version', async () => {
+        return await this.enquirer.selectPrompt(
+          this.isCI,
+          `Please select the PostgreSQL version for this branch (current: ${branch.configuration.image})`,
+          upgradeableImageChoices
         );
       })
       .exhaustive();
@@ -165,6 +216,16 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
         this.process.exit(1);
       }
     })
+    .with('postgres-version', () => {
+      if (!upgradeableImageChoices.some((choice) => choice.name === value)) {
+        this.process.stderr.write(
+          chalk.red(
+            `Invalid PostgreSQL version: ${value}. Not a compatible upgrade for current image ${branch.configuration.image}.\n`
+          )
+        );
+        this.process.exit(1);
+      }
+    })
     .exhaustive();
 
   const updateBody = match(field)
@@ -202,6 +263,11 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
           ...branch.scaleToZero,
           inactivityPeriodMinutes: parseInt(value)
         }
+      };
+    })
+    .with('postgres-version', () => {
+      return {
+        image: value
       };
     })
     .exhaustive();
