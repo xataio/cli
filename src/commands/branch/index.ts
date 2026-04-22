@@ -8,6 +8,7 @@ import { BranchGetCommand } from './get';
 import { BranchListCommand } from './list';
 import { BranchSetCommand } from './set';
 import { BranchTreeCommand } from './tree';
+import { BranchRotatePasswordCommand } from './rotate-password';
 import { BranchURLCommand } from './url';
 import { BranchWaitReadyCommand } from './wait-ready';
 
@@ -25,6 +26,7 @@ export const BranchRoute = buildRouteMap({
     tree: BranchTreeCommand,
     get: BranchGetCommand,
     set: BranchSetCommand,
+    'rotate-password': BranchRotatePasswordCommand,
     'wait-ready': BranchWaitReadyCommand
   },
   aliases: {
