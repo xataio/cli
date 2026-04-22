@@ -1,5 +1,13 @@
 # xata-cli
 
+## 1.1.5
+
+### Patch Changes
+
+- [#2295](https://github.com/xataio/frontend/pull/2295) [`1a3cd21`](https://github.com/xataio/frontend/commit/1a3cd212952b9a814cf540795e5cb5427b342486) Thanks [@divyenduz](https://github.com/divyenduz)! - add xata branch set postgres-version
+
+- [#2294](https://github.com/xataio/frontend/pull/2294) [`a277e06`](https://github.com/xataio/frontend/commit/a277e0691da6bbc3e3f0cc2b1a1e9ecaf334f0c7) Thanks [@divyenduz](https://github.com/divyenduz)! - xata branch rotate-password
+
 ## 1.1.4
 
 ### Patch Changes
