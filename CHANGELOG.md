@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.2.0
+
+### Minor Changes
+
+- [#2244](https://github.com/xataio/frontend/pull/2244) [`c4edf9f`](https://github.com/xataio/frontend/commit/c4edf9f32553f4cfb5d439568d07e9a0b2676c4c) Thanks [@kvch](https://github.com/kvch)! - Add a new option for xata branch url to retrieve connection string for poolers
+
 ## 1.1.5
 
 ### Patch Changes
