@@ -11,10 +11,10 @@ type Flags = {
   project?: string;
   branch?: string;
   database?: string;
-  type: 'primary' | 'primary-or-replica' | 'replica';
+  type: 'primary' | 'primary-or-replica' | 'replica' | 'pooler';
 };
 
-export function mapTypeToConnectionSuffix(type: 'primary' | 'primary-or-replica' | 'replica'): Types.EndpointType {
+export function mapTypeToConnectionSuffix(type: Flags['type']): Types.EndpointType {
   switch (type) {
     case 'primary':
       return 'rw';
@@ -22,6 +22,8 @@ export function mapTypeToConnectionSuffix(type: 'primary' | 'primary-or-replica'
       return 'r';
     case 'replica':
       return 'ro';
+    case 'pooler':
+      return 'pooled_rw';
   }
 }
 
@@ -103,9 +105,9 @@ export const BranchURLCommand = buildCommand({
       },
       type: {
         kind: 'enum',
-        values: ['primary', 'primary-or-replica', 'replica'],
+        values: ['primary', 'primary-or-replica', 'replica', 'pooler'],
         brief:
-          'Connection type: primary (direct access to the primary), primary-or-replica (routed access to primary or replicas), replica (read-only access to replicas only)',
+          'Connection type: primary (direct access to the primary), primary-or-replica (routed access to primary or replicas), replica (read-only access to replicas only), pooler (pooled access to the primary)',
         default: 'primary'
       }
     },
