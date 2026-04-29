@@ -1,6 +1,7 @@
 import type { StricliAutoCompleteContext } from '@stricli/auto-complete';
 import type { CommandContext } from '@stricli/core';
 import type { ApiClient } from '@xata.io/api';
+import { determineAgent } from '@vercel/detect-agent';
 import * as ciInfo from 'ci-info';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -28,7 +29,14 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
   readonly fs: typeof import('node:fs');
   readonly os: typeof import('node:os');
   readonly path: typeof import('node:path');
-  readonly isCI: boolean;
+  /**
+   * Whether the CLI is running in an interactive context.
+   *
+   * False when running in CI or when invoked from an agentic context
+   * (Cursor, Claude Code, Amp, etc.). Prompt helpers short-circuit when
+   * this is false.
+   */
+  readonly isInteractive: boolean;
   readonly print: typeof print;
   readonly getActiveProfile: typeof getActiveProfile;
   readonly getOrganization: typeof getOrganization;
@@ -54,6 +62,7 @@ export async function buildContext(process: NodeJS.Process, canonicalName?: stri
   const debug = Boolean(Bun.env.DEBUG);
   const usingEnvApiKey = Boolean(env.XATA_API_KEY);
   const xata = await getApi({ canonicalName });
+  const agent = await determineAgent();
 
   if (usingEnvApiKey && debug) {
     process.stderr.write('Using XATA_API_KEY from environment variable.\n');
@@ -67,7 +76,8 @@ export async function buildContext(process: NodeJS.Process, canonicalName?: stri
     os,
     fs,
     path,
-    isCI: ciInfo.isCI,
+    // Treat both CI and agentic invocations as non-interactive
+    isInteractive: !(ciInfo.isCI || agent.isAgent),
     print,
     getActiveProfile,
     getOrganization,

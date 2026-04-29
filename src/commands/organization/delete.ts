@@ -18,7 +18,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   if (!flags.yes) {
     const confirmFromPrompt = await this.enquirer.confirmPrompt(
-      this.isCI,
+      this.isInteractive,
       `Are you sure you want to delete the organization ${organization.name}?`
     );
     if (!confirmFromPrompt) {

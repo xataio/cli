@@ -20,7 +20,7 @@ export async function implementation(this: LocalContext, { profile: profileFlag,
 
   if (!yes) {
     const confirmFromPrompt = await this.enquirer.confirmPrompt(
-      this.isCI,
+      this.isInteractive,
       `Do you want to log out of the profile ${profile}`
     );
     if (!confirmFromPrompt) {

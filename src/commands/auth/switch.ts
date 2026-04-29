@@ -25,7 +25,7 @@ export async function implementation(this: LocalContext, {}: Flags, profile?: st
       message: profile === activeProfile ? `${profile} (current)` : profile
     }));
 
-    selectedProfile = await this.enquirer.selectPrompt(this.isCI, 'Select profile to switch to:', choices);
+    selectedProfile = await this.enquirer.selectPrompt(this.isInteractive, 'Select profile to switch to:', choices);
 
     if (!selectedProfile) {
       console.log('No profile selected');

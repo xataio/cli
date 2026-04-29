@@ -59,7 +59,7 @@ export async function getTestContext() {
     os,
     fs,
     path,
-    isCI: true,
+    isInteractive: false,
     print,
     getActiveProfile,
     getOrganization,

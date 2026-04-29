@@ -66,34 +66,34 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     value = await match(field)
       .with('name', async () => {
         return await this.enquirer.inputPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please enter the new project name (current: ${projectName})`
         );
       })
       .with('scale-to-zero-base', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please select the default scale to zero status for the base branch (current: ${scaleToZeroBase ? 'Enabled' : 'Disabled'})`,
           [...scaleToZeroChoices]
         );
       })
       .with('scale-to-zero-child', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please select the default scale to zero status for the child branches (current: ${scaleToZeroChild ? 'Enabled' : 'Disabled'})`,
           [...scaleToZeroChoices]
         );
       })
       .with('inactivity-period-base', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please select the default inactivity period for the base branch (current: ${inactivityPeriodBase} minutes)`,
           [...timeChoices]
         );
       })
       .with('inactivity-period-child', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please select the default inactivity period for the child branches (current: ${inactivityPeriodChild} minutes)`,
           [...timeChoices]
         );

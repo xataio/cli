@@ -29,7 +29,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       message: `${inv.email} (${inv.status})`
     }));
 
-    invitationId = await this.enquirer.selectPrompt(this.isCI, 'Select an invitation to view', choices);
+    invitationId = await this.enquirer.selectPrompt(this.isInteractive, 'Select an invitation to view', choices);
   }
 
   if (!invitationId) {

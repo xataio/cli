@@ -30,7 +30,11 @@ export async function implementation(this: LocalContext, flags: Flags) {
       message: `${member.name || '-'} (${member.email})`
     }));
 
-    userId = await this.enquirer.selectPrompt(this.isCI, 'Select a member to remove from the organization', choices);
+    userId = await this.enquirer.selectPrompt(
+      this.isInteractive,
+      'Select a member to remove from the organization',
+      choices
+    );
   }
 
   if (!userId) {
@@ -48,7 +52,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   if (!flags.force) {
     const memberName = memberToRemove.name || memberToRemove.email;
     const confirmed = await this.enquirer.confirmPrompt(
-      this.isCI,
+      this.isInteractive,
       `Are you sure you want to remove ${memberName} from the organization?`
     );
 

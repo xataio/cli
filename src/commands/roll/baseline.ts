@@ -39,7 +39,7 @@ export async function implementation(
 
   let migrationName = args[0];
   if (!migrationName) {
-    migrationName = await this.enquirer.inputPrompt(this.isCI, 'Please enter the name of the migration', {
+    migrationName = await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the name of the migration', {
       placeholder: '01_initial_migration'
     });
   }

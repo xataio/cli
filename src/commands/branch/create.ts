@@ -146,7 +146,11 @@ export async function getRegion(context: LocalContext, flags: { region?: string 
 
   if (!flags.region) {
     const regionChoices = groupAndSortRegions(regions.regions);
-    const region = (await context.enquirer.selectPrompt(context.isCI, title, regionChoices)) as Flags['region'];
+    const region = (await context.enquirer.selectPrompt(
+      context.isInteractive,
+      title,
+      regionChoices
+    )) as Flags['region'];
     invariant(region, `Region should exist`);
     return region;
   }
@@ -171,7 +175,11 @@ export async function getReplicas(context: LocalContext, flags: { replicas?: str
   }
 
   if (!flags.replicas) {
-    const replicas = (await context.enquirer.selectPrompt(context.isCI, title, replicaChoices)) as Flags['replicas'];
+    const replicas = (await context.enquirer.selectPrompt(
+      context.isInteractive,
+      title,
+      replicaChoices
+    )) as Flags['replicas'];
     invariant(replicas, `Replicas should exist`);
     return replicas;
   }
@@ -203,7 +211,7 @@ export async function getInstanceType(
 
   if (!flags['instance-type']) {
     const instanceType = (await context.enquirer.selectPrompt(
-      context.isCI,
+      context.isInteractive,
       title,
       instanceChoices
     )) as Flags['instance-type'];
@@ -254,7 +262,9 @@ export async function getImage(
     const defaultIndex = sortedImages.findIndex((image) => image.name.startsWith('postgres:'));
     const initial = defaultIndex >= 0 ? defaultIndex : 0;
 
-    const image = (await context.enquirer.selectPrompt(context.isCI, title, imageChoices, { initial })) as string;
+    const image = (await context.enquirer.selectPrompt(context.isInteractive, title, imageChoices, {
+      initial
+    })) as string;
     invariant(image, `Postgres version should exist`);
     return image;
   } catch {
@@ -278,7 +288,9 @@ export async function implementation(this: LocalContext, flags: Flags) {
   const scaleToZeroChild = project.configuration.scaleToZero.childBranches.enabled;
   const inactivityPeriodChild = project.configuration.scaleToZero.childBranches.inactivityPeriodMinutes;
 
-  const branchName = await this.enquirer.inputPrompt(this.isCI, 'Please enter the branch name', { flag: flags.name });
+  const branchName = await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the branch name', {
+    flag: flags.name
+  });
   if (!branchName) {
     this.process.stderr.write(chalk.red(`Expected input for flag --name`));
     this.process.exit(1);

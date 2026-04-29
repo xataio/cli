@@ -35,7 +35,7 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
       name: entry.cidr,
       message: entry.description ? `${entry.cidr} - ${entry.description}` : entry.cidr
     }));
-    cidrToRemove = await this.enquirer.selectPrompt(this.isCI, 'Select CIDR to remove', choices);
+    cidrToRemove = await this.enquirer.selectPrompt(this.isInteractive, 'Select CIDR to remove', choices);
   }
 
   const index = ipFiltering.cidr.findIndex((e) => e.cidr === cidrToRemove);
@@ -47,7 +47,7 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
   const isLastEntry = ipFiltering.cidr.length === 1;
   if (isLastEntry && ipFiltering.enabled && !flags.force) {
     const confirm = await this.enquirer.confirmPrompt(
-      this.isCI,
+      this.isInteractive,
       'This is the last CIDR entry and IP filtering is enabled. Removing it will leave filtering enabled with no allowed IPs. Continue?'
     );
     if (!confirm) return;

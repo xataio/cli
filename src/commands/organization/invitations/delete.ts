@@ -30,7 +30,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       message: `${inv.email} (${inv.status})`
     }));
 
-    invitationId = await this.enquirer.selectPrompt(this.isCI, 'Select an invitation to delete', choices);
+    invitationId = await this.enquirer.selectPrompt(this.isInteractive, 'Select an invitation to delete', choices);
   }
 
   if (!invitationId) {
@@ -47,7 +47,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   if (!flags.force) {
     const confirmed = await this.enquirer.confirmPrompt(
-      this.isCI,
+      this.isInteractive,
       `Are you sure you want to delete the invitation for ${invitation.email}?`
     );
 

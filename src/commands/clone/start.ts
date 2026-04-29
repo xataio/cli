@@ -71,10 +71,14 @@ export async function implementation(
 
   let validationMode: ValidationMode = 'strict';
   if (flags['validation-mode'] === 'prompt') {
-    const validationModeResult = (await this.enquirer.selectPrompt(this.isCI, 'Do you want to anonymize data?', [
-      { name: 'strict', message: 'Yes' },
-      { name: 'relaxed', message: 'No' }
-    ])) as ValidationMode;
+    const validationModeResult = (await this.enquirer.selectPrompt(
+      this.isInteractive,
+      'Do you want to anonymize data?',
+      [
+        { name: 'strict', message: 'Yes' },
+        { name: 'relaxed', message: 'No' }
+      ]
+    )) as ValidationMode;
     if (validationModeResult) {
       validationMode = validationModeResult;
     }

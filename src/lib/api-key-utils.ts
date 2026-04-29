@@ -1,7 +1,7 @@
 import * as chrono from 'chrono-node';
 import { datePrompt, selectPrompt } from './enquirer';
 
-export async function parseExpiry(isCI: boolean, expiryFlag = ''): Promise<string | null> {
+export async function parseExpiry(isInteractive: boolean, expiryFlag = ''): Promise<string | null> {
   if (expiryFlag === 'never' || expiryFlag === 'null') {
     return null;
   }
@@ -14,7 +14,7 @@ export async function parseExpiry(isCI: boolean, expiryFlag = ''): Promise<strin
   }
 
   const choice = await selectPrompt(
-    isCI,
+    isInteractive,
     'Select expiry',
     [
       { name: 'never', message: 'Never' },
@@ -32,7 +32,7 @@ export async function parseExpiry(isCI: boolean, expiryFlag = ''): Promise<strin
   }
 
   if (choice === 'custom') {
-    const date = await datePrompt(isCI, 'Enter expiry (e.g. "In 1 week" or "2025-12-31")');
+    const date = await datePrompt(isInteractive, 'Enter expiry (e.g. "In 1 week" or "2025-12-31")');
     return date?.toISOString() || null;
   }
 

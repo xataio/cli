@@ -21,7 +21,7 @@ type Flags = {
 export async function implementation(this: LocalContext, flags: Flags) {
   const organizationId = await this.getOrganization(this, flags, {});
 
-  const branchName = await this.enquirer.inputPrompt(this.isCI, 'Please enter the branch name', {
+  const branchName = await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the branch name', {
     flag: flags['branch-name'],
     placeholder: 'main'
   });

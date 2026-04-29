@@ -12,7 +12,7 @@ function createMockContext(debug = false): LocalContext {
     os,
     path,
     env: {},
-    isCI: false,
+    isInteractive: true,
     process: {
       stdout: { write: () => {} },
       stderr: { write: () => {} },

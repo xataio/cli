@@ -63,7 +63,7 @@ type Flags = {
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
-  if (this.isCI && flags.mode !== 'auto') {
+  if (!this.isInteractive && flags.mode !== 'auto') {
     invariant(false, 'Only --mode `auto` is available in CI');
   }
   await checkBranchIsReachable(this, flags);
@@ -76,10 +76,14 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   let validationMode: ValidationMode = 'strict';
   if (flags['validation-mode'] === 'prompt') {
-    const validationModeResult = (await this.enquirer.selectPrompt(this.isCI, 'Do you want to anonymize data?', [
-      { name: 'strict', message: 'Yes' },
-      { name: 'relaxed', message: 'No' }
-    ])) as ValidationMode;
+    const validationModeResult = (await this.enquirer.selectPrompt(
+      this.isInteractive,
+      'Do you want to anonymize data?',
+      [
+        { name: 'strict', message: 'Yes' },
+        { name: 'relaxed', message: 'No' }
+      ]
+    )) as ValidationMode;
     if (validationModeResult) {
       validationMode = validationModeResult;
     }

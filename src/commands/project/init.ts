@@ -49,7 +49,7 @@ export async function ensureDatabase(context: LocalContext, connectionString: st
 
   if (!databaseExists) {
     const shouldCreate = await context.enquirer.confirmPrompt(
-      context.isCI,
+      context.isInteractive,
       `Database "${databaseName}" does not exist. Would you like to create it?`
     );
 

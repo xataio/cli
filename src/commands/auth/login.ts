@@ -23,11 +23,13 @@ async function resolveCustomConfig(
   context: LocalContext,
   flags: Pick<Flags, 'custom-issuer' | 'custom-api-base-url' | 'custom-client-id' | 'custom-client-secret'>
 ): Promise<CustomConfig | undefined> {
-  const issuer = await context.enquirer.inputPrompt(context.isCI, 'Issuer URL', { flag: flags['custom-issuer'] });
-  const apiBaseUrl = await context.enquirer.inputPrompt(context.isCI, 'API base URL', {
+  const issuer = await context.enquirer.inputPrompt(context.isInteractive, 'Issuer URL', {
+    flag: flags['custom-issuer']
+  });
+  const apiBaseUrl = await context.enquirer.inputPrompt(context.isInteractive, 'API base URL', {
     flag: flags['custom-api-base-url']
   });
-  const clientSecret = await context.enquirer.inputPrompt(context.isCI, 'Client secret', {
+  const clientSecret = await context.enquirer.inputPrompt(context.isInteractive, 'Client secret', {
     flag: flags['custom-client-secret']
   });
 

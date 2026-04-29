@@ -12,8 +12,8 @@ interface Flags {
 export async function implementation(this: LocalContext, flags: Flags) {
   const organizationId = await this.getOrganization(this, flags, {});
 
-  const name = await this.enquirer.inputPrompt(this.isCI, 'API key name', { flag: flags.name });
-  const expiry = await parseExpiry(this.isCI, flags.expiry);
+  const name = await this.enquirer.inputPrompt(this.isInteractive, 'API key name', { flag: flags.name });
+  const expiry = await parseExpiry(this.isInteractive, flags.expiry);
 
   const { key } = await this.api.apiKeys.createOrganizationAPIKey({
     pathParams: { organizationID: organizationId },

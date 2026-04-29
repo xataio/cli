@@ -36,7 +36,7 @@ export async function getSelectedColumnsViaPrompt(
 
   const preselectedSchemas = await getPreSelectedSchemas(cloneConfigJson, allSchemas);
   const selectedSchemas = await context.enquirer.multiselectPrompt(
-    context.isCI,
+    context.isInteractive,
     `Pick the schemas you want to configure ${shortcuts}`,
     allSchemas.map((schema) => ({
       name: `${schema.schema}`,
@@ -53,7 +53,7 @@ export async function getSelectedColumnsViaPrompt(
   const preSelectedTables = getPreSelectedTables(cloneConfigJson);
 
   const selectedTables = await context.enquirer.multiselectPrompt(
-    context.isCI,
+    context.isInteractive,
     `Pick the tables you want to configure ${shortcuts}`,
     allTables.map((table) => ({
       name: `${table.schema}.${table.table}`,
@@ -75,7 +75,7 @@ export async function getSelectedColumnsViaPrompt(
     const preSelectedColumns = getPreSelectedColumns(cloneConfigJson, selectedTable);
 
     const selectedColumns = await context.enquirer.multiselectPrompt(
-      context.isCI,
+      context.isInteractive,
       `Pick the columns you want to configure for the table ${selectedTable} ${shortcuts}`,
       allTableColumns.map((column) => ({
         name: `${column.schema}.${column.table}.${column.column}`,

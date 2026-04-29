@@ -35,7 +35,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   if (!flags.yes) {
     const confirmed = await this.enquirer.confirmPrompt(
-      this.isCI,
+      this.isInteractive,
       `Rotate the password for PostgreSQL user ${username} on branch ${branch.name}? Existing connections will not be affected, but any new connections will need to use the new credentials.`
     );
     if (!confirmed) {

@@ -32,7 +32,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   if (!flags.yes) {
     const confirmFromPrompt = await this.enquirer.confirmPrompt(
-      this.isCI,
+      this.isInteractive,
       `Are you sure you want to delete the branch ${branchToDelete.name} with id ${branchToDelete.id}?`
     );
     if (!confirmFromPrompt) {

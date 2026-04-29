@@ -52,7 +52,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   // Prompt for missing required parameters with smart defaults
   const organizationName =
     flags['organization-name'] ||
-    (await this.enquirer.inputPrompt(this.isCI, 'Please enter the organization name', {
+    (await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the organization name', {
       placeholder: getDefaultOrganizationName(userInfo)
     })) ||
     getDefaultOrganizationName(userInfo);
@@ -63,7 +63,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   const projectName =
     flags['project-name'] ||
-    (await this.enquirer.inputPrompt(this.isCI, 'Please enter the project name', {
+    (await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the project name', {
       placeholder: 'First Project'
     })) ||
     'First Project';
@@ -74,7 +74,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   const branchName =
     flags['branch-name'] ||
-    (await this.enquirer.inputPrompt(this.isCI, 'Please enter the branch name', {
+    (await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the branch name', {
       placeholder: 'main'
     })) ||
     'main';
@@ -122,7 +122,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   this.process.stdout.write(chalk.gray('• Set up database connection in this directory\n\n'));
 
   const shouldInitialize = await this.enquirer.confirmPrompt(
-    this.isCI,
+    this.isInteractive,
     'Would you like to initialize this project in the current folder?'
   );
 

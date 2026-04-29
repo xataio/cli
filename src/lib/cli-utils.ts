@@ -75,7 +75,7 @@ export const getOrganization = async (
       name: org.id,
       message: org.name
     }));
-    const organizationId = context.enquirer.selectPrompt(context.isCI, title, choices);
+    const organizationId = context.enquirer.selectPrompt(context.isInteractive, title, choices);
     if (!organizationId) {
       invariant(false, 'expected input for flag --organization');
     }
@@ -122,7 +122,7 @@ export const getProject = async (context: LocalContext, flags: { project?: strin
       name: project.id,
       message: `${project.id} - ${project.name}`
     }));
-    const projectId = context.enquirer.selectPrompt(context.isCI, title, choices);
+    const projectId = context.enquirer.selectPrompt(context.isInteractive, title, choices);
     if (!projectId) {
       invariant(false, 'expected input for flag --project');
     }
@@ -178,7 +178,7 @@ export const getBranch = async (
       name: branch.id,
       message: `${branch.id} - ${branch.name}`
     }));
-    const branchId = context.enquirer.selectPrompt(context.isCI || skipPrompt, title, choices);
+    const branchId = context.enquirer.selectPrompt(context.isInteractive && !skipPrompt, title, choices);
     return branchId;
   }
 };
@@ -198,7 +198,7 @@ export const getDatabase = async (context: LocalContext, flags: { database?: str
     return branchConfig.databaseName;
   }
 
-  const databaseName = await context.enquirer.inputPrompt(context.isCI, 'Please enter the database name', {
+  const databaseName = await context.enquirer.inputPrompt(context.isInteractive, 'Please enter the database name', {
     placeholder: DEFAULT_DATABASE_NAME
   });
   return databaseName;

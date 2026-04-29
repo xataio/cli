@@ -14,7 +14,10 @@ type Flags = {
 export async function implementation(this: LocalContext, flags: Flags, cidr?: string) {
   let cidrValue = cidr;
   if (!cidrValue) {
-    cidrValue = await this.enquirer.inputPrompt(this.isCI, 'Enter CIDR block (e.g. 192.168.0.0/24 or 10.0.0.1)');
+    cidrValue = await this.enquirer.inputPrompt(
+      this.isInteractive,
+      'Enter CIDR block (e.g. 192.168.0.0/24 or 10.0.0.1)'
+    );
   }
 
   if (!cidrValue?.trim()) {
@@ -48,15 +51,18 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
   }
 
   let description = flags.label;
-  if (description === undefined && !this.isCI) {
+  if (description === undefined && this.isInteractive) {
     description =
-      (await this.enquirer.inputPrompt(this.isCI, 'Description (optional, press enter to skip)')) || undefined;
+      (await this.enquirer.inputPrompt(this.isInteractive, 'Description (optional, press enter to skip)')) || undefined;
   }
 
   ipFiltering.cidr.push({ cidr: normalized, description });
 
-  if (!ipFiltering.enabled && !this.isCI) {
-    const enable = await this.enquirer.confirmPrompt(this.isCI, 'IP filtering is currently disabled. Enable it now?');
+  if (!ipFiltering.enabled && this.isInteractive) {
+    const enable = await this.enquirer.confirmPrompt(
+      this.isInteractive,
+      'IP filtering is currently disabled. Enable it now?'
+    );
     if (enable) {
       ipFiltering.enabled = true;
     }

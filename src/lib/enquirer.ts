@@ -2,7 +2,7 @@ import * as chrono from 'chrono-node';
 import enquirer from 'enquirer';
 
 export async function inputPrompt<T = string>(
-  isCI: boolean,
+  isInteractive: boolean,
   message: string,
   { flag, placeholder }: { flag?: T; placeholder?: T } = {}
 ) {
@@ -10,7 +10,7 @@ export async function inputPrompt<T = string>(
     return flag;
   }
 
-  if (isCI) {
+  if (!isInteractive) {
     return '';
   }
 
@@ -23,8 +23,8 @@ export async function inputPrompt<T = string>(
   return inputPrompt.input;
 }
 
-export async function confirmPrompt(isCI: boolean, message: string) {
-  if (isCI) {
+export async function confirmPrompt(isInteractive: boolean, message: string) {
+  if (!isInteractive) {
     return '';
   }
 
@@ -42,7 +42,7 @@ type Choice = {
 };
 
 export async function selectPrompt<T extends Choice>(
-  isCI: boolean,
+  isInteractive: boolean,
   message: string,
   choices: T[],
   { flag, initial }: { flag?: T['name']; initial?: number } = {}
@@ -51,7 +51,7 @@ export async function selectPrompt<T extends Choice>(
     return flag;
   }
 
-  if (isCI) {
+  if (!isInteractive) {
     return '';
   }
 
@@ -66,8 +66,8 @@ export async function selectPrompt<T extends Choice>(
   return selectPrompt.value;
 }
 
-export async function multiselectPrompt(isCI: boolean, message: string, choices: Choice[], initial: string[]) {
-  if (isCI) {
+export async function multiselectPrompt(isInteractive: boolean, message: string, choices: Choice[], initial: string[]) {
+  if (!isInteractive) {
     return [];
   }
 
@@ -83,8 +83,8 @@ export async function multiselectPrompt(isCI: boolean, message: string, choices:
   return multiselectPrompt.value;
 }
 
-export async function datePrompt(isCI: boolean, message: string, defaultValue?: string) {
-  if (isCI) {
+export async function datePrompt(isInteractive: boolean, message: string, defaultValue?: string) {
+  if (!isInteractive) {
     return null;
   }
 

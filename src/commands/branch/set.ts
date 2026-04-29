@@ -113,45 +113,45 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
   if (!value) {
     value = await match(field)
       .with('name', async () => {
-        return await this.enquirer.inputPrompt(this.isCI, 'Please enter the new branch name');
+        return await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the new branch name');
       })
       .with('replicas', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           'Please select number of replicas for the branch',
           replicaChoices
         );
       })
       .with('instance-type', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           'Please select the type of instance for this branch',
           instanceChoices
         );
       })
       .with('hibernate', async () => {
-        return await this.enquirer.selectPrompt(this.isCI, 'Please select hibernation status for the branch', [
+        return await this.enquirer.selectPrompt(this.isInteractive, 'Please select hibernation status for the branch', [
           { name: 'true', message: 'Hibernated' },
           { name: 'false', message: 'Not hibernated' }
         ]);
       })
       .with('scale-to-zero', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please select scale to zero status for the branch (current: ${defaultScaleToZero ? 'Enabled' : 'Disabled'})`,
           [...scaleToZeroChoices]
         );
       })
       .with('inactivity-period', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please select inactivity period for the branch (current: ${defaultInactivityPeriod} minutes)`,
           [...timeChoices]
         );
       })
       .with('postgres-version', async () => {
         return await this.enquirer.selectPrompt(
-          this.isCI,
+          this.isInteractive,
           `Please select the PostgreSQL version for this branch (current: ${branch.configuration.image})`,
           upgradeableImageChoices
         );
