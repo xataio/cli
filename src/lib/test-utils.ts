@@ -26,7 +26,7 @@ if (Bun.env.DEBUG) {
 export const TEST_XATA_ORG = 'e2e';
 export const TEST_XATA_PROJECT_NAME = 'cli-e2e-tests-database';
 export const TEST_XATA_PROJECT_ID = 'prj_lj5tgb80p97jv99a7mctcnbbug';
-export const TEST_XATA_BRANCH_ID = 's9bt0trasd1qr08ert42cr19d0';
+export const TEST_XATA_BRANCH_ID = 'ncg0hgv1vl0e78dmba7t9h7s58';
 export const TEST_XATA_BRANCH_NAME = 'main';
 
 function createFakeProcess() {
