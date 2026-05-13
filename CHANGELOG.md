@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.2.1
+
+### Patch Changes
+
+- [#2319](https://github.com/xataio/frontend/pull/2319) [`abf8f7b`](https://github.com/xataio/frontend/commit/abf8f7b089b6c55e6ba278675a574a735bc680b1) Thanks [@divyenduz](https://github.com/divyenduz)! - When CLI is running inside an agent context, make it not-interactive.
+
 ## 1.2.0
 
 ### Minor Changes
