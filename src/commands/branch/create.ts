@@ -7,7 +7,7 @@ import { branchConfig } from '~/lib/branch-config';
 import { CLI_NAME } from '~/lib/constants';
 
 import type { Types } from '@xata.io/api';
-import { sortPostgresImagesDesc } from '@xata.io/utils';
+import { pickLatestPostgresImage, sortPostgresImagesDesc } from '@xata.io/utils';
 import invariant from 'tiny-invariant';
 import type { ProjectOptions } from '~/lib/cli-utils';
 import { groupAndSortRegions } from '~/lib/cli-utils';
@@ -259,7 +259,8 @@ export async function getImage(
       return flags['postgres-version'];
     }
 
-    const defaultIndex = sortedImages.findIndex((image) => image.name.startsWith('postgres:'));
+    const defaultImage = pickLatestPostgresImage(sortedImages);
+    const defaultIndex = defaultImage ? sortedImages.indexOf(defaultImage) : -1;
     const initial = defaultIndex >= 0 ? defaultIndex : 0;
 
     const image = (await context.enquirer.selectPrompt(context.isInteractive, title, imageChoices, {
