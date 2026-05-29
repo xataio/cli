@@ -1,14 +1,11 @@
 import { describe, expect, spyOn, test } from 'bun:test';
-import {
-  getNthArgOfNthCall,
-  getTestContext,
-  TEST_XATA_ORG,
-  TEST_XATA_PROJECT_ID,
-  TEST_XATA_PROJECT_NAME
-} from '~/lib/test-utils';
+import { setupTestResources } from '@xata.io/test-utils';
+import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './get';
 
-describe('project get command tests', async () => {
+describe('project get command tests', () => {
+  const { project } = setupTestResources();
+
   test('project get a non-existent field', async () => {
     const context = await getTestContext();
     const _stdoutWriteSpy = spyOn(context.process.stdout, 'write');
@@ -18,7 +15,7 @@ describe('project get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID
+        project: project.id
       },
       'non-existent-field'
     );
@@ -40,13 +37,13 @@ describe('project get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID
+        project: project.id
       },
       'name'
     );
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    expect(output).toStrictEqual(TEST_XATA_PROJECT_NAME);
+    expect(output).toStrictEqual(project.name);
   });
 });

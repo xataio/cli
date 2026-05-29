@@ -1,15 +1,12 @@
 import { describe, expect, spyOn, test } from 'bun:test';
-import {
-  getNthArgOfNthCall,
-  getTestContext,
-  TEST_XATA_BRANCH_ID,
-  TEST_XATA_ORG,
-  TEST_XATA_PROJECT_ID
-} from '~/lib/test-utils';
+import { setupTestResources } from '@xata.io/test-utils';
+import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './get';
 import stripAnsi from 'strip-ansi';
 
-describe('branch get command tests', async () => {
+describe('branch get command tests', () => {
+  const { project, branch } = setupTestResources();
+
   test('get non-existent field', async () => {
     const context = await getTestContext();
     const _stdoutWriteSpy = spyOn(context.process.stdout, 'write');
@@ -20,8 +17,8 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
-        branch: TEST_XATA_BRANCH_ID
+        project: project.id,
+        branch: branch.id
       },
       'non-existent-field'
     );
@@ -44,8 +41,8 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
-        branch: TEST_XATA_BRANCH_ID
+        project: project.id,
+        branch: branch.id
       },
       '.catalog'
     );
@@ -68,8 +65,8 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
-        branch: TEST_XATA_BRANCH_ID
+        project: project.id,
+        branch: branch.id
       },
       'name'
     );
@@ -79,7 +76,7 @@ describe('branch get command tests', async () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe('main');
+    expect(output).toBe(branch.name);
   });
 
   test('get branch id field', async () => {
@@ -91,8 +88,8 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
-        branch: TEST_XATA_BRANCH_ID
+        project: project.id,
+        branch: branch.id
       },
       'id'
     );
@@ -101,7 +98,7 @@ describe('branch get command tests', async () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe(TEST_XATA_BRANCH_ID);
+    expect(output).toBe(branch.id);
   });
 
   test('get object field returns JSON', async () => {
@@ -115,8 +112,8 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
-        branch: TEST_XATA_BRANCH_ID
+        project: project.id,
+        branch: branch.id
       },
       'configuration'
     );
@@ -128,9 +125,9 @@ describe('branch get command tests', async () => {
     expect(typeof parsed).toBe('object');
     expect(parsed).toMatchObject({
       image: expect.any(String),
-      instanceType: 'xata.micro',
+      instanceType: expect.any(String),
       postgresConfigurationParameters: expect.any(Object),
-      preloadLibraries: expect.arrayContaining(['pg_stat_statements']),
+      preloadLibraries: expect.any(Array),
       region: expect.any(String),
       replicas: expect.any(Number),
       storage: expect.any(Number)
@@ -146,8 +143,8 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
-        branch: TEST_XATA_BRANCH_ID
+        project: project.id,
+        branch: branch.id
       },
       'parentID'
     );
@@ -167,9 +164,9 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID
+        project: project.id
       },
-      'main',
+      branch.name,
       'name'
     );
 
@@ -177,7 +174,7 @@ describe('branch get command tests', async () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe('main');
+    expect(output).toBe(branch.name);
   });
 
   test('get field with branch name argument - different branch', async () => {
@@ -190,9 +187,9 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID
+        project: project.id
       },
-      'main',
+      branch.name,
       'id'
     );
 
@@ -200,7 +197,7 @@ describe('branch get command tests', async () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe(TEST_XATA_BRANCH_ID);
+    expect(output).toBe(branch.id);
   });
 
   test('no arguments shows catalog', async () => {
@@ -211,8 +208,8 @@ describe('branch get command tests', async () => {
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID
+      project: project.id,
+      branch: branch.id
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
@@ -233,8 +230,8 @@ describe('branch get command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
-        branch: TEST_XATA_BRANCH_ID
+        project: project.id,
+        branch: branch.id
       },
       'arg1',
       'arg2',

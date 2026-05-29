@@ -1,15 +1,12 @@
 import { describe, expect, spyOn, test } from 'bun:test';
+import { setupTestResources } from '@xata.io/test-utils';
 import stripAnsi from 'strip-ansi';
-import {
-  getNthArgOfNthCall,
-  getTestContext,
-  TEST_XATA_BRANCH_ID,
-  TEST_XATA_ORG,
-  TEST_XATA_PROJECT_ID
-} from '~/lib/test-utils';
+import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './list';
 
-describe('branch list command tests', async () => {
+describe('branch list command tests', () => {
+  const { project, branch } = setupTestResources();
+
   test('list branches with json output', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
@@ -18,7 +15,7 @@ describe('branch list command tests', async () => {
     await implementation.call(context, {
       json: true,
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID
+      project: project.id
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
@@ -40,7 +37,7 @@ describe('branch list command tests', async () => {
     await implementation.call(context, {
       json: false,
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID
+      project: project.id
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
@@ -59,13 +56,12 @@ describe('branch list command tests', async () => {
     await implementation.call(context, {
       json: false,
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID
+      project: project.id,
+      branch: branch.id
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    console.log(output);
-    expect(output).toContain('main (current)');
+    expect(output).toContain(`${branch.name} (current)`);
   });
 });

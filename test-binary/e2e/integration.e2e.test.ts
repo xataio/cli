@@ -1,9 +1,12 @@
 import { describe, expect, test } from 'bun:test';
+import { setupTestResources } from '@xata.io/test-utils';
 import { runCli } from './cli-driver';
-import { TEST_XATA_BRANCH_NAME, TEST_XATA_ORG, TEST_XATA_PROJECT_ID, TEST_XATA_PROJECT_NAME } from '~/lib/test-utils';
+import { TEST_XATA_ORG } from '~/lib/test-utils';
 
 describe('CLI binary integration tests (staging API)', () => {
-  test('organization list includes e2e org', async () => {
+  const { project, branch } = setupTestResources();
+
+  test('organization list includes the e2e org', async () => {
     const result = await runCli(['organization', 'list', '--json']);
 
     expect(result.code).toBe(0);
@@ -16,7 +19,7 @@ describe('CLI binary integration tests (staging API)', () => {
     expect(e2eOrg.name).toBe(TEST_XATA_ORG);
   });
 
-  test('project list shows expected project', async () => {
+  test('project list includes the provisioned project', async () => {
     const result = await runCli(['project', 'list', '--organization', TEST_XATA_ORG, '--json']);
 
     expect(result.code).toBe(0);
@@ -24,28 +27,20 @@ describe('CLI binary integration tests (staging API)', () => {
     const projects = JSON.parse(result.stdout);
     expect(Array.isArray(projects)).toBe(true);
 
-    const testProject = projects.find((p: { id: string }) => p.id === TEST_XATA_PROJECT_ID);
-    expect(testProject).toBeDefined();
-    expect(testProject.name).toBe(TEST_XATA_PROJECT_NAME);
+    const match = projects.find((p: { id: string }) => p.id === project.id);
+    expect(match).toBeDefined();
+    expect(match.name).toBe(project.name);
   });
 
-  test('branch list includes main branch', async () => {
-    const result = await runCli([
-      'branch',
-      'list',
-      '--organization',
-      TEST_XATA_ORG,
-      '--project',
-      TEST_XATA_PROJECT_ID,
-      '--json'
-    ]);
+  test('branch list includes the provisioned branch', async () => {
+    const result = await runCli(['branch', 'list', '--organization', TEST_XATA_ORG, '--project', project.id, '--json']);
 
     expect(result.code).toBe(0);
 
     const branches = JSON.parse(result.stdout);
     expect(Array.isArray(branches)).toBe(true);
 
-    const mainBranch = branches.find((b: { name: string }) => b.name === TEST_XATA_BRANCH_NAME);
-    expect(mainBranch).toBeDefined();
+    const match = branches.find((b: { name: string }) => b.name === branch.name);
+    expect(match).toBeDefined();
   });
 });

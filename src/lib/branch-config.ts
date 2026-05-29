@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { loadConfig } from 'zod-config';
+import { loadConfigSync } from 'zod-config';
 import { envAdapter } from 'zod-config/env-adapter';
 import { jsonAdapter } from 'zod-config/json-adapter';
 import { CLI_NAME } from '~/lib/constants';
 import { env, loadEnvConfig } from './env';
 import { type BranchConfig, BranchConfigSchema } from './schemas';
 
-export const branchConfig = await loadConfig({
+export const branchConfig = loadConfigSync({
   schema: BranchConfigSchema,
   adapters: [
     jsonAdapter({ path: getBranchConfigPath(), silent: true }),

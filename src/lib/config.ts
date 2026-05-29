@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { type Adapter, loadConfig } from 'zod-config';
+import { loadConfigSync, type SyncAdapter } from 'zod-config';
 import { jsonAdapter } from 'zod-config/json-adapter';
 import { CLI_NAME, DEFAULT_ENVIRONMENT } from './constants';
 import { env } from './env';
@@ -9,8 +9,8 @@ import { type Config, ConfigSchema } from './schemas';
 const envAdapter = () =>
   ({
     name: 'env',
-    async read(): Promise<Partial<Config>> {
-      const environment = env.XATA_API_ENVIRONMENT || DEFAULT_ENVIRONMENT;
+    read(): Partial<Config> {
+      const environment = env.XATA_API_ENVIRONMENT ?? DEFAULT_ENVIRONMENT;
 
       if (env.XATA_API_KEY) {
         return {
@@ -27,9 +27,9 @@ const envAdapter = () =>
 
       return {};
     }
-  }) satisfies Adapter;
+  }) satisfies SyncAdapter;
 
-export const config = await loadConfig({
+export const config = loadConfigSync({
   schema: ConfigSchema,
   adapters: [jsonAdapter({ path: getConfigPath(), silent: true }), envAdapter()]
 });

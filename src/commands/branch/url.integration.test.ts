@@ -1,23 +1,20 @@
 import { describe, expect, mock, spyOn, test } from 'bun:test';
-import {
-  getNthArgOfNthCall,
-  getTestContext,
-  TEST_XATA_BRANCH_ID,
-  TEST_XATA_ORG,
-  TEST_XATA_PROJECT_ID
-} from '~/lib/test-utils';
+import { setupTestResources } from '@xata.io/test-utils';
+import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import type { Types } from '@xata.io/api';
 import { implementation } from './url';
 
-describe('branch url command tests', async () => {
+describe('branch url command tests', () => {
+  const { project, branch } = setupTestResources();
+
   test('url returns connection string for healthy branch', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID,
+      project: project.id,
+      branch: branch.id,
       type: 'primary'
     });
 
@@ -35,10 +32,10 @@ describe('branch url command tests', async () => {
       context,
       {
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID,
+        project: project.id,
         type: 'primary'
       },
-      'main'
+      branch.name
     );
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
@@ -52,8 +49,8 @@ describe('branch url command tests', async () => {
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID,
+      project: project.id,
+      branch: branch.id,
       database: 'custom_db',
       type: 'primary'
     });
@@ -78,8 +75,8 @@ describe('branch url command tests', async () => {
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID,
+      project: project.id,
+      branch: branch.id,
       type: 'primary'
     });
 
@@ -96,7 +93,7 @@ describe('branch url command tests', async () => {
         context,
         {
           organization: TEST_XATA_ORG,
-          project: TEST_XATA_PROJECT_ID,
+          project: project.id,
           type: 'primary'
         },
         'non-existent-branch'

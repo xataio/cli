@@ -1,14 +1,11 @@
 import { describe, expect, spyOn, test } from 'bun:test';
-import {
-  getNthArgOfNthCall,
-  getTestContext,
-  TEST_XATA_ORG,
-  TEST_XATA_PROJECT_ID,
-  TEST_XATA_PROJECT_NAME
-} from '~/lib/test-utils';
+import { setupTestResources } from '@xata.io/test-utils';
+import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './list';
 
-describe('project list command with tests', async () => {
+describe('project list command with tests', () => {
+  const { project } = setupTestResources();
+
   test('list projects with json output', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
@@ -23,8 +20,8 @@ describe('project list command with tests', async () => {
     expect(output).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: TEST_XATA_PROJECT_ID,
-          name: TEST_XATA_PROJECT_NAME,
+          id: project.id,
+          name: project.name,
           createdAt: expect.any(String),
           updatedAt: expect.any(String)
         })

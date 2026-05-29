@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { loadConfig } from 'zod-config';
+import { loadConfigSync } from 'zod-config';
 import { envAdapter } from 'zod-config/env-adapter';
 import { jsonAdapter } from 'zod-config/json-adapter';
 import { CLI_NAME } from './constants';
 import { env, loadEnvConfig } from './env';
 import { type ProjectConfig, ProjectConfigSchema } from './schemas';
 
-export const projectConfig = await loadConfig({
+export const projectConfig = loadConfigSync({
   schema: ProjectConfigSchema,
   adapters: [
     jsonAdapter({ path: getProjectConfigPath(), silent: true }),

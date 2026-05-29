@@ -19,7 +19,9 @@ dotenv.config({
   ignore: ['MISSING_ENV_FILE']
 });
 
-const missingEnvVars = ['XATA_API_KEY', 'XATA_API_ENVIRONMENT'].filter((key) => !Bun.env[key]);
+const missingEnvVars = ['XATA_API_KEY', 'XATA_API_ENVIRONMENT', 'XATA_TEST_ORGANIZATION_ID'].filter(
+  (key) => !Bun.env[key]
+);
 
 if (missingEnvVars.length > 0) {
   console.error(
@@ -33,11 +35,7 @@ if (Bun.env.DEBUG) {
   console.warn(chalk.red(`DEBUG is set. Since there is more output in the console with debug. Some tests will fail.`));
 }
 
-export const TEST_XATA_ORG = 'e2e';
-export const TEST_XATA_PROJECT_NAME = 'cli-e2e-tests-database';
-export const TEST_XATA_PROJECT_ID = 'prj_lj5tgb80p97jv99a7mctcnbbug';
-export const TEST_XATA_BRANCH_ID = 'm99irodq5p2crbqt0r939r8nio';
-export const TEST_XATA_BRANCH_NAME = 'main';
+export const TEST_XATA_ORG = Bun.env.XATA_TEST_ORGANIZATION_ID!;
 
 function createFakeProcess() {
   const fakeProcess = {

@@ -1,22 +1,20 @@
 import { describe, expect, spyOn, test } from 'bun:test';
+import { setupChildBranch, setupTestResources } from '@xata.io/test-utils';
 import stripAnsi from 'strip-ansi';
-import {
-  getNthArgOfNthCall,
-  getTestContext,
-  TEST_XATA_BRANCH_ID,
-  TEST_XATA_ORG,
-  TEST_XATA_PROJECT_ID
-} from '~/lib/test-utils';
+import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './tree';
 
-describe('branch tree command tests', async () => {
+describe('branch tree command tests', () => {
+  const { project, branch } = setupTestResources();
+  const { child } = setupChildBranch();
+
   test('tree displays branch hierarchy', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
+      project: project.id,
       'show-id': false
     });
 
@@ -24,7 +22,7 @@ describe('branch tree command tests', async () => {
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toContain('main');
+    expect(output).toContain(branch.name);
   });
 
   test('tree with show-id flag displays branch IDs', async () => {
@@ -33,13 +31,13 @@ describe('branch tree command tests', async () => {
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
+      project: project.id,
       'show-id': true
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
-    expect(output).toContain(`main (id: ${TEST_XATA_BRANCH_ID})`);
+    expect(output).toContain(`${branch.name} (id: ${branch.id})`);
   });
 
   test('tree shows current branch indicator', async () => {
@@ -48,8 +46,8 @@ describe('branch tree command tests', async () => {
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID,
+      project: project.id,
+      branch: branch.id,
       'show-id': false
     });
 
@@ -64,15 +62,14 @@ describe('branch tree command tests', async () => {
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID,
+      project: project.id,
+      branch: branch.id,
       'show-id': true
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
-    console.log(output);
-    expect(output).toContain(`main (id: ${TEST_XATA_BRANCH_ID}) (current)`);
+    expect(output).toContain(`${branch.name} (id: ${branch.id}) (current)`);
   });
 
   test('tree handles multiple branches with parent-child relationships', async () => {
@@ -81,13 +78,13 @@ describe('branch tree command tests', async () => {
 
     await implementation.call(context, {
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
+      project: project.id,
       'show-id': false
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
-    expect(output).toContain(`└─ main`);
-    expect(output).toContain(`└─ child1`);
+    expect(output).toContain(branch.name);
+    expect(output).toContain(child.name);
   });
 });

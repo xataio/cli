@@ -1,15 +1,12 @@
 import { describe, expect, spyOn, test } from 'bun:test';
+import { setupTestResources } from '@xata.io/test-utils';
 import stripAnsi from 'strip-ansi';
-import {
-  getNthArgOfNthCall,
-  getTestContext,
-  TEST_XATA_BRANCH_ID,
-  TEST_XATA_ORG,
-  TEST_XATA_PROJECT_ID
-} from '~/lib/test-utils';
+import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './describe';
 
-describe('branch describe command tests', async () => {
+describe('branch describe command tests', () => {
+  const { project, branch } = setupTestResources();
+
   test('describe branch with json output', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
@@ -18,8 +15,8 @@ describe('branch describe command tests', async () => {
     await implementation.call(context, {
       json: true,
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID
+      project: project.id,
+      branch: branch.id
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
@@ -40,8 +37,8 @@ describe('branch describe command tests', async () => {
     await implementation.call(context, {
       json: false,
       organization: TEST_XATA_ORG,
-      project: TEST_XATA_PROJECT_ID,
-      branch: TEST_XATA_BRANCH_ID
+      project: project.id,
+      branch: branch.id
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
@@ -64,15 +61,15 @@ describe('branch describe command tests', async () => {
       {
         json: true,
         organization: TEST_XATA_ORG,
-        project: TEST_XATA_PROJECT_ID
+        project: project.id
       },
-      'main'
+      branch.name
     );
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     const output = JSON.parse(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
     expect(output).toHaveProperty('name');
-    expect(output.name).toBe('main');
+    expect(output.name).toBe(branch.name);
   });
 
   test('describe non-existent branch', async () => {
@@ -86,7 +83,7 @@ describe('branch describe command tests', async () => {
         {
           json: true,
           organization: TEST_XATA_ORG,
-          project: TEST_XATA_PROJECT_ID
+          project: project.id
         },
         'non-existent-branch'
       )
