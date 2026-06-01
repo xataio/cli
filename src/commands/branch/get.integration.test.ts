@@ -4,9 +4,9 @@ import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-ut
 import { implementation } from './get';
 import stripAnsi from 'strip-ansi';
 
-describe('branch get command tests', () => {
-  const { project, branch } = setupTestResources();
+const { project, branch } = await setupTestResources();
 
+describe('branch get command tests', () => {
   test('get non-existent field', async () => {
     const context = await getTestContext();
     const _stdoutWriteSpy = spyOn(context.process.stdout, 'write');

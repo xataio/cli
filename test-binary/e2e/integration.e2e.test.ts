@@ -3,9 +3,9 @@ import { setupTestResources } from '@xata.io/test-utils';
 import { runCli } from './cli-driver';
 import { TEST_XATA_ORG } from '~/lib/test-utils';
 
-describe('CLI binary integration tests (staging API)', () => {
-  const { project, branch } = setupTestResources();
+const { project, branch } = await setupTestResources();
 
+describe('CLI binary integration tests (staging API)', () => {
   test('organization list includes the e2e org', async () => {
     const result = await runCli(['organization', 'list', '--json']);
 

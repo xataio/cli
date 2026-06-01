@@ -3,9 +3,9 @@ import { setupTestResources } from '@xata.io/test-utils';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './get';
 
-describe('project get command tests', () => {
-  const { project } = setupTestResources();
+const { project } = await setupTestResources();
 
+describe('project get command tests', () => {
   test('project get a non-existent field', async () => {
     const context = await getTestContext();
     const _stdoutWriteSpy = spyOn(context.process.stdout, 'write');

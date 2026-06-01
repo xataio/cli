@@ -4,9 +4,9 @@ import stripAnsi from 'strip-ansi';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './describe';
 
-describe('branch describe command tests', () => {
-  const { project, branch } = setupTestResources();
+const { project, branch } = await setupTestResources();
 
+describe('branch describe command tests', () => {
   test('describe branch with json output', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');

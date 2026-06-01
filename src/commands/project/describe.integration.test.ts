@@ -4,9 +4,9 @@ import stripAnsi from 'strip-ansi';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './describe';
 
-describe('project describe command tests', () => {
-  const { project } = setupTestResources();
+const { project } = await setupTestResources();
 
+describe('project describe command tests', () => {
   test('describe 404 project call', async () => {
     const context = await getTestContext();
     const projectId = 'PROJECT_ID_THAT_DOES_NOT_EXIST';

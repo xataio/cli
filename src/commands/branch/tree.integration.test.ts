@@ -4,10 +4,10 @@ import stripAnsi from 'strip-ansi';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './tree';
 
-describe('branch tree command tests', () => {
-  const { project, branch } = setupTestResources();
-  const { child } = setupChildBranch();
+const { project, branch } = await setupTestResources();
+const { child } = await setupChildBranch();
 
+describe('branch tree command tests', () => {
   test('tree displays branch hierarchy', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');

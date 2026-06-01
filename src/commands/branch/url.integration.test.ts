@@ -4,9 +4,9 @@ import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-ut
 import type { Types } from '@xata.io/api';
 import { implementation } from './url';
 
-describe('branch url command tests', () => {
-  const { project, branch } = setupTestResources();
+const { project, branch } = await setupTestResources();
 
+describe('branch url command tests', () => {
   test('url returns connection string for healthy branch', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
