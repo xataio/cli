@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { run } from '@stricli/core';
 import dotenv from '@dotenvx/dotenvx';
+import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { buildContext } from '~/context';
 import { getCanonicalCommandId } from '~/lib/canonical-command-id';
@@ -12,11 +13,13 @@ dotenv.config({
   ignore: ['MISSING_ENV_FILE']
 });
 
+const cliInvocationId = randomUUID();
+
 await run(app, process.argv.slice(2), {
   process,
   forCommand: async (info) => {
     const canonicalName = getCanonicalCommandId(app, info.prefix);
-    const context = await buildContext(process, canonicalName);
+    const context = await buildContext(process, { canonicalName, cliInvocationId });
 
     if (context.usingEnvApiKey && !context.debug) {
       process.on('exit', (code) => {

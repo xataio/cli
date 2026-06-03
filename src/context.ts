@@ -58,10 +58,15 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
   postgres: (connectionString: string) => postgres.Sql;
 }
 
-export async function buildContext(process: NodeJS.Process, canonicalName?: string): Promise<LocalContext> {
+type BuildContextOptions = {
+  canonicalName?: string;
+  cliInvocationId?: string;
+};
+
+export async function buildContext(process: NodeJS.Process, options: BuildContextOptions = {}): Promise<LocalContext> {
   const debug = Boolean(Bun.env.DEBUG);
   const usingEnvApiKey = Boolean(env.XATA_API_KEY);
-  const xata = await getApi({ canonicalName });
+  const xata = await getApi(options);
   const agent = await determineAgent();
 
   if (usingEnvApiKey && debug) {

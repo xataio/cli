@@ -6,11 +6,18 @@ import { config, updateConfig } from './config';
 import { getProfile } from './profile';
 import type { ApiEnvironment, CustomConfig } from './schemas';
 
-export async function getApi({ canonicalName }: { canonicalName?: string } = {}): Promise<XataApi> {
+export async function getApi({
+  canonicalName,
+  cliInvocationId
+}: {
+  canonicalName?: string;
+  cliInvocationId?: string;
+} = {}): Promise<XataApi> {
   const agent = await determineAgent();
   const xataAgent: Record<string, string | undefined> = {
     service: 'cli',
     cli_command_id: canonicalName,
+    cli_invocation_id: cliInvocationId,
     ci: ciInfo.isCI ? (ciInfo.id?.toLowerCase() ?? 'unknown') : undefined,
     pr: ciInfo.isCI ? (ciInfo.isPR ? 'true' : 'false') : undefined,
     ai_agent: agent.isAgent ? agent.agent.name : undefined
