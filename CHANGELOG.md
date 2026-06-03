@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.2.2
+
+### Patch Changes
+
+- [#2490](https://github.com/xataio/frontend/pull/2490) [`34da9b2`](https://github.com/xataio/frontend/commit/34da9b25a38c3b4a625526554e26e78e178861d1) Thanks [@richardgill](https://github.com/richardgill)! - Add CLI invocation IDs to X-Xata-Agent telemetry headers.
+
 ## 1.2.1
 
 ### Patch Changes
