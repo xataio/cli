@@ -35,7 +35,7 @@ type Flags = {
   aggregations: string;
   aggregation: BranchMetricAggregation;
   refresh: string;
-  format: OutputFormat;
+  output: OutputFormat;
   watch: boolean;
   json: boolean;
 };
@@ -342,8 +342,8 @@ function ensureAggregationIncluded(
 
 function resolveOutputFormat(flags: Flags, isInteractive: boolean): OutputFormat {
   if (flags.json) return 'json';
-  if (flags.watch && flags.format === 'table') return isInteractive ? 'tui' : 'ndjson';
-  return flags.format;
+  if (flags.watch && flags.output === 'table') return isInteractive ? 'tui' : 'ndjson';
+  return flags.output;
 }
 
 function parseRefreshInterval(value: string): number {
@@ -437,7 +437,7 @@ export const BranchMetricsCommand = buildCommand({
         parse: String,
         default: '10s'
       },
-      format: {
+      output: {
         kind: 'enum',
         values: ['table', 'json', 'ndjson', 'tui'],
         brief: 'Output format',
@@ -464,6 +464,9 @@ export const BranchMetricsCommand = buildCommand({
           optional: true
         }
       ]
+    },
+    aliases: {
+      o: 'output'
     }
   },
   func: implementation

@@ -13,7 +13,7 @@ const baseFlags = {
   aggregations: 'avg',
   aggregation: 'avg' as const,
   refresh: '10s',
-  format: 'json' as const,
+  output: 'json' as const,
   watch: false,
   json: false
 };
