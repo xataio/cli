@@ -56,7 +56,7 @@ export async function selectPrompt<T extends Choice>(
   }
 
   const selectPrompt = await enquirer.prompt<{ value: string }>({
-    type: 'select',
+    type: 'autocomplete',
     name: 'value',
     message,
     choices,
