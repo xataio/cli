@@ -6,6 +6,7 @@ import { BranchDeleteCommand } from './delete';
 import { BranchDescribeCommand } from './describe';
 import { BranchGetCommand } from './get';
 import { BranchListCommand } from './list';
+import { BranchMetricsCommand } from './metrics';
 import { BranchSetCommand } from './set';
 import { BranchTreeCommand } from './tree';
 import { BranchRotatePasswordCommand } from './rotate-password';
@@ -14,7 +15,10 @@ import { BranchWaitReadyCommand } from './wait-ready';
 
 export const BranchRoute = buildRouteMap({
   docs: {
-    brief: `Create, list, and manage ${CLI_NAME} branches`
+    brief: `Create, list, and manage ${CLI_NAME} branches`,
+    hideRoute: {
+      metrics: true
+    }
   },
   routes: {
     list: BranchListCommand,
@@ -25,6 +29,7 @@ export const BranchRoute = buildRouteMap({
     checkout: BranchCheckoutCommand,
     tree: BranchTreeCommand,
     get: BranchGetCommand,
+    metrics: BranchMetricsCommand,
     set: BranchSetCommand,
     'rotate-password': BranchRotatePasswordCommand,
     'wait-ready': BranchWaitReadyCommand
