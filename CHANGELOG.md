@@ -1,5 +1,13 @@
 # xata-cli
 
+## 1.2.3
+
+### Patch Changes
+
+- [#2523](https://github.com/xataio/frontend/pull/2523) [`2d7e6b3`](https://github.com/xataio/frontend/commit/2d7e6b32c255998bb10a1185cba0574d9934d985) Thanks [@divyenduz](https://github.com/divyenduz)! - add xata branch metrics
+
+- [#2519](https://github.com/xataio/frontend/pull/2519) [`a1cefd5`](https://github.com/xataio/frontend/commit/a1cefd5154f88a8dceb164f55ac026f8d30e8319) Thanks [@divyenduz](https://github.com/divyenduz)! - make all prompts filterable on typing
+
 ## 1.2.2
 
 ### Patch Changes
