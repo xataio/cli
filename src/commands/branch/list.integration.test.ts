@@ -43,10 +43,10 @@ describe('branch list command tests', () => {
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
-    expect(output).toContain('ID');
-    expect(output).toContain('Name');
-    expect(output).toContain('Created At');
-    expect(output).toContain('Parent ID');
+    expect(output).toContain('branch_id');
+    expect(output).toContain('name');
+    expect(output).toContain('created_at');
+    expect(output).toContain('parent_id');
   });
 
   test('list branches with specific branch context', async () => {

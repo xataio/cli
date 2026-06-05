@@ -25,7 +25,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     project,
-    ['ID', 'Created At', 'Updated At', 'Name'],
+    ['project_id', 'created_at', 'updated_at', 'name'],
     [[project.id, project.createdAt, project.updatedAt, project.name]]
   );
 }

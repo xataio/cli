@@ -15,7 +15,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...ids: s
     this,
     flags.json,
     { deleted: ids.length },
-    ['Deleted keys'],
+    ['deleted_key_id'],
     ids.map((id) => [id])
   );
 }

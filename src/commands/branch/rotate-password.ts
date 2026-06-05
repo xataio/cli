@@ -53,7 +53,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     this,
     flags.json,
     { branchId: branch.id, branchName: branch.name, username },
-    ['Branch', 'Username', 'Status'],
+    ['branch', 'username', 'status'],
     [[branch.name, username, 'Password rotated successfully']]
   );
 }

@@ -9,6 +9,7 @@ import { config } from './config';
 import { DEFAULT_DATABASE_NAME } from './constants';
 import { getProfile } from './profile';
 import { projectConfig } from './project-config';
+import { borderlessTableOptions } from './table';
 
 export const print = (
   context: LocalContext,
@@ -23,6 +24,7 @@ export const print = (
   }
 
   const table = new Table({
+    ...borderlessTableOptions,
     head: headers
   });
   rows.forEach((row) => {

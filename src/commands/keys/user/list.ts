@@ -12,7 +12,7 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     this,
     json,
     keys,
-    ['ID', 'Created At', 'Expiry', 'Last Used', 'Name'],
+    ['key_id', 'created_at', 'expiry', 'last_used', 'name'],
     keys.map((k) => [k.id, k.created_at, k.expiry ?? 'Never', k.last_used ?? 'Never', k.name])
   );
 }

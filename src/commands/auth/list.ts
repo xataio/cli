@@ -41,7 +41,7 @@ export async function implementation(this: LocalContext, { json }: Flags) {
   if (json) {
     print(this, true, profileData);
   } else {
-    const headers = ['Profile', 'Type', 'Environment', 'Email', 'Name', 'Current'];
+    const headers = ['profile', 'type', 'environment', 'email', 'name', 'current'];
     const rows = profileData.map((data) => [
       data.profile,
       data.type,

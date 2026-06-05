@@ -13,7 +13,7 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     this,
     json,
     organizations,
-    ['ID', 'Name'],
+    ['organization_id', 'name'],
     organizations.map((p) => [p.id, p.name])
   );
 }

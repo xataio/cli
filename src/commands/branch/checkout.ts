@@ -47,7 +47,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   await updateBranchConfig({ branchId: targetBranch.id, branchName: targetBranch.name, databaseName: database });
 
   const { id, name } = targetBranch;
-  this.print(this, flags.json, { id, name }, ['Switched to branch'], [[targetBranch.name]]);
+  this.print(this, flags.json, { id, name }, ['branch'], [[targetBranch.name]]);
 }
 
 export const BranchCheckoutCommand = buildCommand({

@@ -24,7 +24,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     key,
-    ['ID', 'Created At', 'Expiry', 'Name', 'Token'],
+    ['key_id', 'created_at', 'expiry', 'name', 'token'],
     [[key.id, key.created_at, key.expiry ?? 'Never', key.name, key.token]]
   );
 }

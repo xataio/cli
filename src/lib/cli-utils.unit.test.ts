@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'bun:test';
-import { getErrorMessage, groupAndSortRegions } from './cli-utils';
+import stripAnsi from 'strip-ansi';
+import { getErrorMessage, groupAndSortRegions, print } from './cli-utils';
 
 type Region = {
   id: string;
   publicAccess: boolean;
   backupsEnabled: boolean;
   organizationId: string | null;
+};
+
+const normalizeTableOutput = (output: string) => {
+  return stripAnsi(output)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => line.split(/\s+/));
 };
 
 function createRegion(id: string, organizationId: string | null = null): Region {
@@ -154,5 +163,57 @@ describe('getErrorMessage', () => {
   it('should handle object without message property', () => {
     const error = { code: 'ERR_001', detail: 'some detail' };
     expect(getErrorMessage(error)).toBe('[object Object]');
+  });
+});
+
+describe('print', () => {
+  it('should print JSON output unchanged by table headers', () => {
+    const writes: string[] = [];
+    const context = {
+      process: {
+        stdout: {
+          write: (value: string) => writes.push(value)
+        }
+      }
+    };
+    const data = { id: 'branch-id', name: 'main' };
+
+    const result = print(context as any, true, data, ['branch_id', 'name'], [['ignored', 'ignored']]);
+
+    expect(result).toBe(JSON.stringify(data, null, 2));
+    expect(writes).toEqual([`${JSON.stringify(data, null, 2)}\n`]);
+  });
+
+  it('should print compact borderless tables', () => {
+    const writes: string[] = [];
+    const context = {
+      process: {
+        stdout: {
+          write: (value: string) => writes.push(value)
+        }
+      }
+    };
+
+    const result = print(
+      context as any,
+      false,
+      [
+        { name: 'alpha', status: 'ready' },
+        { name: 'beta', status: 'paused' }
+      ],
+      ['name', 'status'],
+      [
+        ['alpha', 'ready'],
+        ['beta', 'paused']
+      ]
+    );
+
+    expect(writes).toEqual([`${result}\n`]);
+    expect(stripAnsi(result)).not.toMatch(/[─│]/);
+    expect(normalizeTableOutput(result)).toEqual([
+      ['name', 'status'],
+      ['alpha', 'ready'],
+      ['beta', 'paused']
+    ]);
   });
 });

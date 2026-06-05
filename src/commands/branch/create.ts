@@ -382,7 +382,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     branch,
-    ['ID', 'Created At', 'Name', 'Parent ID'],
+    ['branch_id', 'created_at', 'name', 'parent_id'],
     [[branch.id, branch.createdAt, branch.name, branch.parentID ?? '']]
   );
 

@@ -79,7 +79,7 @@ describe('project describe command tests', () => {
           id: project.id,
           name: project.name
         },
-        ['ID', 'Created At', 'Updated At', 'Name'],
+        ['project_id', 'created_at', 'updated_at', 'name'],
         [[project.id, fetched.createdAt, fetched.updatedAt, project.name]]
       )
     );

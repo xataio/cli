@@ -25,7 +25,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     branches,
-    ['ID', 'Created At', 'Name', 'Parent ID'],
+    ['branch_id', 'created_at', 'name', 'parent_id'],
     branches.map((branch) => {
       const current = currentBranch?.id === branch.id ? ' (current)' : '';
       return [branch.id, branch.createdAt, `${branch.name}${current}`, branch.parentID ?? ''];

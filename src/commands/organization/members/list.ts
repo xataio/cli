@@ -17,7 +17,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     members,
-    ['ID', 'Email', 'Name'],
+    ['member_id', 'email', 'name'],
     members.map((member) => [member.id, member.email, member.name || '-'])
   );
 }

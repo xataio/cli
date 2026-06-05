@@ -138,7 +138,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       branchName: branch.name,
       databaseName
     },
-    ['Branch ID', 'Branch Name', 'Database Name', 'Organization ID', 'Project ID'],
+    ['branch_id', 'branch', 'database', 'organization_id', 'project_id'],
     [[branchId, branch.name, databaseName, organizationId, projectId]]
   );
 }

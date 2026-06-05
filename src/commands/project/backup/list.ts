@@ -25,7 +25,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     backups,
-    ['ID', 'Branch ID', 'Earliest Restore', 'Description'],
+    ['backup_id', 'branch_id', 'earliest_restore', 'description'],
     backups.map((b) => [b.id, b.branchID, b.earliestRestore || 'unknown', b.description])
   );
 }

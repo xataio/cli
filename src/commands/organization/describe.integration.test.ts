@@ -57,10 +57,10 @@ describe('organization describe command tests', async () => {
           id: TEST_XATA_ORG,
           name: TEST_XATA_ORG
         },
-        ['ID', 'Name'],
+        ['organization_id', 'name'],
         [[TEST_XATA_ORG, TEST_XATA_ORG]]
       )
-    );
+    ).trim();
     expect(output).toStrictEqual(expectedOutput);
   });
 });

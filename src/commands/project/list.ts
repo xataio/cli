@@ -16,7 +16,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     projects,
-    ['ID', 'Created At', 'Updated At', 'Name'],
+    ['project_id', 'created_at', 'updated_at', 'name'],
     projects.map((p) => [p.id, p.createdAt, p.updatedAt, p.name])
   );
 }

@@ -1,8 +1,8 @@
-import { describe, expect, mock, spyOn, test } from 'bun:test';
+import { describe, expect, spyOn, test } from 'bun:test';
 import { setupTestResources } from '@xata.io/test-utils';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import type { Types } from '@xata.io/api';
-import { implementation } from './url';
+import { implementation, validateBranchStatusForUrl } from './url';
 
 const { project, branch } = await setupTestResources();
 
@@ -60,29 +60,20 @@ describe('branch url command tests', () => {
     expect(output).toContain('custom_db');
   });
 
-  test.skip('url for unhealthy branch shows error message', async () => {
+  test('url for unhealthy branch shows error message', async () => {
     const context = await getTestContext();
-    const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
-    const _stderrWriteSpy = spyOn(context.process.stderr, 'write');
+    const stderrWriteSpy = spyOn(context.process.stderr, 'write');
 
-    context.api.branches.describeBranch = mock(() => {
-      return Promise.resolve({
-        status: {
-          statusType: 'STATUS_TYPE_UNSPECIFIED'
-        }
-      } as unknown as Types.BranchMetadata);
-    });
+    const isReady = validateBranchStatusForUrl(context, {
+      status: {
+        statusType: 'STATUS_TYPE_FAULT'
+      }
+    } as unknown as Types.BranchMetadata);
 
-    await implementation.call(context, {
-      organization: TEST_XATA_ORG,
-      project: project.id,
-      branch: branch.id,
-      type: 'primary'
-    });
-
-    expect(stdoutWriteSpy).toHaveBeenCalled();
-    const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    expect(output).toContain('not healthy');
+    expect(isReady).toBeFalse();
+    expect(stderrWriteSpy).toHaveBeenCalled();
+    const output = getNthArgOfNthCall(stderrWriteSpy, 0, 0);
+    expect(output).toContain('unhealthy');
   });
 
   test('url with non-existent branch throws error', async () => {

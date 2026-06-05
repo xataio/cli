@@ -22,16 +22,16 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     flags.json,
     branch,
     [
-      'Branch ID',
-      'Created At',
-      'Instance Type',
-      'Name',
-      'Parent Branch Id',
-      'Replicas',
-      'Status',
-      'Status Type',
-      'Scale To Zero',
-      'Inactivity Period (minutes)'
+      'branch_id',
+      'created_at',
+      'instance_type',
+      'name',
+      'parent_id',
+      'replicas',
+      'status',
+      'status_type',
+      'scale_to_zero',
+      'inactivity_minutes'
     ],
     [
       [

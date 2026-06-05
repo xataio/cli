@@ -11,19 +11,19 @@ export function isCLIConfigInitialized(context: LocalContext) {
         context,
         false,
         {
-          'Organization ID': projectConfig.organizationId || '(not set)',
-          'Project ID': projectConfig.projectId || '(not set)',
-          'Branch ID': branchConfig.branchId || '(not set)',
-          'Branch Name': branchConfig.branchName || '(not set)',
-          'Database Name': branchConfig.databaseName || '(not set)'
+          organization_id: projectConfig.organizationId || '(not set)',
+          project_id: projectConfig.projectId || '(not set)',
+          branch_id: branchConfig.branchId || '(not set)',
+          branch: branchConfig.branchName || '(not set)',
+          database: branchConfig.databaseName || '(not set)'
         },
-        ['Configuration', 'Value'],
+        ['config', 'value'],
         [
-          ['Branch ID', branchConfig.branchId || '(not set)'],
-          ['Branch Name', branchConfig.branchName || '(not set)'],
-          ['Database Name', branchConfig.databaseName || '(not set)'],
-          ['Organization ID', projectConfig.organizationId || '(not set)'],
-          ['Project ID', projectConfig.projectId || '(not set)']
+          ['branch_id', branchConfig.branchId || '(not set)'],
+          ['branch', branchConfig.branchName || '(not set)'],
+          ['database', branchConfig.databaseName || '(not set)'],
+          ['organization_id', projectConfig.organizationId || '(not set)'],
+          ['project_id', projectConfig.projectId || '(not set)']
         ]
       );
     }

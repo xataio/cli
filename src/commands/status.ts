@@ -40,7 +40,7 @@ export async function implementation(this: LocalContext, { json }: Flags) {
         project: `${project.name} (${project.id})`,
         branch: `${branch.name} (${branch.id})`
       },
-      ['Organization', 'Project', 'Branch'],
+      ['organization', 'project', 'branch'],
       [[organization.name, `${project.name} (${project.id})`, `${branch.name} (${branch.id})`]]
     );
   } else {

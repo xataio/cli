@@ -44,12 +44,12 @@ describe('branch describe command tests', () => {
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
-    expect(output).toContain('Branch ID');
-    expect(output).toContain('Name');
-    expect(output).toContain('Created At');
-    expect(output).toContain('Instance Type');
-    expect(output).toContain('Replicas');
-    expect(output).toContain('Status');
+    expect(output).toContain('branch_id');
+    expect(output).toContain('name');
+    expect(output).toContain('created_at');
+    expect(output).toContain('instance_type');
+    expect(output).toContain('replicas');
+    expect(output).toContain('status');
   });
 
   test('describe specific branch by name', async () => {

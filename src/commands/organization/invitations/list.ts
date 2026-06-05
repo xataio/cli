@@ -31,7 +31,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     invitations,
-    ['ID', 'Email', 'Name', 'Status', 'Expires'],
+    ['invitation_id', 'email', 'name', 'status', 'expires_at'],
     invitations.map((inv) => [
       inv.id,
       inv.email,

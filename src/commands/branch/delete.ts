@@ -45,7 +45,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchToDelete.id }
   });
 
-  this.print(this, flags.json, branchToDelete, ['Deleted branch'], [[branchToDelete.name]]);
+  this.print(this, flags.json, branchToDelete, ['branch'], [[branchToDelete.name]]);
 }
 
 export const BranchDeleteCommand = buildCommand({

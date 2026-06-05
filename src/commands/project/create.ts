@@ -71,7 +71,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     project.configuration.scaleToZero.baseBranches.inactivityPeriodMinutes,
     image
   );
-  this.print(this, flags.json, project, ['Project ID', 'Project Name'], [[project.id, project.name]]);
+  this.print(this, flags.json, project, ['project_id', 'name'], [[project.id, project.name]]);
 }
 
 export async function ensureBranch(
