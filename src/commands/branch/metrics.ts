@@ -466,7 +466,8 @@ export const BranchMetricsCommand = buildCommand({
       ]
     },
     aliases: {
-      o: 'output'
+      o: 'output',
+      w: 'watch'
     }
   },
   func: implementation
