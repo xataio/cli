@@ -1,8 +1,7 @@
 import chalk from 'chalk';
 import { stdin, stdout } from 'node:process';
 import stripAnsi from 'strip-ansi';
-import Table from 'cli-table3';
-import { borderlessTableOptions } from '~/lib/table';
+import { createTable } from '~/lib/table';
 
 interface TerminalUIProps {
   schema: any[];
@@ -154,11 +153,9 @@ export class TerminalUI {
       const firstResult = results[0];
       const headers = Object.keys(firstResult);
 
-      const table = new Table({
-        ...borderlessTableOptions,
+      const table = createTable({
         head: headers.map((h) => chalk.cyan(h)),
         style: {
-          ...borderlessTableOptions.style,
           head: ['cyan'],
           border: ['grey']
         }

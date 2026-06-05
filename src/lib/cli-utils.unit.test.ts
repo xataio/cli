@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import stripAnsi from 'strip-ansi';
 import { getErrorMessage, groupAndSortRegions, print } from './cli-utils';
+import { renderTable } from './table';
 
 type Region = {
   id: string;
@@ -209,7 +210,24 @@ describe('print', () => {
     );
 
     expect(writes).toEqual([`${result}\n`]);
-    expect(stripAnsi(result)).not.toMatch(/[─│]/);
+    expect(normalizeTableOutput(result)).toEqual([
+      ['name', 'status'],
+      ['alpha', 'ready'],
+      ['beta', 'paused']
+    ]);
+  });
+});
+
+describe('renderTable', () => {
+  it('should render compact borderless tables', () => {
+    const result = renderTable(
+      ['name', 'status'],
+      [
+        ['alpha', 'ready'],
+        ['beta', 'paused']
+      ]
+    );
+
     expect(normalizeTableOutput(result)).toEqual([
       ['name', 'status'],
       ['alpha', 'ready'],

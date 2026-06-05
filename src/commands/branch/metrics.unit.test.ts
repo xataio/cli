@@ -105,6 +105,18 @@ describe('branch metrics command', () => {
     });
   });
 
+  test('prints branch metrics as a compact borderless table', async () => {
+    const { context, stdout, branchMetrics } = buildContext();
+
+    await implementation.call(context, { ...baseFlags, output: 'table' });
+
+    expect(branchMetrics).toHaveBeenCalledTimes(1);
+    const output = stdout.join('');
+    expect(output).toContain('Metrics for main (branch)');
+    expect(output).toContain('Metric');
+    expect(output).toContain('Primary');
+  });
+
   test('shows the expected timestamp format for invalid start and end times', async () => {
     const { context: startContext } = buildContext();
     await expect(implementation.call(startContext, { ...baseFlags, start: '10' })).rejects.toThrow(

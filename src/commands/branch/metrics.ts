@@ -17,9 +17,9 @@ import {
   type BranchMetricsReport
 } from '@xata.io/utils';
 import chalk from 'chalk';
-import Table from 'cli-table3';
 import type { LocalContext } from '~/context';
 import { getErrorMessage } from '~/lib/cli-utils';
+import { renderTable } from '~/lib/table';
 
 type OutputFormat = 'table' | 'json' | 'ndjson' | 'tui';
 
@@ -229,14 +229,12 @@ async function watchMetrics(
 }
 
 function renderSummaryTable(report: BranchMetricsReport, aggregation: BranchMetricAggregation): string {
-  const table = new Table({
-    head: ['Metric', 'Instance', 'Agg', 'Latest', 'Min', 'Max', 'Avg', 'Unit', 'Status']
-  });
+  const rows: string[][] = [];
 
   for (const metric of report.metrics) {
     const series = metric.series.filter((s) => s.aggregation === aggregation);
     if (series.length === 0) {
-      table.push([
+      rows.push([
         metric.key,
         '',
         aggregation,
@@ -251,7 +249,7 @@ function renderSummaryTable(report: BranchMetricsReport, aggregation: BranchMetr
     }
 
     for (const serie of series) {
-      table.push([
+      rows.push([
         metric.key,
         serie.instanceName,
         serie.aggregation,
@@ -265,9 +263,11 @@ function renderSummaryTable(report: BranchMetricsReport, aggregation: BranchMetr
     }
   }
 
+  const table = renderTable(['Metric', 'Instance', 'Agg', 'Latest', 'Min', 'Max', 'Avg', 'Unit', 'Status'], rows);
+
   return `${chalk.bold(`Metrics for ${report.target.branchName} (${report.target.branchId})`)}\n${chalk.dim(
     `${report.timeRange.start} → ${report.timeRange.end}`
-  )}\n${table.toString()}\n`;
+  )}\n${table}\n`;
 }
 
 function renderDashboard(report: BranchMetricsReport, aggregation: BranchMetricAggregation): string {

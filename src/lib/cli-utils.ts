@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import Table from 'cli-table3';
 import invariant from 'tiny-invariant';
 import { decodeJwt } from 'jose';
 import type { LocalContext } from '~/context';
@@ -9,7 +8,7 @@ import { config } from './config';
 import { DEFAULT_DATABASE_NAME } from './constants';
 import { getProfile } from './profile';
 import { projectConfig } from './project-config';
-import { borderlessTableOptions } from './table';
+import { renderTable } from './table';
 
 export const print = (
   context: LocalContext,
@@ -23,15 +22,9 @@ export const print = (
     return JSON.stringify(data, null, 2);
   }
 
-  const table = new Table({
-    ...borderlessTableOptions,
-    head: headers
-  });
-  rows.forEach((row) => {
-    table.push(row);
-  });
-  context.process.stdout.write(`${table.toString()}\n`);
-  return table.toString();
+  const table = renderTable(headers, rows);
+  context.process.stdout.write(`${table}\n`);
+  return table;
 };
 
 type BaseOptions = {
