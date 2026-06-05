@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.2.4
+
+### Patch Changes
+
+- [#2525](https://github.com/xataio/frontend/pull/2525) [`15018a0`](https://github.com/xataio/frontend/commit/15018a01e31f1ccc2e396783821f1dc09e6994ef) Thanks [@divyenduz](https://github.com/divyenduz)! - unify table library to one place
+
 ## 1.2.3
 
 ### Patch Changes
