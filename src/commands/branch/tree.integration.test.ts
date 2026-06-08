@@ -4,8 +4,8 @@ import stripAnsi from 'strip-ansi';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './tree';
 
-const { project, branch } = await setupTestResources();
-const { child } = await setupChildBranch();
+const { project, branch } = await setupTestResources('cli-it-');
+const { child } = await setupChildBranch({ project, branch });
 
 describe('branch tree command tests', () => {
   test('tree displays branch hierarchy', async () => {

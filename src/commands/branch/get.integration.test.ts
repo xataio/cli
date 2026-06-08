@@ -4,7 +4,7 @@ import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-ut
 import { implementation } from './get';
 import stripAnsi from 'strip-ansi';
 
-const { project, branch } = await setupTestResources();
+const { project, branch } = await setupTestResources('cli-it-');
 
 describe('branch get command tests', () => {
   test('get non-existent field', async () => {

@@ -3,7 +3,7 @@ import { setupTestResources } from '@xata.io/test-utils';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './list';
 
-const { project } = await setupTestResources();
+const { project } = await setupTestResources('cli-it-');
 
 describe('project list command with tests', () => {
   test('list projects with json output', async () => {

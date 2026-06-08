@@ -3,7 +3,7 @@ import { setupTestResources } from '@xata.io/test-utils';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './get';
 
-const { project } = await setupTestResources();
+const { project } = await setupTestResources('cli-it-');
 
 describe('project get command tests', () => {
   test('project get a non-existent field', async () => {

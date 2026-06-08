@@ -4,7 +4,7 @@ import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-ut
 import type { Types } from '@xata.io/api';
 import { implementation, validateBranchStatusForUrl } from './url';
 
-const { project, branch } = await setupTestResources();
+const { project, branch } = await setupTestResources('cli-it-');
 
 describe('branch url command tests', () => {
   test('url returns connection string for healthy branch', async () => {
