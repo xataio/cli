@@ -1,5 +1,15 @@
 # xata-cli
 
+## 1.3.0
+
+### Minor Changes
+
+- [#2524](https://github.com/xataio/frontend/pull/2524) [`19f931a`](https://github.com/xataio/frontend/commit/19f931a84902e351aa5b75118561635b69d0e8cb) Thanks [@SferaDev](https://github.com/SferaDev)! - [cli] Simplify custom profiles
+
+### Patch Changes
+
+- [#2530](https://github.com/xataio/frontend/pull/2530) [`5fc9b95`](https://github.com/xataio/frontend/commit/5fc9b955fd4b5be4791adbed218471abdbba456e) Thanks [@divyenduz](https://github.com/divyenduz)! - in xata branch metrics add -w as alias for --watch
+
 ## 1.2.4
 
 ### Patch Changes
