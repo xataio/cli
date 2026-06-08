@@ -24,7 +24,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const OrganizationDescribeCommand = buildCommand({
   docs: {
-    brief: 'Describe a organization'
+    brief: 'Describe an organization'
   },
   parameters: {
     flags: {

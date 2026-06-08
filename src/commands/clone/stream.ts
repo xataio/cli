@@ -270,7 +270,7 @@ export const CloneStreamCommand = buildCommand({
       },
       role: {
         kind: 'parsed',
-        brief: 'Postgres role to use for streaming (it should have atleast REPLICATION privilege)',
+        brief: 'Postgres role to use for streaming (it should have at least REPLICATION privilege)',
         parse: String,
         optional: true
       },

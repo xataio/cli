@@ -59,7 +59,7 @@ export const RollConvertCommand = buildCommand({
       // @ts-expect-error fix types
       parameters: [
         {
-          brief: 'The migration file to start',
+          brief: 'The migration file to convert',
           placeholder: 'file',
           parse: String
         }

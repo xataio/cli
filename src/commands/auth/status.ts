@@ -35,7 +35,7 @@ export const AuthStatusCommand = buildCommand({
       profile: {
         kind: 'parsed',
         parse: String,
-        brief: 'The profile to log in to',
+        brief: 'The profile to check',
         optional: true
       }
     }

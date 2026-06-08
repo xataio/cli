@@ -22,7 +22,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       `Are you sure you want to delete the organization ${organization.name}?`
     );
     if (!confirmFromPrompt) {
-      this.process.stdout.write(`Aborted as there was no confirmation. Organzation not deleted.`);
+      this.process.stdout.write(`Aborted as there was no confirmation. Organization not deleted.`);
       return;
     }
   }
@@ -40,7 +40,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const OrganizationDeleteCommand = buildCommand({
   docs: {
-    brief: 'Delete a Organization'
+    brief: 'Delete an organization'
   },
   parameters: {
     flags: {

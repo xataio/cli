@@ -75,7 +75,7 @@ export const StreamDestroyCommand = buildCommand({
       'source-url': {
         kind: 'parsed',
         parse: String,
-        brief: 'The source URL of the database to clone',
+        brief: 'The source PostgreSQL URL',
         optional: false
       },
       'log-level': {

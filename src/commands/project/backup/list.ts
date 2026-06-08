@@ -32,7 +32,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const BackupListCommand = buildCommand({
   docs: {
-    brief: 'List all backups in a project'
+    brief: 'Show backup information for a branch'
   },
   parameters: {
     flags: {
@@ -50,7 +50,7 @@ export const BackupListCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Filter backups by branch ID',
+        brief: 'Branch ID to show backup information for',
         parse: String,
         optional: true
       },

@@ -73,7 +73,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...args: 
 
 export const OrganizationGetCommand = buildCommand({
   docs: {
-    brief: 'Get a field from a organization description'
+    brief: 'Get a field from an organization description'
   },
   parameters: {
     flags: {

@@ -115,7 +115,7 @@ export const BranchTreeCommand = buildCommand({
       },
       'show-id': {
         kind: 'boolean',
-        brief: 'Project ID',
+        brief: 'Show branch IDs in the tree',
         default: false
       }
     }

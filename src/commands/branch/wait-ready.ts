@@ -93,7 +93,7 @@ export const BranchWaitReadyCommand = buildCommand({
       kind: 'tuple',
       parameters: [
         {
-          brief: 'The branch to switch to',
+          brief: 'The branch to wait for',
           parse: String,
           placeholder: 'branch name',
           optional: true
