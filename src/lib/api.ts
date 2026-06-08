@@ -4,7 +4,13 @@ import * as ciInfo from 'ci-info';
 
 import { config, updateConfig } from './config';
 import { getProfile } from './profile';
-import type { ApiEnvironment, CustomConfig } from './schemas';
+import type { CustomConfig } from './schemas';
+import {
+  DEFAULT_API_BASE_URL,
+  DEFAULT_API_CLIENT_ID,
+  DEFAULT_API_CLIENT_SECRET,
+  DEFAULT_API_ISSUER
+} from './constants';
 
 export async function getApi({
   canonicalName,
@@ -35,62 +41,15 @@ export async function getApi({
 }
 
 // We should inject the environment secrets during the build process
-export function getAuthClient(environment: ApiEnvironment, customConfig?: CustomConfig) {
-  switch (environment) {
-    case 'local':
-      return {
-        issuer: 'http://localhost:8080/realms/xata',
-        clientId: 'cli',
-        clientSecret: 'devsecret'
-      };
-    case 'dev':
-      return {
-        issuer: 'https://auth.dev.maki.cooking/realms/xata',
-        clientId: 'cli',
-        clientSecret: 'ToRZxFRan0OrcSS9lXrQg1At6bALSfiM'
-      };
-    case 'staging':
-      return {
-        issuer: 'https://auth.staging.maki.cooking/realms/xata',
-        clientId: 'cli',
-        clientSecret: 'quo8te7gath4PeMieYaithah1laCaing'
-      };
-    case 'prod':
-      return {
-        issuer: 'https://auth.xata.io/realms/xata',
-        clientId: 'cli',
-        clientSecret: 'OhcooQuoNieghie4iege0zetoa3fah4j'
-      };
-    case 'custom': {
-      if (!customConfig) throw new Error('customConfig is required for custom environment');
-      return {
-        issuer: customConfig.issuer,
-        clientId: customConfig.clientId,
-        clientSecret: customConfig.clientSecret
-      };
+export function getAuthConfig(customConfig?: CustomConfig) {
+  return {
+    baseUrl: customConfig?.apiBaseUrl ?? DEFAULT_API_BASE_URL,
+    client: {
+      issuer: customConfig?.issuer ?? DEFAULT_API_ISSUER,
+      clientId: customConfig?.clientId ?? DEFAULT_API_CLIENT_ID,
+      clientSecret: customConfig?.clientSecret ?? DEFAULT_API_CLIENT_SECRET
     }
-    default:
-      throw new Error(`Unsupported environment: ${environment}`);
-  }
-}
-
-export function getApiBaseUrl(environment: ApiEnvironment, customConfig?: CustomConfig) {
-  switch (environment) {
-    case 'local':
-      return 'http://localhost:5001';
-    case 'dev':
-      return 'https://api.dev.maki.cooking';
-    case 'staging':
-      return 'https://api.staging.maki.cooking';
-    case 'prod':
-      return 'https://api.xata.tech';
-    case 'custom': {
-      if (!customConfig) throw new Error('Custom config is required for custom environment');
-      return customConfig.apiBaseUrl;
-    }
-    default:
-      throw new Error(`Unsupported environment: ${environment}`);
-  }
+  };
 }
 
 function getApiOptions(profile: string): ApiOptions {
@@ -104,15 +63,13 @@ function getApiOptions(profile: string): ApiOptions {
     throw new Error(`Profile "${profile}" does not exist`);
   }
 
-  const baseUrl = getApiBaseUrl(profileData.environment, profileData.customConfig);
+  const { baseUrl, client } = getAuthConfig(profileData.customConfig);
 
   if (profileData.type === 'apiKey') {
     return { baseUrl, token: profileData.apiKey };
   }
 
   if (profileData.type === 'oidc') {
-    const client = getAuthClient(profileData.environment, profileData.customConfig);
-
     return {
       baseUrl,
       token: {

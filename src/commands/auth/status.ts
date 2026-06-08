@@ -3,6 +3,7 @@ import type { LocalContext } from '~/context';
 import { getUserInfo } from '~/lib/cli-utils';
 import { getProfile } from '~/lib/profile';
 import { config } from '../../lib/config';
+import { DEFAULT_API_BASE_URL } from '~/lib/constants';
 
 type Flags = {
   profile?: string;
@@ -15,9 +16,12 @@ export async function implementation(this: LocalContext, { profile: profileFlag 
     return;
   }
 
-  const { environment } = config.profiles[profile]!;
   const { name = 'unknown', email } = getUserInfo(profileFlag);
   const displayName = `${name}${email ? ` <${email}>` : ''}`;
+  const environment =
+    config.profiles[profile].customConfig?.apiBaseUrl === DEFAULT_API_BASE_URL
+      ? 'production'
+      : config.profiles[profile].customConfig?.apiBaseUrl;
 
   console.log(`Logged in to ${environment} with profile "${profile}" as ${displayName}`);
 }

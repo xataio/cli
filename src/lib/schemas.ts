@@ -1,20 +1,11 @@
 import { z } from 'zod';
 import { DEFAULT_DATABASE_NAME } from './constants';
 
-export const ApiEnvironmentSchema = z.union([
-  z.literal('local'),
-  z.literal('dev'),
-  z.literal('staging'),
-  z.literal('prod'),
-  z.literal('custom')
-]);
-export type ApiEnvironment = z.infer<typeof ApiEnvironmentSchema>;
-
 const CustomConfigSchema = z.object({
-  issuer: z.string(),
-  apiBaseUrl: z.string(),
-  clientSecret: z.string(),
-  clientId: z.string().default('cli')
+  issuer: z.string().optional(),
+  apiBaseUrl: z.string().optional(),
+  clientSecret: z.string().optional(),
+  clientId: z.string().optional()
 });
 export type CustomConfig = z.infer<typeof CustomConfigSchema>;
 
@@ -38,7 +29,6 @@ export const AuthProfileSchema = z.preprocess(
   z.discriminatedUnion('type', [
     z.object({
       type: z.literal('oidc'),
-      environment: ApiEnvironmentSchema,
       accessToken: z.string(),
       refreshToken: z.string(),
       expiresAt: z.coerce.date(),
@@ -46,7 +36,6 @@ export const AuthProfileSchema = z.preprocess(
     }),
     z.object({
       type: z.literal('apiKey'),
-      environment: ApiEnvironmentSchema,
       apiKey: z.string(),
       customConfig: CustomConfigSchema.optional()
     })

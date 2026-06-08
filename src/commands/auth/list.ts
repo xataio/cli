@@ -31,7 +31,6 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     return {
       profile,
       type: profileConfig?.type || 'unknown',
-      environment: profileConfig?.environment || 'unknown',
       email: userInfo.email || '-',
       name: userInfo.name || '-',
       current: isCurrent
@@ -41,15 +40,8 @@ export async function implementation(this: LocalContext, { json }: Flags) {
   if (json) {
     print(this, true, profileData);
   } else {
-    const headers = ['profile', 'type', 'environment', 'email', 'name', 'current'];
-    const rows = profileData.map((data) => [
-      data.profile,
-      data.type,
-      data.environment,
-      data.email,
-      data.name,
-      data.current ? '✓' : ''
-    ]);
+    const headers = ['profile', 'type', 'email', 'name', 'current'];
+    const rows = profileData.map((data) => [data.profile, data.type, data.email, data.name, data.current ? '✓' : '']);
 
     print(this, false, profileData, headers, rows);
   }

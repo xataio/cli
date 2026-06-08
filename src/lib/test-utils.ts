@@ -19,14 +19,11 @@ dotenv.config({
   ignore: ['MISSING_ENV_FILE']
 });
 
-const missingEnvVars = ['XATA_API_KEY', 'XATA_API_ENVIRONMENT', 'XATA_TEST_ORGANIZATION_ID'].filter(
-  (key) => !Bun.env[key]
-);
+const missingEnvVars = ['XATA_API_KEY', 'XATA_TEST_ORGANIZATION_ID'].filter((key) => !Bun.env[key]);
 
 if (missingEnvVars.length > 0) {
   console.error(
-    `Integration tests require ${missingEnvVars.join(', ')}. Set them in your environment or in ${testEnvPath}.\n` +
-      'The default integration test environment is staging, so set XATA_API_ENVIRONMENT=staging unless you are explicitly running tests against another environment.'
+    `Integration tests require ${missingEnvVars.join(', ')}. Set them in your environment or in ${testEnvPath}.`
   );
   process.exit(1);
 }

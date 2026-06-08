@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { branchConfig } from '~/lib/branch-config';
-import { CLI_NAME } from '~/lib/constants';
+import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
 import type { Types } from '@xata.io/api';
 import { pickLatestPostgresImage, sortPostgresImagesDesc } from '@xata.io/utils';
@@ -49,8 +49,7 @@ export async function instanceTypes(context: LocalContext, organizationId: strin
 
 export function shouldShowInstanceTypePricing(context: LocalContext) {
   const activeProfile = context.getActiveProfile();
-  const environment = config.profiles[activeProfile]?.environment;
-  return environment === 'prod' || environment === 'staging';
+  return config.profiles[activeProfile]?.customConfig?.apiBaseUrl === DEFAULT_API_BASE_URL;
 }
 
 export function buildInstanceTypeChoices(

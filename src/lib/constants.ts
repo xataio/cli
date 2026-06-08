@@ -1,8 +1,9 @@
-import type { ApiEnvironment } from './schemas';
-
 export const CLI_NAME = 'xata';
+export const DEFAULT_API_BASE_URL = 'https://api.xata.tech';
+export const DEFAULT_API_ISSUER = 'https://auth.xata.io/realms/xata';
+export const DEFAULT_API_CLIENT_ID = 'cli';
+export const DEFAULT_API_CLIENT_SECRET = 'OhcooQuoNieghie4iege0zetoa3fah4j';
 export const DEFAULT_DATABASE_NAME = 'xata';
-export const DEFAULT_ENVIRONMENT: ApiEnvironment = 'prod';
 export const DEFAULT_MIGRATIONS_DIRECTORY = `.${CLI_NAME}/migrations`;
 export const DEFAULT_CLONE_RULES_FILE = `.${CLI_NAME}/clone.yaml`;
 export const DEFAULT_CLONE_LOCAL_CONFIG_PATH = `.${CLI_NAME}/config.ts`;

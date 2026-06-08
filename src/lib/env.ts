@@ -1,10 +1,9 @@
 /* biome-ignore-all lint/style/noProcessEnv: It's correct to access environment variables here */
 
 import { z } from 'zod';
-import { ApiEnvironmentSchema } from './schemas';
 
-import path from 'node:path';
 import dotenv from '@dotenvx/dotenvx';
+import path from 'node:path';
 dotenv.config({
   debug: Boolean(Bun.env.DEBUG),
   path: path.join(__dirname, '../../', '.env.local'),
@@ -21,8 +20,11 @@ const schema = z.object({
 
   // Xata environment variables
   XATA_CONFIG_DIR: z.string().optional(),
-  XATA_API_ENVIRONMENT: ApiEnvironmentSchema.optional(),
   XATA_API_KEY: z.string().optional(),
+  XATA_API_BASE_URL: z.string().optional(),
+  XATA_API_ISSUER: z.string().optional(),
+  XATA_API_CLIENT_SECRET: z.string().optional(),
+  XATA_API_CLIENT_ID: z.string().optional(),
 
   XATA_PGROLL_BINARY_VERSION: z.string().optional(),
   XATA_PGSTREAM_BINARY_VERSION: z.string().optional(),

@@ -3,48 +3,21 @@ import { XataApi } from '@xata.io/api';
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
-import { getAuthClient } from '~/lib/api';
+import { getAuthConfig } from '~/lib/api';
 import { config, updateConfig } from '~/lib/config';
-import { CLI_NAME, DEFAULT_ENVIRONMENT } from '~/lib/constants';
+import { CLI_NAME } from '~/lib/constants';
 import { DEFAULT_PROFILE } from '~/lib/profile';
-import type { ApiEnvironment, CustomConfig } from '~/lib/schemas';
 
 type Flags = {
-  env: ApiEnvironment;
   profile: string;
   force: boolean;
-  'custom-issuer'?: string;
-  'custom-api-base-url'?: string;
-  'custom-client-id'?: string;
-  'custom-client-secret'?: string;
+  issuer?: string;
+  'api-url'?: string;
+  'client-id'?: string;
+  'client-secret'?: string;
 };
 
-async function resolveCustomConfig(
-  context: LocalContext,
-  flags: Pick<Flags, 'custom-issuer' | 'custom-api-base-url' | 'custom-client-id' | 'custom-client-secret'>
-): Promise<CustomConfig | undefined> {
-  const issuer = await context.enquirer.inputPrompt(context.isInteractive, 'Issuer URL', {
-    flag: flags['custom-issuer']
-  });
-  const apiBaseUrl = await context.enquirer.inputPrompt(context.isInteractive, 'API base URL', {
-    flag: flags['custom-api-base-url']
-  });
-  const clientSecret = await context.enquirer.inputPrompt(context.isInteractive, 'Client secret', {
-    flag: flags['custom-client-secret']
-  });
-
-  if (!issuer || !apiBaseUrl || !clientSecret) {
-    console.error('Issuer URL, API base URL, and client secret are all required for custom environments.');
-    return undefined;
-  }
-
-  return { issuer, apiBaseUrl, clientSecret, clientId: flags['custom-client-id'] ?? 'cli' };
-}
-
-export async function implementation(
-  this: LocalContext,
-  { env, profile = DEFAULT_PROFILE, force, ...customFlags }: Flags
-) {
+export async function implementation(this: LocalContext, { profile = DEFAULT_PROFILE, force, ...customFlags }: Flags) {
   const profiles = config?.profiles || {};
   if (profiles[profile] && !force) {
     console.log(`Profile "${profile}" is already logged in. Use --force to log in again.`);
@@ -55,11 +28,14 @@ export async function implementation(
     await updateConfig({ ...config, profiles: updatedProfiles });
   }
 
-  const customConfig = env === 'custom' ? await resolveCustomConfig(this, customFlags) : undefined;
-  if (env === 'custom' && !customConfig) return;
-
   try {
-    const client = getAuthClient(env, customConfig);
+    const { baseUrl, client } = getAuthConfig({
+      clientId: customFlags['client-id'],
+      clientSecret: customFlags['client-secret'],
+      issuer: customFlags.issuer,
+      apiBaseUrl: customFlags['api-url']
+    });
+
     for await (const step of XataApi.deviceLogin(client)) {
       match(step)
         .with({ type: 'prompt' }, (step) => {
@@ -78,11 +54,13 @@ export async function implementation(
               ...profiles,
               [profile]: {
                 type: 'oidc',
-                environment: env,
                 accessToken: step.accessToken,
                 refreshToken: step.refreshToken,
                 expiresAt: step.expiresAt,
-                customConfig
+                customConfig: {
+                  ...client,
+                  apiBaseUrl: baseUrl
+                }
               }
             }
           });
@@ -100,12 +78,6 @@ export const AuthLoginCommand = buildCommand({
   },
   parameters: {
     flags: {
-      env: {
-        kind: 'enum',
-        values: ['local', 'dev', 'staging', 'prod', 'custom'],
-        brief: 'The environment to log in to',
-        default: DEFAULT_ENVIRONMENT
-      },
       profile: {
         kind: 'parsed',
         parse: String,
@@ -117,25 +89,25 @@ export const AuthLoginCommand = buildCommand({
         brief: 'Force login even if already logged in',
         default: false
       },
-      'custom-issuer': {
+      issuer: {
         kind: 'parsed',
         parse: String,
         brief: 'Issuer URL for custom environment',
         optional: true
       },
-      'custom-api-base-url': {
+      'api-url': {
         kind: 'parsed',
         parse: String,
         brief: 'API base URL for custom environment',
         optional: true
       },
-      'custom-client-id': {
+      'client-id': {
         kind: 'parsed',
         parse: String,
         brief: 'Client ID for custom environment (defaults to "cli")',
         optional: true
       },
-      'custom-client-secret': {
+      'client-secret': {
         kind: 'parsed',
         parse: String,
         brief: 'Client secret for custom environment',

@@ -2,24 +2,43 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfigSync, type SyncAdapter } from 'zod-config';
 import { jsonAdapter } from 'zod-config/json-adapter';
-import { CLI_NAME, DEFAULT_ENVIRONMENT } from './constants';
+import {
+  CLI_NAME,
+  DEFAULT_API_BASE_URL,
+  DEFAULT_API_CLIENT_ID,
+  DEFAULT_API_CLIENT_SECRET,
+  DEFAULT_API_ISSUER
+} from './constants';
 import { env } from './env';
 import { type Config, ConfigSchema } from './schemas';
+
+function getCustomConfig() {
+  if (env.XATA_API_BASE_URL || env.XATA_API_ISSUER || env.XATA_API_CLIENT_ID || env.XATA_API_CLIENT_SECRET) {
+    return {
+      customConfig: {
+        apiBaseUrl: env.XATA_API_BASE_URL ?? DEFAULT_API_BASE_URL,
+        issuer: env.XATA_API_ISSUER ?? DEFAULT_API_ISSUER,
+        clientSecret: env.XATA_API_CLIENT_SECRET ?? DEFAULT_API_CLIENT_SECRET,
+        clientId: env.XATA_API_CLIENT_ID ?? DEFAULT_API_CLIENT_ID
+      }
+    };
+  }
+
+  return {};
+}
 
 const envAdapter = () =>
   ({
     name: 'env',
     read(): Partial<Config> {
-      const environment = env.XATA_API_ENVIRONMENT ?? DEFAULT_ENVIRONMENT;
-
       if (env.XATA_API_KEY) {
         return {
           activeProfile: '__env',
           profiles: {
             __env: {
               type: 'apiKey',
-              environment,
-              apiKey: env.XATA_API_KEY
+              apiKey: env.XATA_API_KEY,
+              ...getCustomConfig()
             }
           }
         };
