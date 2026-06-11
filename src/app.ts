@@ -14,6 +14,7 @@ import { StreamRoute } from './commands/stream';
 import { UpgradeCommand } from './commands/upgrade';
 import { VersionCommand } from './commands/version';
 import { OnboardCommand } from './commands/onboard';
+import { ScratchCommand } from './commands/scratch';
 import { CLI_NAME } from './lib/constants';
 import { getCLIVersion, getLatestVersion } from './lib/updates';
 import { AiRoute } from './commands/ai';
@@ -36,6 +37,7 @@ const routes = buildRouteMap({
     status: StatusCommand,
     version: VersionCommand,
     checkout: BranchCheckoutCommand,
+    scratch: ScratchCommand,
 
     upgrade: UpgradeCommand,
 
@@ -49,7 +51,8 @@ const routes = buildRouteMap({
     hideRoute: {
       onboard: true,
       ai: true,
-      stream: true
+      stream: true,
+      scratch: true
     }
   }
 });
