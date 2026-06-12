@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.3.1
+
+### Patch Changes
+
+- [#2562](https://github.com/xataio/frontend/pull/2562) [`8d77436`](https://github.com/xataio/frontend/commit/8d77436a3df38d4cd69b72d0d97669ed161b63ce) Thanks [@divyenduz](https://github.com/divyenduz)! - On demand fast branch via xata sandbox
+
 ## 1.3.0
 
 ### Minor Changes
