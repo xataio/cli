@@ -4,7 +4,7 @@ import stripAnsi from 'strip-ansi';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './describe';
 
-const { project, branch } = await setupTestResources('cli-it-');
+const { project, branch } = await setupTestResources('cli-it');
 
 describe('branch describe command tests', () => {
   test('describe branch with json output', async () => {

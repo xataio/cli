@@ -4,7 +4,7 @@ import stripAnsi from 'strip-ansi';
 import { getNthArgOfNthCall, getTestContext, TEST_XATA_ORG } from '~/lib/test-utils';
 import { implementation } from './describe';
 
-const { project } = await setupTestResources('cli-it-');
+const { project } = await setupTestResources('cli-it');
 
 describe('project describe command tests', () => {
   test('describe 404 project call', async () => {
