@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.3.2
+
+### Patch Changes
+
+- [#2591](https://github.com/xataio/frontend/pull/2591) [`0be09e1`](https://github.com/xataio/frontend/commit/0be09e187d10c22aaffbb7cc0396dfef8ca86a32) Thanks [@divyenduz](https://github.com/divyenduz)! - add xata branch logs command
+
 ## 1.3.1
 
 ### Patch Changes
