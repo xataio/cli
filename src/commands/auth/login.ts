@@ -11,6 +11,7 @@ import { DEFAULT_PROFILE } from '~/lib/profile';
 type Flags = {
   profile: string;
   force: boolean;
+  'api-key'?: string;
   issuer?: string;
   'api-url'?: string;
   'client-id'?: string;
@@ -28,14 +29,21 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
     await updateConfig({ ...config, profiles: updatedProfiles });
   }
 
-  try {
-    const { baseUrl, client } = getAuthConfig({
-      clientId: customFlags['client-id'],
-      clientSecret: customFlags['client-secret'],
-      issuer: customFlags.issuer,
-      apiBaseUrl: customFlags['api-url']
-    });
+  const { baseUrl, client } = getAuthConfig({
+    clientId: customFlags['client-id'],
+    clientSecret: customFlags['client-secret'],
+    issuer: customFlags.issuer,
+    apiBaseUrl: customFlags['api-url']
+  });
 
+  // Passing --api-key is a non-interactive alternative to the device OAuth flow below.
+  const apiKey = customFlags['api-key'];
+  if (apiKey) {
+    await loginWithApiKey.call(this, { profile, apiKey, baseUrl });
+    return;
+  }
+
+  try {
     for await (const step of XataApi.deviceLogin(client)) {
       match(step)
         .with({ type: 'prompt' }, (step) => {
@@ -72,6 +80,35 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
   }
 }
 
+async function loginWithApiKey(
+  this: LocalContext,
+  { profile, apiKey, baseUrl }: { profile: string; apiKey: string; baseUrl: string }
+) {
+  // Validate the API key before persisting it so we don't store an invalid one.
+  try {
+    const xata = new XataApi({ baseUrl, token: apiKey });
+    await xata.api.organizations.getOrganizationsList({});
+  } catch {
+    console.error('The provided API key is invalid or could not be verified. No changes were made.');
+    return;
+  }
+
+  await updateConfig({
+    ...config,
+    activeProfile: profile,
+    profiles: {
+      ...(config?.profiles || {}),
+      [profile]: {
+        type: 'apiKey',
+        apiKey,
+        customConfig: { apiBaseUrl: baseUrl }
+      }
+    }
+  });
+
+  console.log(`Logged in with profile "${profile}" using an API key.`);
+}
+
 export const AuthLoginCommand = buildCommand({
   docs: {
     brief: `Log in to a ${CLI_NAME} account`
@@ -88,6 +125,12 @@ export const AuthLoginCommand = buildCommand({
         kind: 'boolean',
         brief: 'Force login even if already logged in',
         default: false
+      },
+      'api-key': {
+        kind: 'parsed',
+        parse: String,
+        brief: 'Log in non-interactively with an API key instead of the browser OAuth flow',
+        optional: true
       },
       issuer: {
         kind: 'parsed',
