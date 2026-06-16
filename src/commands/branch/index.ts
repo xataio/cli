@@ -17,10 +17,7 @@ import { BranchWaitReadyCommand } from './wait-ready';
 export const BranchRoute = buildRouteMap({
   docs: {
     brief: `Create, list, and manage ${CLI_NAME} branches`,
-    hideRoute: {
-      logs: true,
-      metrics: true
-    }
+    hideRoute: {}
   },
   routes: {
     list: BranchListCommand,
