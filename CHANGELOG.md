@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.0
+
+### Minor Changes
+
+- [#2590](https://github.com/xataio/frontend/pull/2590) [`e43ad59`](https://github.com/xataio/frontend/commit/e43ad599757bae98575cf5d34cd0600bdb808712) Thanks [@SferaDev](https://github.com/SferaDev)! - Add support for logging in with an API key via `xata auth login --api-key <key>`. This is a non-interactive alternative to the browser-based device OAuth flow, and the key is validated before being stored.
+
 ## 1.3.2
 
 ### Patch Changes
