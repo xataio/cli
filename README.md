@@ -13,8 +13,14 @@ The official command-line interface for [Xata](https://xata.io).
 ### Installation
 
 ```bash
-npm install -g @xata.io/cli
+# macOS / Linux
+curl -fsSL https://xata.io/install.sh | bash
+
+# Windows PowerShell
+powershell -c "irm https://xata.io/install.ps1 | iex"
 ```
+
+After installation, run `xata upgrade` to update to the latest CLI release.
 
 ### Documentation
 
