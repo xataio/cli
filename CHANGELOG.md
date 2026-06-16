@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.1
+
+### Patch Changes
+
+- [#2601](https://github.com/xataio/frontend/pull/2601) [`5779d12`](https://github.com/xataio/frontend/commit/5779d12fabe0589e37b0325ade77753ca46d9d41) Thanks [@divyenduz](https://github.com/divyenduz)! - unhide xata branch metrics/logs command
+
 ## 1.4.0
 
 ### Minor Changes
