@@ -155,6 +155,10 @@ export async function implementation(
     }
 
     if (!skipDdlTracking) {
+      // Clean up any leftover v0.9.x pgstream state before initializing. The flag is
+      // idempotent and safe for repeated use, and implies --init. Guarded by the same
+      // condition as --init since --skip-ddl-tracking opts out of initialization.
+      runtimeFlags.push('--upgrade');
       runtimeFlags.push('--init');
     }
 

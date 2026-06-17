@@ -17,4 +17,4 @@ export const DEFAULT_CLONE_LOCAL_CONFIG_PATH = `.${CLI_NAME}/config.ts`;
  * the "Complete Migration" action via workflow_dispatch.
  */
 export const PINNED_PGROLL_BINARY_VERSION = '0.16.1';
-export const PINNED_PGSTREAM_BINARY_VERSION = '0.9.11';
+export const PINNED_PGSTREAM_BINARY_VERSION = '1.1.0';
