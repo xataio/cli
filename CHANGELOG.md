@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.2
+
+### Patch Changes
+
+- [#2603](https://github.com/xataio/frontend/pull/2603) [`7bc4e39`](https://github.com/xataio/frontend/commit/7bc4e3975efba27e01e351256153d2463a395e8b) Thanks [@kvch](https://github.com/kvch)! - Bump pinned pgstream binary version to 1.1.0 and pass `--upgrade` to `clone stream` (alongside `--init`, unless `--skip-ddl-tracking` is set) so leftover v0.9.x pgstream state is cleaned up before streaming.
+
 ## 1.4.1
 
 ### Patch Changes
