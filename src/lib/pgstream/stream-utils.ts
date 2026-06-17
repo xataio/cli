@@ -88,7 +88,9 @@ export function convertGlobalFlagsToRuntimeFlags<CommandType extends PgStreamCom
 
   const flagHandlers: FlagHandlers = {
     config: (value) => runtimeFlags.push(`--config=${value}`),
-    'log-level': (value) => runtimeFlags.push(`--log-level=${value}`)
+    'log-format': (value) => runtimeFlags.push(`--log-format=${value}`),
+    'log-level': (value) => runtimeFlags.push(`--log-level=${value}`),
+    'no-color': (value) => runtimeFlags.push(`--no-color=${value}`)
   };
 
   for (const [key, value] of Object.entries(flags)) {
