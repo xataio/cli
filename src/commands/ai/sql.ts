@@ -16,6 +16,7 @@ type Flags = {
   project?: string;
   branch?: string;
   database?: string;
+  model?: string;
   yes: boolean;
 };
 
@@ -113,7 +114,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
     const handleGenerateSQL = async (query: string, currentSQL: string): Promise<string> => {
       invariant(env.ANTHROPIC_API_KEY, 'ANTHROPIC_API_KEY is required for AI features');
-      return await generateSQL(env.ANTHROPIC_API_KEY, query, formattedSchema, currentSQL);
+      return await generateSQL(env.ANTHROPIC_API_KEY, query, formattedSchema, currentSQL, { model: flags.model });
     };
 
     const ui = new TerminalUI({
@@ -158,6 +159,12 @@ export const GenerateSQLCommand = buildCommand({
       database: {
         kind: 'parsed',
         brief: 'Database name',
+        parse: String,
+        optional: true
+      },
+      model: {
+        kind: 'parsed',
+        brief: 'Anthropic model override for AI SQL generation',
         parse: String,
         optional: true
       },

@@ -60,6 +60,7 @@ type Flags = {
   project?: string;
   branch?: string;
   prompt?: string;
+  model?: string;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -147,7 +148,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
           env.ANTHROPIC_API_KEY,
           effectivePrompt,
           formattedSchema,
-          previousConfigYaml
+          previousConfigYaml,
+          { model: flags.model }
         );
       } catch (err) {
         this.process.stderr.write(
@@ -263,6 +265,12 @@ export const CloneConfigCommand = buildCommand({
       prompt: {
         kind: 'parsed',
         brief: 'Instructions for AI mode (e.g., which columns to anonymize, specific transformers to use)',
+        parse: String,
+        optional: true
+      },
+      model: {
+        kind: 'parsed',
+        brief: 'Anthropic model override for AI mode',
         parse: String,
         optional: true
       }
