@@ -262,8 +262,31 @@ type Region = {
   id: string;
   publicAccess: boolean;
   backupsEnabled: boolean;
+  provider: 'aws' | 'gcp' | 'custom';
   organizationId: string | null;
 };
+
+const regionProviderLabels = {
+  aws: 'AWS',
+  gcp: 'GCP',
+  custom: 'Custom'
+} satisfies Record<Region['provider'], string>;
+
+const regionProviderColors = {
+  aws: chalk.hex('#FF9900'),
+  gcp: chalk.hex('#4285F4'),
+  custom: chalk.gray
+} satisfies Record<Region['provider'], (text: string) => string>;
+
+function formatRegionProvider(provider: Region['provider']) {
+  const label = `(${regionProviderLabels[provider]})`;
+  return regionProviderColors[provider](label);
+}
+
+function formatRegionChoiceMessage(region: Region, group?: 'Organization' | 'Global') {
+  const prefix = group ? `[${group}] ` : '';
+  return `${prefix}${region.id} ${formatRegionProvider(region.provider)}`;
+}
 
 export function groupAndSortRegions(regions: Region[]): { name: string; message: string }[] {
   const organizationRegions = regions.filter((r) => r.organizationId !== null);
@@ -280,11 +303,11 @@ export function groupAndSortRegions(regions: Region[]): { name: string; message:
   return [
     ...organizationRegions.map((region) => ({
       name: region.id,
-      message: showGroups ? `[Organization] ${region.id}` : region.id
+      message: formatRegionChoiceMessage(region, showGroups ? 'Organization' : undefined)
     })),
     ...sortedGlobalRegions.map((region) => ({
       name: region.id,
-      message: showGroups ? `[Global] ${region.id}` : region.id
+      message: formatRegionChoiceMessage(region, showGroups ? 'Global' : undefined)
     }))
   ];
 }

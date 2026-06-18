@@ -297,7 +297,13 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
 
   if (!flags['parent-branch']) {
-    flags['parent-branch'] = await this.getBranch(this, {}, { organizationId, projectId });
+    const branches = await this.api.branches.listBranches({
+      pathParams: { organizationID: organizationId, projectID: projectId }
+    });
+    flags['parent-branch'] = '';
+    if (branches.branches.length > 0) {
+      flags['parent-branch'] = await this.getBranch(this, {}, { organizationId, projectId });
+    }
   }
 
   const parentBranchId = flags['parent-branch'];

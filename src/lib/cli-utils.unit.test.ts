@@ -7,6 +7,7 @@ type Region = {
   id: string;
   publicAccess: boolean;
   backupsEnabled: boolean;
+  provider: 'aws' | 'gcp' | 'custom';
   organizationId: string | null;
 };
 
@@ -18,8 +19,12 @@ const normalizeTableOutput = (output: string) => {
     .map((line) => line.split(/\s+/));
 };
 
-function createRegion(id: string, organizationId: string | null = null): Region {
-  return { id, publicAccess: true, backupsEnabled: true, organizationId };
+function stripMessages(choices: { name: string; message: string }[]) {
+  return choices.map((choice) => ({ ...choice, message: stripAnsi(choice.message) }));
+}
+
+function createRegion(id: string, organizationId: string | null = null, provider: Region['provider'] = 'aws'): Region {
+  return { id, publicAccess: true, backupsEnabled: true, provider, organizationId };
 }
 
 describe('groupAndSortRegions', () => {
@@ -29,9 +34,20 @@ describe('groupAndSortRegions', () => {
 
       const result = groupAndSortRegions(regions);
 
-      expect(result).toEqual([
-        { name: 'us-east-1', message: 'us-east-1' },
-        { name: 'eu-west-1', message: 'eu-west-1' }
+      expect(stripMessages(result)).toEqual([
+        { name: 'us-east-1', message: 'us-east-1 (AWS)' },
+        { name: 'eu-west-1', message: 'eu-west-1 (AWS)' }
+      ]);
+    });
+
+    it('should add cloud provider labels to region messages', () => {
+      const regions = [createRegion('us-east-1', null, 'aws'), createRegion('europe-west1', null, 'gcp')];
+
+      const result = groupAndSortRegions(regions);
+
+      expect(stripMessages(result)).toEqual([
+        { name: 'us-east-1', message: 'us-east-1 (AWS)' },
+        { name: 'europe-west1', message: 'europe-west1 (GCP)' }
       ]);
     });
 
@@ -58,22 +74,30 @@ describe('groupAndSortRegions', () => {
 
       const result = groupAndSortRegions(regions);
 
-      expect(result).toEqual([
-        { name: 'org-region-1', message: 'org-region-1' },
-        { name: 'org-region-2', message: 'org-region-2' }
+      expect(stripMessages(result)).toEqual([
+        { name: 'org-region-1', message: 'org-region-1 (AWS)' },
+        { name: 'org-region-2', message: 'org-region-2 (AWS)' }
       ]);
+    });
+
+    it('should add custom provider labels to organization region messages', () => {
+      const regions = [createRegion('org-region-1', 'org-123', 'custom')];
+
+      const result = groupAndSortRegions(regions);
+
+      expect(stripMessages(result)).toEqual([{ name: 'org-region-1', message: 'org-region-1 (Custom)' }]);
     });
   });
 
   describe('with both global and organization regions', () => {
     it('should add group prefixes to messages', () => {
-      const regions = [createRegion('us-east-1'), createRegion('org-region-1', 'org-123')];
+      const regions = [createRegion('us-east-1'), createRegion('org-region-1', 'org-123', 'custom')];
 
       const result = groupAndSortRegions(regions);
 
-      expect(result).toEqual([
-        { name: 'org-region-1', message: '[Organization] org-region-1' },
-        { name: 'us-east-1', message: '[Global] us-east-1' }
+      expect(stripMessages(result)).toEqual([
+        { name: 'org-region-1', message: '[Organization] org-region-1 (Custom)' },
+        { name: 'us-east-1', message: '[Global] us-east-1 (AWS)' }
       ]);
     });
 
@@ -116,7 +140,7 @@ describe('groupAndSortRegions', () => {
 
       const result = groupAndSortRegions(regions);
 
-      expect(result).toEqual([{ name: 'us-west-2', message: 'us-west-2' }]);
+      expect(stripMessages(result)).toEqual([{ name: 'us-west-2', message: 'us-west-2 (AWS)' }]);
     });
 
     it('should handle single organization region', () => {
@@ -124,7 +148,7 @@ describe('groupAndSortRegions', () => {
 
       const result = groupAndSortRegions(regions);
 
-      expect(result).toEqual([{ name: 'org-region-1', message: 'org-region-1' }]);
+      expect(stripMessages(result)).toEqual([{ name: 'org-region-1', message: 'org-region-1 (AWS)' }]);
     });
   });
 });
