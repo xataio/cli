@@ -32,9 +32,9 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
   /**
    * Whether the CLI is running in an interactive context.
    *
-   * False when running in CI or when invoked from an agentic context
-   * (Cursor, Claude Code, Amp, etc.). Prompt helpers short-circuit when
-   * this is false.
+   * False when stdio is not attached to an interactive terminal, when running
+   * in CI, or when invoked from an agentic context (Cursor, Claude Code, Amp,
+   * etc.). Prompt helpers short-circuit when this is false.
    */
   readonly isInteractive: boolean;
   readonly print: typeof print;
@@ -63,6 +63,10 @@ type BuildContextOptions = {
   cliInvocationId?: string;
 };
 
+export function getIsInteractive(process: NodeJS.Process, { isCI, isAgent }: { isCI: boolean; isAgent: boolean }) {
+  return process.stdin.isTTY === true && process.stdout.isTTY === true && !(isCI || isAgent);
+}
+
 export async function buildContext(process: NodeJS.Process, options: BuildContextOptions = {}): Promise<LocalContext> {
   const debug = Boolean(Bun.env.DEBUG);
   const usingEnvApiKey = Boolean(env.XATA_API_KEY);
@@ -81,8 +85,8 @@ export async function buildContext(process: NodeJS.Process, options: BuildContex
     os,
     fs,
     path,
-    // Treat both CI and agentic invocations as non-interactive
-    isInteractive: !(ciInfo.isCI || agent.isAgent),
+    // Treat captured/piped output, CI, and agentic invocations as non-interactive.
+    isInteractive: getIsInteractive(process, { isCI: ciInfo.isCI, isAgent: agent.isAgent }),
     print,
     getActiveProfile,
     getOrganization,
