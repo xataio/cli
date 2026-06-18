@@ -1,5 +1,15 @@
 # xata-cli
 
+## 1.4.4
+
+### Patch Changes
+
+- [#2632](https://github.com/xataio/frontend/pull/2632) [`003eb27`](https://github.com/xataio/frontend/commit/003eb27457e332d49dbb15612bc8ddd26741688c) Thanks [@divyenduz](https://github.com/divyenduz)! - run CLI in non interactive mode when running in a sub shell
+
+- [#2629](https://github.com/xataio/frontend/pull/2629) [`1da65b4`](https://github.com/xataio/frontend/commit/1da65b45fc9190b0ae85a8d80fb43e2891fdeab0) Thanks [@divyenduz](https://github.com/divyenduz)! - fix ai mode of clone pii config generation
+
+- [#2631](https://github.com/xataio/frontend/pull/2631) [`dd3da60`](https://github.com/xataio/frontend/commit/dd3da607cce506b5497c04ac07c44774e7954892) Thanks [@divyenduz](https://github.com/divyenduz)! - show cloud providers nicely in CLI prompts
+
 ## 1.4.3
 
 ### Patch Changes
