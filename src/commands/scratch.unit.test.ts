@@ -40,15 +40,6 @@ function buildContext() {
 
   const context = {
     api: {
-      projects: {
-        getProject: mock(async () => ({
-          configuration: {
-            scaleToZero: {
-              childBranches: { enabled: true, inactivityPeriodMinutes: 15 }
-            }
-          }
-        }))
-      },
       branches: {
         createBranch,
         describeBranch,
@@ -91,7 +82,7 @@ describe('scratch command', () => {
       body: {
         mode: 'inherit',
         parentID: 'source-branch-id',
-        scaleToZero: { enabled: true, inactivityPeriodMinutes: 15 }
+        scaleToZero: { enabled: true, inactivityPeriodMinutes: 10 }
       }
     });
     expect(createBranch.mock.calls[0]?.[0].body.name).toStartWith('scratch-');

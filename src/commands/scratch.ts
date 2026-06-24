@@ -18,6 +18,10 @@ type Flags = {
 };
 
 const SIGNAL_CLEANUP_TIMEOUT_MS = 10 * 1000;
+const SCRATCH_SCALE_TO_ZERO = {
+  enabled: true,
+  inactivityPeriodMinutes: 10
+} as const;
 
 type ScratchBranch = {
   id: string;
@@ -248,10 +252,6 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
     this.process.exit(1);
   }
 
-  const project = await this.api.projects.getProject({
-    pathParams: { organizationID: organizationId, projectID: projectId }
-  });
-
   const runId = randomUUID();
   const branchName = `scratch-${runId}`;
   let scratchBranch: ScratchBranch | undefined;
@@ -329,8 +329,8 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
       projectId,
       parentBranchId,
       branchName,
-      project.configuration.scaleToZero.childBranches.enabled,
-      project.configuration.scaleToZero.childBranches.inactivityPeriodMinutes
+      SCRATCH_SCALE_TO_ZERO.enabled,
+      SCRATCH_SCALE_TO_ZERO.inactivityPeriodMinutes
     );
     const createdScratchBranch = await createBranchPromise;
     scratchBranch = createdScratchBranch;
