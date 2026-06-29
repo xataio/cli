@@ -1,5 +1,13 @@
 # xata-cli
 
+## 1.4.5
+
+### Patch Changes
+
+- [#2472](https://github.com/xataio/frontend/pull/2472) [`b1ae83d`](https://github.com/xataio/frontend/commit/b1ae83d7d61540ad8eb5d9502db2afa4192651fd) Thanks [@divyenduz](https://github.com/divyenduz)! - add xata branch query-insights / xata branch qi command
+
+- [#2642](https://github.com/xataio/frontend/pull/2642) [`53a3936`](https://github.com/xataio/frontend/commit/53a39361272989dcb3b4d17cdf608fe44d204198) Thanks [@divyenduz](https://github.com/divyenduz)! - start xata scratch branches with 10min s2z config
+
 ## 1.4.4
 
 ### Patch Changes
