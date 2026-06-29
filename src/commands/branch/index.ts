@@ -13,6 +13,7 @@ import { BranchTreeCommand } from './tree';
 import { BranchRotatePasswordCommand } from './rotate-password';
 import { BranchURLCommand } from './url';
 import { BranchWaitReadyCommand } from './wait-ready';
+import { BranchQueryInsightsRoute } from './query-insights';
 
 export const BranchRoute = buildRouteMap({
   docs: {
@@ -32,7 +33,8 @@ export const BranchRoute = buildRouteMap({
     metrics: BranchMetricsCommand,
     set: BranchSetCommand,
     'rotate-password': BranchRotatePasswordCommand,
-    'wait-ready': BranchWaitReadyCommand
+    'wait-ready': BranchWaitReadyCommand,
+    'query-insights': BranchQueryInsightsRoute
   },
   aliases: {
     ls: 'list',
@@ -41,6 +43,7 @@ export const BranchRoute = buildRouteMap({
 
     'connection-string': 'url',
 
-    topology: 'tree'
+    topology: 'tree',
+    qi: 'query-insights'
   }
 });
