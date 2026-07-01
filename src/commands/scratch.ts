@@ -18,6 +18,8 @@ type Flags = {
 };
 
 const SIGNAL_CLEANUP_TIMEOUT_MS = 10 * 1000;
+const CONNECTION_STRING_RETRY_COUNT = 2;
+const CONNECTION_STRING_RETRY_DELAY_MS = 100;
 const SCRATCH_SCALE_TO_ZERO = {
   enabled: true,
   inactivityPeriodMinutes: 10
@@ -55,6 +57,10 @@ async function withTimeout<T>(promise: Promise<T>, ms: number) {
   } finally {
     if (timeout) clearTimeout(timeout);
   }
+}
+
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function getErrorMessage(error: unknown) {
@@ -202,6 +208,28 @@ async function deleteScratchBranchByName(
   }
 }
 
+async function resolveScratchBranchConnectionString(
+  context: LocalContext,
+  organizationId: string,
+  projectId: string,
+  branch: ScratchBranch
+) {
+  if (branch.connectionString) return branch;
+
+  let resolvedBranch = branch;
+  for (let retry = 0; retry < CONNECTION_STRING_RETRY_COUNT; retry++) {
+    await sleep(CONNECTION_STRING_RETRY_DELAY_MS);
+
+    resolvedBranch = await context.api.branches.describeBranch({
+      pathParams: { organizationID: organizationId, projectID: projectId, branchID: branch.id }
+    });
+
+    if (resolvedBranch.connectionString) return resolvedBranch;
+  }
+
+  return resolvedBranch;
+}
+
 export async function implementation(this: LocalContext, flags: Flags, ...command: string[]) {
   const hasQuery = Boolean(flags.execute);
   const hasBinary = command.length > 0;
@@ -337,9 +365,11 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
 
     this.process.stderr.write(chalk.green(`Created scratch branch ${createdScratchBranch.name}\n`));
 
-    invariant(createdScratchBranch.connectionString, 'Scratch branch should have a connection string.');
+    scratchBranch = await resolveScratchBranchConnectionString(this, organizationId, projectId, createdScratchBranch);
 
-    const connectionString = buildConnectionString(createdScratchBranch.connectionString, {
+    invariant(scratchBranch.connectionString, 'Scratch branch should have a connection string.');
+
+    const connectionString = buildConnectionString(scratchBranch.connectionString, {
       database,
       endpointType: 'rw'
     });

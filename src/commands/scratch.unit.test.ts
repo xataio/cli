@@ -27,14 +27,14 @@ function buildContext() {
     name: body.name,
     createdAt: '2026-06-09T00:00:00.000Z',
     parentID: 'source-branch-id',
-    connectionString: 'postgresql://user:pass@localhost:5432/postgres'
+    connectionString: 'postgresql://user:pass@localhost:5432/postgres' as string | null
   }));
   const deleteBranch = mock(async () => ({}));
   const listBranches = mock(async (): Promise<{ branches: { id: string; name: string }[] }> => ({ branches: [] }));
   const describeBranch = mock(async () => ({
     id: 'scratch-branch-id',
     name: 'scratch-branch',
-    connectionString: 'postgresql://user:pass@localhost:5432/postgres',
+    connectionString: 'postgresql://user:pass@localhost:5432/postgres' as string | null,
     status: { statusType: 'STATUS_TYPE_HEALTHY', status: 'healthy' }
   }));
 
@@ -93,6 +93,31 @@ describe('scratch command', () => {
     expect(stdout.join('')).toContain('hello');
     expect(stderr.join('')).toContain('Created scratch branch scratch-');
     expect(stderr.join('')).toContain('Deleted scratch branch scratch-');
+  });
+
+  test('retries describing the scratch branch when create does not return a connection string', async () => {
+    const { context, createBranch, describeBranch, unsafe } = buildContext();
+    createBranch.mockImplementationOnce(async ({ body }: { body: { name: string } }) => ({
+      id: 'scratch-branch-id',
+      name: body.name,
+      createdAt: '2026-06-09T00:00:00.000Z',
+      parentID: 'source-branch-id',
+      connectionString: null
+    }));
+    describeBranch.mockImplementationOnce(async () => ({
+      id: 'scratch-branch-id',
+      name: 'scratch-branch',
+      connectionString: null,
+      status: { statusType: 'STATUS_TYPE_HEALTHY', status: 'healthy' }
+    }));
+
+    await implementation.call(context, { execute: 'select 1', json: false });
+
+    expect(describeBranch).toHaveBeenCalledTimes(2);
+    expect(describeBranch).toHaveBeenCalledWith({
+      pathParams: { organizationID: 'org-id', projectID: 'project-id', branchID: 'scratch-branch-id' }
+    });
+    expect(unsafe).toHaveBeenCalledWith('select 1');
   });
 
   test('prints SQL results as JSON when --json is passed', async () => {
