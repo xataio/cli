@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.6
+
+### Patch Changes
+
+- [#2659](https://github.com/xataio/frontend/pull/2659) [`5d3685e`](https://github.com/xataio/frontend/commit/5d3685eae93d62ef913d8c0d52f003adf66b36d0) Thanks [@divyenduz](https://github.com/divyenduz)! - add retry logic for xata scratch
+
 ## 1.4.5
 
 ### Patch Changes
