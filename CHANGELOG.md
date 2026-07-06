@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.7
+
+### Patch Changes
+
+- [#2675](https://github.com/xataio/frontend/pull/2675) [`7453325`](https://github.com/xataio/frontend/commit/74533256c8ed6eb6f8a6f079e3c60f31433f9192) Thanks [@kvch](https://github.com/kvch)! - bump pgstream to v1.1.1 and add clone snapshot support for global DB objects (`PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS`, off by default)
+
 ## 1.4.6
 
 ### Patch Changes
