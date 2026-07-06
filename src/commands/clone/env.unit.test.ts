@@ -70,8 +70,17 @@ describe('clone env tests', () => {
         expect(env.PGSTREAM_POSTGRES_SNAPSHOT_STORE_URL).toBe(mockTargetUrl);
         expect(env.PGSTREAM_POSTGRES_SNAPSHOT_STORE_REPEATABLE).toBe('true');
         expect(env.PGSTREAM_POSTGRES_SNAPSHOT_CLEAN_TARGET_DB).toBe('true');
+        expect(env.PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS).toBe('false');
         expect(env.PGSTREAM_POSTGRES_WRITER_ON_CONFLICT_ACTION).toBe('error');
         expect(env.PGSTREAM_POSTGRES_WRITER_DISABLE_TRIGGERS).toBe('true');
+      });
+
+      it('should allow overriding global database object snapshots', () => {
+        process.env = { PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS: 'true' };
+
+        const env = getPgStreamStartEnv(context, mockSourceUrl, mockTargetUrl, mockFilterTables);
+
+        expect(env.PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS).toBe('true');
       });
 
       it('should set role when provided', () => {
@@ -148,8 +157,17 @@ describe('clone env tests', () => {
         expect(env.PGSTREAM_INJECTOR_STORE_POSTGRES_URL).toBe(mockSourceUrl);
         expect(env.PGSTREAM_POSTGRES_SNAPSHOT_STORE_REPEATABLE).toBe('false');
         expect(env.PGSTREAM_POSTGRES_SNAPSHOT_CLEAN_TARGET_DB).toBe('true');
+        expect(env.PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS).toBe('false');
         expect(env.PGSTREAM_POSTGRES_WRITER_ON_CONFLICT_ACTION).toBe('error');
         expect(env.PGSTREAM_POSTGRES_WRITER_DISABLE_TRIGGERS).toBe('true');
+      });
+
+      it('should allow overriding global database object snapshots', () => {
+        process.env = { PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS: 'true' };
+
+        const env = getPgStreamStreamEnv(context, mockSourceUrl, mockTargetUrl, mockFilterTables);
+
+        expect(env.PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS).toBe('true');
       });
 
       it('should set role when provided', () => {
@@ -236,6 +254,7 @@ describe('clone env tests', () => {
       expect(env.PGSTREAM_POSTGRES_WRITER_TARGET_URL).toBe(mockTargetUrl);
       expect(env.PGSTREAM_POSTGRES_SNAPSHOT_STORE_URL).toBe(mockSourceUrl);
       expect(env.PGSTREAM_INJECTOR_STORE_POSTGRES_URL).toBe(mockSourceUrl);
+      expect(env.PGSTREAM_POSTGRES_SNAPSHOT_INCLUDE_GLOBAL_DB_OBJECTS).toBe('false');
       expect(env.PGSTREAM_POSTGRES_WRITER_ON_CONFLICT_ACTION).toBe('error');
       expect(env.PGSTREAM_POSTGRES_WRITER_DISABLE_TRIGGERS).toBe('true');
     });
