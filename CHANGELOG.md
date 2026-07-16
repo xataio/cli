@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.8
+
+### Patch Changes
+
+- [#2729](https://github.com/xataio/frontend/pull/2729) [`1a2ce39`](https://github.com/xataio/frontend/commit/1a2ce396fa0afec847786397e12a0b68ebf30d5a) Thanks [@kvch](https://github.com/kvch)! - bump pgstream to v1.2.0
+
 ## 1.4.7
 
 ### Patch Changes
