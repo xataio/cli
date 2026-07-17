@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.10
+
+### Patch Changes
+
+- [#2737](https://github.com/xataio/frontend/pull/2737) [`f32f60a`](https://github.com/xataio/frontend/commit/f32f60aad9793428a57d314a2052011bb144ca24) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Use instance/replica limits from the limits API
+
 ## 1.4.9
 
 ### Patch Changes
