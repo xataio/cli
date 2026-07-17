@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { branchConfig } from '~/lib/branch-config';
+import { getBranchLimits, instanceTypeUnavailableMessage, replicaChoicesFor } from '~/lib/branch-limits';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
 import type { Types } from '@xata.io/api';
@@ -21,7 +22,7 @@ type Flags = {
   project?: string;
   name?: string;
   'parent-branch'?: string;
-  replicas?: '0' | '1' | '2' | '3' | '4';
+  replicas?: string;
   'instance-type'?: string;
   region?: string;
   'postgres-version'?: string;
@@ -29,14 +30,6 @@ type Flags = {
   'inactivity-period'?: '15' | '30' | '60' | '120' | '180';
   json: boolean;
 };
-
-export const replicaChoices = [
-  { name: '0', message: '0' },
-  { name: '1', message: '1' },
-  { name: '2', message: '2' },
-  { name: '3', message: '3' },
-  { name: '4', message: '4' }
-];
 
 export async function instanceTypes(context: LocalContext, organizationId: string, region: string) {
   const instanceTypes = await context.api.projects.listInstanceTypes({
@@ -54,13 +47,16 @@ export function shouldShowInstanceTypePricing(context: LocalContext) {
 
 export function buildInstanceTypeChoices(
   instances: Awaited<ReturnType<typeof instanceTypes>>,
-  { showPricing }: { showPricing: boolean }
+  { showPricing, maxAllowedVCPUs }: { showPricing: boolean; maxAllowedVCPUs?: number }
 ) {
   return instances.map((instanceType) => {
     const parts = [`${instanceType.name} / ${instanceType.vcpus} milli-vCPU / ${instanceType.ram} GB RAM`];
     if (showPricing) {
       const instanceMonthlyCost = monthlyComputeCost(instanceType, 1);
       parts.push(chalk.gray(`$${instanceMonthlyCost.display} per mo`));
+    }
+    if (maxAllowedVCPUs !== undefined && instanceType.vcpus > maxAllowedVCPUs) {
+      parts.push(chalk.yellow('not available on your current plan'));
     }
     return {
       name: instanceType.name,
@@ -159,13 +155,13 @@ export async function getRegion(context: LocalContext, flags: { region?: string 
 
 export async function getReplicas(context: LocalContext, flags: { replicas?: string }, options: ProjectOptions) {
   const title = options?.title || 'Please select number of replicas for the branch';
+  const { maxReplicas } = await getBranchLimits(context, options.organizationId);
+  const choices = replicaChoicesFor(maxReplicas);
 
   if (flags.replicas) {
-    if (!replicaChoices.some((replica) => flags.replicas === replica.name)) {
+    if (!choices.some((replica) => flags.replicas === replica.name)) {
       context.process.stderr.write(
-        chalk.red(
-          `Invalid replica count: ${flags.replicas}. Must be one of: ${replicaChoices.map((r) => r.name).join(', ')}.`
-        )
+        chalk.red(`Invalid replica count: ${flags.replicas}. Must be one of: ${choices.map((r) => r.name).join(', ')}.`)
       );
       context.process.exit(1);
     }
@@ -174,11 +170,7 @@ export async function getReplicas(context: LocalContext, flags: { replicas?: str
   }
 
   if (!flags.replicas) {
-    const replicas = (await context.enquirer.selectPrompt(
-      context.isInteractive,
-      title,
-      replicaChoices
-    )) as Flags['replicas'];
+    const replicas = (await context.enquirer.selectPrompt(context.isInteractive, title, choices)) as Flags['replicas'];
     invariant(replicas, `Replicas should exist`);
     return replicas;
   }
@@ -192,33 +184,32 @@ export async function getInstanceType(
   options: ProjectOptions & { region: string }
 ) {
   const title = options?.title || 'Please select the type of instance for this branch';
+  const { maxAllowedVCPUs } = await getBranchLimits(context, options.organizationId);
   const instances = await instanceTypes(context, options.organizationId, options.region);
-  const instanceChoices = buildInstanceTypeChoices(instances, { showPricing: shouldShowInstanceTypePricing(context) });
+  const instanceChoices = buildInstanceTypeChoices(instances, {
+    showPricing: shouldShowInstanceTypePricing(context),
+    maxAllowedVCPUs
+  });
 
-  if (flags['instance-type']) {
-    if (!instances.some((instance) => flags['instance-type'] === instance.name)) {
-      context.process.stderr.write(
-        chalk.red(
-          `Invalid instance type: ${flags['instance-type']}. This instance type is not available for this organization.`
-        )
-      );
-      context.process.exit(1);
-    }
-    invariant(flags['instance-type'], `Instance type should exist`);
-    return flags['instance-type'];
+  const instanceType =
+    flags['instance-type'] ??
+    ((await context.enquirer.selectPrompt(context.isInteractive, title, instanceChoices)) as Flags['instance-type']);
+  invariant(instanceType, `Instance type should exist`);
+
+  const instance = instances.find((option) => option.name === instanceType);
+  if (!instance) {
+    context.process.stderr.write(
+      chalk.red(`Invalid instance type: ${instanceType}. This instance type is not available for this organization.`)
+    );
+    context.process.exit(1);
   }
 
-  if (!flags['instance-type']) {
-    const instanceType = (await context.enquirer.selectPrompt(
-      context.isInteractive,
-      title,
-      instanceChoices
-    )) as Flags['instance-type'];
-    invariant(instanceType, `Instance type should exist`);
-    return instanceType;
+  if (maxAllowedVCPUs && instance.vcpus > maxAllowedVCPUs) {
+    context.process.stderr.write(chalk.red(`${instanceTypeUnavailableMessage(instanceType)}\n`));
+    context.process.exit(1);
   }
 
-  invariant(false, `Expected input for flag --instance-type`);
+  return instanceType;
 }
 
 export async function getImage(
@@ -445,8 +436,8 @@ export const BranchCreateCommand = buildCommand({
         optional: true
       },
       replicas: {
-        kind: 'enum',
-        values: ['0', '1', '2', '3', '4'],
+        kind: 'parsed',
+        parse: String,
         brief: 'Please select number of replicas for the branch',
         optional: true
       },

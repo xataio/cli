@@ -4,7 +4,8 @@ import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
-import { buildInstanceTypeChoices, instanceTypes, replicaChoices, shouldShowInstanceTypePricing } from './create';
+import { getBranchLimits, instanceTypeUnavailableMessage, replicaChoicesFor } from '~/lib/branch-limits';
+import { buildInstanceTypeChoices, instanceTypes, shouldShowInstanceTypePricing } from './create';
 import { validScaleToZeroValues, validInactivityPeriodValues, scaleToZeroChoices, timeChoices } from '~/lib/config';
 
 type Flags = {
@@ -79,8 +80,13 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
   const defaultScaleToZero = isRootBranch ? scaleToZeroBase : scaleToZeroChild;
   const defaultInactivityPeriod = isRootBranch ? inactivityPeriodBase : inactivityPeriodChild;
 
+  const { maxReplicas, maxAllowedVCPUs } = await getBranchLimits(this, organizationId);
+  const replicaChoices = replicaChoicesFor(maxReplicas);
   const instances = await instanceTypes(this, organizationId, branchRegion);
-  const instanceChoices = buildInstanceTypeChoices(instances, { showPricing: shouldShowInstanceTypePricing(this) });
+  const instanceChoices = buildInstanceTypeChoices(instances, {
+    showPricing: shouldShowInstanceTypePricing(this),
+    maxAllowedVCPUs
+  });
 
   let upgradeableImageChoices: { name: string; message: string }[] = [];
   if (field === 'postgres-version') {
@@ -172,7 +178,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
       }
     })
     .with('replicas', () => {
-      const validReplicas = ['0', '1', '2', '3', '4'];
+      const validReplicas = replicaChoices.map((choice) => choice.name);
       if (!validReplicas.includes(value)) {
         this.process.stderr.write(
           chalk.red(`Invalid replicas value: ${value}. Valid values are: ${validReplicas.join(', ')}`)
@@ -181,11 +187,16 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
       }
     })
     .with('instance-type', () => {
-      const validInstanceTypes = instances.map((t) => t.name);
-      if (!validInstanceTypes.includes(value)) {
+      const instance = instances.find((t) => t.name === value);
+      if (!instance) {
+        const validInstanceTypes = instances.map((t) => t.name);
         this.process.stderr.write(
           chalk.red(`Invalid instance type: ${value}. Valid values are: ${validInstanceTypes.join(', ')}`)
         );
+        this.process.exit(1);
+      }
+      if (maxAllowedVCPUs && instance.vcpus > maxAllowedVCPUs) {
+        this.process.stderr.write(chalk.red(`${instanceTypeUnavailableMessage(value)}\n`));
         this.process.exit(1);
       }
     })

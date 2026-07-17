@@ -13,7 +13,7 @@ type Flags = {
   'project-name'?: string;
   'branch-name'?: string;
 
-  replicas?: '0' | '1' | '2' | '3' | '4';
+  replicas?: string;
   'instance-type'?: string;
   region?: string;
   'scale-to-zero-base'?: 'true' | 'false';
@@ -229,8 +229,8 @@ export const OnboardCommand = buildCommand({
         optional: true
       },
       replicas: {
-        kind: 'enum',
-        values: ['0', '1', '2', '3', '4'],
+        kind: 'parsed',
+        parse: String,
         brief: 'Please select number of replicas for the branch',
         optional: true
       },
