@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { isValidCidr, normalizeCidr } from '@xata.io/lang';
 import type { LocalContext } from '~/context';
 
 export type IpFilteringConfig = {
@@ -30,6 +31,11 @@ export function printIpFilterStatus(context: LocalContext, ipFiltering: IpFilter
     }
   }
   context.process.stdout.write('\n');
+}
+
+export function normalizeIpFilterCidr(cidr: string): string {
+  const trimmed = cidr.trim();
+  return isValidCidr(trimmed) ? normalizeCidr(trimmed) : trimmed;
 }
 
 export async function updateIpFiltering(

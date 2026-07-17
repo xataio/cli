@@ -2,7 +2,7 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import { isValidCidr, normalizeCidr } from '@xata.io/lang';
 import type { LocalContext } from '~/context';
-import { getIpFilteringConfig, printIpFilterStatus, updateIpFiltering } from './shared';
+import { getIpFilteringConfig, normalizeIpFilterCidr, printIpFilterStatus, updateIpFiltering } from './shared';
 
 type Flags = {
   organization?: string;
@@ -16,7 +16,7 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
   if (!cidrValue) {
     cidrValue = await this.enquirer.inputPrompt(
       this.isInteractive,
-      'Enter CIDR block (e.g. 192.168.0.0/24 or 10.0.0.1)'
+      'Enter IP address or CIDR block (e.g. 192.168.0.0/24 or 10.0.0.1)'
     );
   }
 
@@ -27,9 +27,11 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
 
   const normalized = normalizeCidr(cidrValue.trim());
 
-  if (!isValidCidr(normalized)) {
+  if (!isValidCidr(cidrValue.trim())) {
     this.process.stderr.write(
-      chalk.red(`Invalid CIDR format: ${cidrValue}. Expected format: 192.168.0.0/24 or 10.0.0.1\n`)
+      chalk.red(
+        `Invalid CIDR format: ${cidrValue}. Expected an IP address or CIDR range, e.g. 192.168.0.0/24 or 10.0.0.1\n`
+      )
     );
     this.process.exit(1);
   }
@@ -43,7 +45,7 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
 
   const ipFiltering = getIpFilteringConfig(project.configuration.ipFiltering);
 
-  const existing = ipFiltering.cidr.find((e) => e.cidr === normalized);
+  const existing = ipFiltering.cidr.find((e) => normalizeIpFilterCidr(e.cidr) === normalized);
   if (existing) {
     const desc = existing.description ? ` (${existing.description})` : '';
     this.process.stderr.write(chalk.red(`CIDR ${normalized} already exists${desc}\n`));
@@ -112,7 +114,7 @@ export const IpFilterAddCommand = buildCommand({
       kind: 'tuple',
       parameters: [
         {
-          brief: 'CIDR block to add (e.g. 192.168.0.0/24 or 10.0.0.1)',
+          brief: 'IP address or CIDR block to add (e.g. 192.168.0.0/24 or 10.0.0.1)',
           placeholder: 'cidr',
           parse: String,
           optional: true

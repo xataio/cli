@@ -1,8 +1,7 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
-import { normalizeCidr } from '@xata.io/lang';
 import type { LocalContext } from '~/context';
-import { getIpFilteringConfig, printIpFilterStatus, updateIpFiltering } from './shared';
+import { getIpFilteringConfig, normalizeIpFilterCidr, printIpFilterStatus, updateIpFiltering } from './shared';
 
 type Flags = {
   organization?: string;
@@ -29,7 +28,7 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
   let cidrToRemove: string;
 
   if (cidr) {
-    cidrToRemove = normalizeCidr(cidr.trim());
+    cidrToRemove = normalizeIpFilterCidr(cidr);
   } else {
     const choices = ipFiltering.cidr.map((entry) => ({
       name: entry.cidr,
@@ -38,7 +37,7 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
     cidrToRemove = await this.enquirer.selectPrompt(this.isInteractive, 'Select CIDR to remove', choices);
   }
 
-  const index = ipFiltering.cidr.findIndex((e) => e.cidr === cidrToRemove);
+  const index = ipFiltering.cidr.findIndex((e) => normalizeIpFilterCidr(e.cidr) === cidrToRemove);
   if (index === -1) {
     this.process.stderr.write(chalk.red(`CIDR ${cidrToRemove} not found\n`));
     this.process.exit(1);
