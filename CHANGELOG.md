@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.9
+
+### Patch Changes
+
+- [#2667](https://github.com/xataio/frontend/pull/2667) [`b7cac99`](https://github.com/xataio/frontend/commit/b7cac9923db4bcf3b1fd4ed5388d20d86ea8c9a5) Thanks [@divyenduz](https://github.com/divyenduz)! - Xata CLI: add support for ipv6 in ip filtering commands
+
 ## 1.4.8
 
 ### Patch Changes

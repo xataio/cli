@@ -1,7 +1,7 @@
 {
   "name": "xata-cli",
   "description": "Xata CLI",
-  "version": "1.4.7",
+  "version": "1.4.9",
   "private": true,
   "module": "src/app.ts",
   "type": "module",
@@ -37,8 +37,8 @@
     "zod": "4.4.3",
     "zod-config": "1.4.0",
     "@xata.io/ai": "0.1.0",
-    "@xata.io/config": "0.0.1",
     "@xata.io/api": "0.1.1",
+    "@xata.io/config": "0.0.1",
     "@xata.io/lang": "0.0.1",
     "@xata.io/pgroll": "0.9.0",
     "@xata.io/pgstream": "0.2.0",
