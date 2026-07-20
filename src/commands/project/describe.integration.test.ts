@@ -16,7 +16,7 @@ describe('project describe command tests', () => {
         organization: TEST_XATA_ORG,
         project: projectId
       })
-    ).rejects.toThrow(`project [${projectId}] not found`);
+    ).rejects.toThrow(`project with ID [${projectId}] not found`);
   });
 
   test('describe project call with json output', async () => {
