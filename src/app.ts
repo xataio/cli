@@ -1,4 +1,5 @@
 import { buildApplication, buildRouteMap, text_en } from '@stricli/core';
+import { SessionExpiredError } from '@xata.io/api';
 import { AuthRoute } from './commands/auth';
 import { BranchRoute } from './commands/branch';
 import { BranchCheckoutCommand } from './commands/branch/checkout';
@@ -68,6 +69,10 @@ export const app = buildApplication(routes, {
       return {
         ...text_en,
         exceptionWhileRunningCommand: (e) => {
+          // Expired offline session that was not recovered.
+          if (e instanceof SessionExpiredError) {
+            return `Error: Your Xata session has expired. Please use \`${CLI_NAME} auth login\` to log in again.`;
+          }
           // @ts-expect-error error object is not typed
           const errorId = e.stack?.id ? ` (id: ${e.stack.id})` : '';
           // @ts-expect-error error object is not typed
