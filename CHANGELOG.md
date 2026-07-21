@@ -1,5 +1,13 @@
 # xata-cli
 
+## 1.4.12
+
+### Patch Changes
+
+- [#2758](https://github.com/xataio/frontend/pull/2758) [`a48820c`](https://github.com/xataio/frontend/commit/a48820cbdbf297fae50bec9ec0ff3870d8420d6d) Thanks [@kvch](https://github.com/kvch)! - bump pgstream to v1.2.1
+
+- [#2744](https://github.com/xataio/frontend/pull/2744) [`ec268d7`](https://github.com/xataio/frontend/commit/ec268d78181c6c5894c1292b9cfcc2a62123345d) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Support setting branch storage with limit enforcement
+
 ## 1.4.11
 
 ### Patch Changes

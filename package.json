@@ -1,7 +1,7 @@
 {
   "name": "xata-cli",
   "description": "Xata CLI",
-  "version": "1.4.10",
+  "version": "1.4.12",
   "private": true,
   "module": "src/app.ts",
   "type": "module",
