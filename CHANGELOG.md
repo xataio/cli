@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.13
+
+### Patch Changes
+
+- [#2760](https://github.com/xataio/frontend/pull/2760) [`48c276d`](https://github.com/xataio/frontend/commit/48c276d3906693f3577931bc8b7b5633ec877e6f) Thanks [@SferaDev](https://github.com/SferaDev)! - Show a clear message when the CLI offline session expires
+
 ## 1.4.12
 
 ### Patch Changes
