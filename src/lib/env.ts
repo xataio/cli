@@ -37,12 +37,37 @@ const schema = z.object({
 
 export const env = schema.parse(process.env);
 
-export function loadEnvConfig(keys: string[]): Record<string, string> {
+/**
+ * Preferred (snake-cased) environment variable names for config keys.
+ *
+ * Historically, env var names were derived as `XATA_${key.toUpperCase()}`,
+ * producing concatenated names like XATA_ORGANIZATIONID. Those legacy names
+ * remain supported as a fallback; the snake-cased name takes precedence when
+ * both are set.
+ */
+const preferredEnvNames: Readonly<Record<string, string>> = {
+  organizationId: 'XATA_ORGANIZATION_ID',
+  projectId: 'XATA_PROJECT_ID',
+  branchId: 'XATA_BRANCH_ID',
+  branchName: 'XATA_BRANCH_NAME',
+  databaseName: 'XATA_DATABASE_NAME'
+};
+
+export function loadEnvConfig(
+  keys: string[],
+  source: Readonly<Record<string, string | undefined>> = process.env
+): Record<string, string> {
   const result: Record<string, string> = {};
 
   for (const key of keys) {
-    if (process.env[`XATA_${key.toUpperCase()}`]) {
-      result[key] = process.env[`XATA_${key.toUpperCase()}`]!;
+    const preferredName = preferredEnvNames[key];
+    const legacyName = `XATA_${key.toUpperCase()}`;
+
+    // Intentionally treats empty strings as unset (preserves legacy behavior).
+    const value = (preferredName && source[preferredName]) || source[legacyName];
+
+    if (value) {
+      result[key] = value;
     }
   }
 
