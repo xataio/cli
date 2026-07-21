@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.11
+
+### Patch Changes
+
+- [#2754](https://github.com/xataio/frontend/pull/2754) [`d30e1f6`](https://github.com/xataio/frontend/commit/d30e1f681ac477bd617ef6fe0c1f6f6f87d1d6c5) Thanks [@divyenduz](https://github.com/divyenduz)! - unify env var names, in addition to XATA_BRANCHID, XATA_BRANCH_ID should also work
+
 ## 1.4.10
 
 ### Patch Changes
