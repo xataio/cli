@@ -1,10 +1,10 @@
 import { buildCommand } from '@stricli/core';
-import { monthlyComputeCost } from '@xata.io/utils';
+import { instanceTypeUnavailableMessage, monthlyComputeCost } from '@xata.io/utils';
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { branchConfig } from '~/lib/branch-config';
-import { getBranchLimits, instanceTypeUnavailableMessage, replicaChoicesFor } from '~/lib/branch-limits';
+import { getBranchLimits, replicaChoicesFor } from '~/lib/branch-limits';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
 import type { Types } from '@xata.io/api';

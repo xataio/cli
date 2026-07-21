@@ -1,12 +1,36 @@
 import { buildCommand } from '@stricli/core';
-import { filterUpgradeablePostgresImages, sortPostgresImagesDesc } from '@xata.io/utils';
+import {
+  filterUpgradeablePostgresImages,
+  instanceTypeUnavailableMessage,
+  sortPostgresImagesDesc
+} from '@xata.io/utils';
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
-import { getBranchLimits, instanceTypeUnavailableMessage, replicaChoicesFor } from '~/lib/branch-limits';
+import { getBranchLimits, replicaChoicesFor } from '~/lib/branch-limits';
 import { buildInstanceTypeChoices, instanceTypes, shouldShowInstanceTypePricing } from './create';
 import { validScaleToZeroValues, validInactivityPeriodValues, scaleToZeroChoices, timeChoices } from '~/lib/config';
+
+function storageLimitMessage(maxStorage: number, hasPaymentMethod: boolean): string {
+  const action = hasPaymentMethod
+    ? 'contact support'
+    : 'add a payment method in your billing settings or contact support';
+  return `Storage cannot exceed ${maxStorage} GB on your current plan; please ${action} to increase the limit.`;
+}
+
+// A valid payment method on file moves the org to usage tier t2, so the tier doubles as a
+// "has payment method" signal. Defaults to false (offer the billing hint) if the lookup fails.
+async function hasPaymentMethod(context: LocalContext, organizationId: string): Promise<boolean> {
+  try {
+    const organization = await context.api.organizations.getOrganization({
+      pathParams: { organizationID: organizationId }
+    });
+    return organization.status.usage_tier === 't2';
+  } catch {
+    return false;
+  }
+}
 
 type Flags = {
   organization?: string;
@@ -19,6 +43,7 @@ type Field =
   | 'name'
   | 'replicas'
   | 'instance-type'
+  | 'storage'
   | 'hibernate'
   | 'scale-to-zero'
   | 'inactivity-period'
@@ -35,6 +60,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     'name',
     'replicas',
     'instance-type',
+    'storage',
     'hibernate',
     'scale-to-zero',
     'inactivity-period',
@@ -80,7 +106,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
   const defaultScaleToZero = isRootBranch ? scaleToZeroBase : scaleToZeroChild;
   const defaultInactivityPeriod = isRootBranch ? inactivityPeriodBase : inactivityPeriodChild;
 
-  const { maxReplicas, maxAllowedVCPUs } = await getBranchLimits(this, organizationId);
+  const { maxReplicas, maxAllowedVCPUs, maxStorage } = await getBranchLimits(this, organizationId);
   const replicaChoices = replicaChoicesFor(maxReplicas);
   const instances = await instanceTypes(this, organizationId, branchRegion);
   const instanceChoices = buildInstanceTypeChoices(instances, {
@@ -135,6 +161,11 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
           instanceChoices
         );
       })
+      .with('storage', async () => {
+        const current = branch.configuration.storage;
+        const suffix = current !== undefined ? ` (current: ${current} GB)` : '';
+        return await this.enquirer.inputPrompt(this.isInteractive, `Please enter the new storage size in GB${suffix}`);
+      })
       .with('hibernate', async () => {
         return await this.enquirer.selectPrompt(this.isInteractive, 'Please select hibernation status for the branch', [
           { name: 'true', message: 'Hibernated' },
@@ -170,6 +201,9 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     this.process.exit(1);
   }
 
+  const storageOverLimit = field === 'storage' && maxStorage !== undefined && Number(value) > maxStorage;
+  const paymentMethodOnFile = storageOverLimit ? await hasPaymentMethod(this, organizationId) : false;
+
   match(field)
     .with('name', () => {
       if (!value.trim()) {
@@ -197,6 +231,22 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
       }
       if (maxAllowedVCPUs && instance.vcpus > maxAllowedVCPUs) {
         this.process.stderr.write(chalk.red(`${instanceTypeUnavailableMessage(value)}\n`));
+        this.process.exit(1);
+      }
+    })
+    .with('storage', () => {
+      const storageGB = Number(value);
+      if (!Number.isInteger(storageGB) || storageGB < 1) {
+        this.process.stderr.write(chalk.red(`Invalid storage value: ${value}. Storage must be a whole number of GB.`));
+        this.process.exit(1);
+      }
+      const currentStorage = branch.configuration.storage;
+      if (currentStorage !== undefined && storageGB < currentStorage) {
+        this.process.stderr.write(chalk.red(`Storage cannot be decreased (current: ${currentStorage} GB).\n`));
+        this.process.exit(1);
+      }
+      if (maxStorage !== undefined && storageGB > maxStorage) {
+        this.process.stderr.write(chalk.red(`${storageLimitMessage(maxStorage, paymentMethodOnFile)}\n`));
         this.process.exit(1);
       }
     })
@@ -253,6 +303,11 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     .with('instance-type', () => {
       return {
         instanceType: value
+      };
+    })
+    .with('storage', () => {
+      return {
+        storage: parseInt(value)
       };
     })
     .with('hibernate', () => {
