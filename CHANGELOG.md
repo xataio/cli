@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.14
+
+### Patch Changes
+
+- [#2763](https://github.com/xataio/frontend/pull/2763) [`eec85cd`](https://github.com/xataio/frontend/commit/eec85cd75de8cef02f0107c664294b9e471e4384) Thanks [@divyenduz](https://github.com/divyenduz)! - Use chalk to color cli-table3 header so it respects tty and NO_COLOR
+
 ## 1.4.13
 
 ### Patch Changes
