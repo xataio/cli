@@ -154,11 +154,7 @@ export class TerminalUI {
       const headers = Object.keys(firstResult);
 
       const table = createTable({
-        head: headers.map((h) => chalk.cyan(h)),
-        style: {
-          head: ['cyan'],
-          border: ['grey']
-        }
+        head: headers.map((h) => chalk.cyan.bold(h))
       });
 
       const displayRows = results.slice(0, 20);
