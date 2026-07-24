@@ -47,6 +47,7 @@ describe('branch list command tests', () => {
     expect(output).toContain('name');
     expect(output).toContain('created_at');
     expect(output).toContain('parent_id');
+    expect(output).toContain('current');
   });
 
   test('list branches with specific branch context', async () => {
@@ -61,7 +62,11 @@ describe('branch list command tests', () => {
     });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
-    const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    expect(output).toContain(`${branch.name} (current)`);
+    const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
+    expect(output).not.toContain('(current)');
+    const currentRow = output.split('\n').find((line) => line.includes(branch.id));
+    expect(currentRow).toBeDefined();
+    expect(currentRow).toContain(branch.name);
+    expect(currentRow?.trimEnd().endsWith('true')).toBe(true);
   });
 });
