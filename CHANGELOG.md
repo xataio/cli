@@ -1,5 +1,22 @@
 # xata-cli
 
+## 1.4.16
+
+### Patch Changes
+
+- [#2778](https://github.com/xataio/frontend/pull/2778) [`6244a15`](https://github.com/xataio/frontend/commit/6244a1503b1ffd156c9673f42436778614365c8c) Thanks [@SferaDev](https://github.com/SferaDev)! - Publish the internal package versions required by the public xataio/cli mirror build.
+
+- Updated dependencies [[`6244a15`](https://github.com/xataio/frontend/commit/6244a1503b1ffd156c9673f42436778614365c8c)]:
+  - @xata.io/ai@0.1.1
+  - @xata.io/api@0.1.2
+  - @xata.io/config@0.0.2
+  - @xata.io/lang@0.0.2
+  - @xata.io/pgroll@0.9.1
+  - @xata.io/pgstream@0.2.1
+  - @xata.io/sql@0.1.5
+  - @xata.io/tsconfig@0.0.2
+  - @xata.io/utils@0.1.1
+
 ## 1.4.15
 
 ### Patch Changes
