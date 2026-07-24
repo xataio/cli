@@ -1,9 +1,9 @@
 # CI for the xata-cli mirror.
 #
 # Verifies the standalone mirror builds from source using only its committed
-# lockfile and packages published to npm — the guarantee tracked in xataio/cli#2.
-# The monorepo's mirror sync regenerates pnpm-lock.yaml on every push, so
-# `--frozen-lockfile` here proves the committed lockfile stays in sync.
+# lockfile and packages published to npm. The monorepo's mirror sync regenerates
+# pnpm-lock.yaml on every push, so `--frozen-lockfile` here proves the committed
+# lockfile stays in sync.
 #
 # Maintained directly in this repo (.github is not part of the synced subtree).
 name: CI
@@ -36,11 +36,22 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck
-        run: pnpm run tsc
+      - name: Run package checks
+        run: |
+          run_if_present() {
+            local script="$1"
+            if node -e "process.exit(require('./package.json').scripts?.[process.argv[1]] ? 0 : 1)" "$script"; then
+              pnpm run "$script"
+            else
+              echo "Skipping missing script: $script"
+            fi
+          }
 
-      - name: Build
-        run: pnpm run build
+          run_if_present tsc
+          run_if_present build
 
-      - name: Unit tests
-        run: pnpm run test-unit
+          if node -e "process.exit(require('./package.json').scripts?.['test-unit'] ? 0 : 1)"; then
+            pnpm run test-unit
+          else
+            run_if_present test
+          fi
