@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.17
+
+### Patch Changes
+
+- [#2785](https://github.com/xataio/frontend/pull/2785) [`4244aa8`](https://github.com/xataio/frontend/commit/4244aa8db62a4cf9706d41c5ed987d4be6476825) Thanks [@divyenduz](https://github.com/divyenduz)! - Move the `(current)` marker in `xata branch list` table output to a dedicated `current` column (`true`/`false`) and render empty `parent_id` cells as `-`, so every row has a constant field count and the `name` column stays clean for positional parsing with tools like awk.
+
 ## 1.4.16
 
 ### Patch Changes
