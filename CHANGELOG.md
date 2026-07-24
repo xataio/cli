@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.4.15
+
+### Patch Changes
+
+- [#2775](https://github.com/xataio/frontend/pull/2775) [`dc81e6f`](https://github.com/xataio/frontend/commit/dc81e6fe75107d2a2143f8124f804af8cb52291f) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Make xataio/cli mirror buildable from source + GitHub releases
+
 ## 1.4.14
 
 ### Patch Changes
