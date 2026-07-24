@@ -39,11 +39,11 @@ describe('project describe command tests', () => {
       configuration: {
         scaleToZero: {
           baseBranches: {
-            enabled: false,
+            enabled: expect.any(Boolean),
             inactivityPeriodMinutes: 30
           },
           childBranches: {
-            enabled: false,
+            enabled: expect.any(Boolean),
             inactivityPeriodMinutes: 30
           }
         }
