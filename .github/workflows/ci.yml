@@ -1,0 +1,46 @@
+# CI for the xata-cli mirror.
+#
+# Verifies the standalone mirror builds from source using only its committed
+# lockfile and packages published to npm — the guarantee tracked in xataio/cli#2.
+# The monorepo's mirror sync regenerates pnpm-lock.yaml on every push, so
+# `--frozen-lockfile` here proves the committed lockfile stays in sync.
+#
+# Maintained directly in this repo (.github is not part of the synced subtree).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build from source
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run tsc
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Unit tests
+        run: pnpm run test-unit
