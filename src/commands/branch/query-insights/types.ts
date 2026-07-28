@@ -10,7 +10,6 @@ import {
 
 export { PERFORMANCE_CATEGORIES, QUERY_TYPES };
 export type { PerformanceCategory, QueryType, SortDirection };
-export type { QueryInsightsSort } from './sort';
 
 export type RawQueryInsightRow = Record<string, unknown>;
 

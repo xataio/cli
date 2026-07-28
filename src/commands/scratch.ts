@@ -289,7 +289,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
   let cleanupPromise: Promise<void> | undefined;
   let receivedSignal = false;
 
-  const cleanup = async () => {
+  const cleanup = () => {
     cleanupPromise ??= (async () => {
       if (!scratchBranch && createBranchPromise) {
         try {
