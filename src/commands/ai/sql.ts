@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import invariant from 'tiny-invariant';
 
 import { BUILD_SCHEMA_QUERY, buildConnectionString, type Schema } from '@xata.io/sql';
-import { parse } from 'pg-connection-string';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
 import { env } from '~/lib/env';
@@ -20,43 +19,8 @@ type Flags = {
   yes: boolean;
 };
 
-async function getBranchSchema(
-  api: LocalContext['api'],
-  organizationId: string,
-  projectId: string,
-  branchId: string,
-  database: string
-): Promise<Schema[]> {
-  const { connectionString } = await api.branches.describeBranch({
-    pathParams: {
-      organizationID: organizationId,
-      projectID: projectId,
-      branchID: branchId
-    }
-  });
-
-  if (!connectionString) {
-    throw new Error('Connection string not found');
-  }
-
-  const { host, port, user, password, application_name } = parse(connectionString);
-
-  if (!host || !user) {
-    throw new Error('Invalid connection string');
-  }
-
-  const postgres = (await import('postgres')).default;
-  const sql = postgres({
-    host,
-    database,
-    port: parseInt(port ?? '5432'),
-    user,
-    password,
-    connection: {
-      application_name
-    },
-    ssl: { rejectUnauthorized: false }
-  });
+async function getBranchSchema(connectionString: string): Promise<Schema[]> {
+  const sql = postgres(connectionString);
 
   try {
     const schemaResult = await sql.unsafe<Schema[]>(BUILD_SCHEMA_QUERY);
@@ -103,9 +67,9 @@ export async function implementation(this: LocalContext, flags: Flags) {
     }
 
     invariant(branch.connectionString, 'Branch should have a connection string at this point.');
-    const connectionString = buildConnectionString(branch.connectionString);
+    const connectionString = buildConnectionString(branch.connectionString, { database: databaseName });
 
-    const schema = await getBranchSchema(this.api, organizationId, projectId, branchId, databaseName);
+    const schema = await getBranchSchema(connectionString);
     const formattedSchema = formatSchemaForAI(schema);
 
     const handleExecuteSQL = async (sql: string): Promise<any[]> => {
