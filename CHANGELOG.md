@@ -1,5 +1,23 @@
 # xata-cli
 
+## 1.4.18
+
+### Patch Changes
+
+- [#2787](https://github.com/xataio/frontend/pull/2787) [`1f293c7`](https://github.com/xataio/frontend/commit/1f293c757466694db1230de63202b96aa96da560) Thanks [@xata-bot](https://github.com/xata-bot)! - Update dependencies
+
+- [#2795](https://github.com/xataio/frontend/pull/2795) [`19052d8`](https://github.com/xataio/frontend/commit/19052d88591f7b337f0aff398a7ce02e4b8b3a06) Thanks [@SferaDev](https://github.com/SferaDev)! - Fix `xata ai sql` running generated queries against the `xata` database instead of the selected one. The schema shown to the model came from `--database`, but the execute connection kept the branch default, so queries silently hit the wrong database.
+
+- [#2787](https://github.com/xataio/frontend/pull/2787) [`1f293c7`](https://github.com/xataio/frontend/commit/1f293c757466694db1230de63202b96aa96da560) Thanks [@xata-bot](https://github.com/xata-bot)! - Remove unused export
+
+- Updated dependencies [[`1fa4631`](https://github.com/xataio/frontend/commit/1fa4631f136e732552992a00b60c1432169891f8), [`1f293c7`](https://github.com/xataio/frontend/commit/1f293c757466694db1230de63202b96aa96da560)]:
+  - @xata.io/api@0.1.3
+  - @xata.io/lang@0.0.3
+  - @xata.io/sql@0.1.6
+  - @xata.io/utils@0.1.2
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.3
+
 ## 1.4.17
 
 ### Patch Changes
