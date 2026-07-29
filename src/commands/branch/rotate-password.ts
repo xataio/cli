@@ -1,8 +1,9 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
-import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
-import { parseConnectionString } from '@xata.io/sql';
+import type { Types } from '@xata.io/api';
+import { fetchBranchCredentials } from '@xata.io/sql';
+import { getErrorMessage } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
@@ -11,6 +12,23 @@ type Flags = {
   yes: boolean;
   json: boolean;
 };
+
+async function resolveDatabaseUsername(
+  context: LocalContext,
+  branch: Types.GetBranchCredentialsPathParams
+): Promise<string> {
+  try {
+    const { username } = await fetchBranchCredentials(context.api, branch);
+    return username;
+  } catch (error) {
+    context.process.stderr.write(
+      chalk.red(
+        `Could not read the credentials for this branch: ${getErrorMessage(error)}\nAPI keys need the ${chalk.bold('credentials:read')} scope; if the branch is still starting, wait for it with ${chalk.bold('xata branch wait-ready')}.\n`
+      )
+    );
+    return context.process.exit(1);
+  }
+}
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
   const organizationId = await this.getOrganization(this, flags, {});
@@ -21,17 +39,11 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
   });
 
-  if (!branch.connectionString) {
-    this.process.stderr.write(
-      chalk.red(
-        `This branch does not currently expose a connection string. Wait until it is ready with ${chalk.bold('xata branch wait-ready')} and try again.\n`
-      )
-    );
-    this.process.exit(1);
-  }
-
-  const { username } = parseConnectionString(branch.connectionString);
-  invariant(username, 'Could not derive the PostgreSQL username from the branch connection string.');
+  const username = await resolveDatabaseUsername(this, {
+    organizationID: organizationId,
+    projectID: projectId,
+    branchID: branchId
+  });
 
   if (!flags.yes) {
     const confirmed = await this.enquirer.confirmPrompt(

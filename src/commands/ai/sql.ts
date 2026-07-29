@@ -2,7 +2,12 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import invariant from 'tiny-invariant';
 
-import { BUILD_SCHEMA_QUERY, buildConnectionString, type Schema } from '@xata.io/sql';
+import {
+  BUILD_SCHEMA_QUERY,
+  buildCredentialsConnectionString,
+  fetchBranchCredentials,
+  type Schema
+} from '@xata.io/sql';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
 import { env } from '~/lib/env';
@@ -66,8 +71,14 @@ export async function implementation(this: LocalContext, flags: Flags) {
       return;
     }
 
-    invariant(branch.connectionString, 'Branch should have a connection string at this point.');
-    const connectionString = buildConnectionString(branch.connectionString, { database: databaseName });
+    const credentials = await fetchBranchCredentials(this.api, {
+      organizationID: organizationId,
+      projectID: projectId,
+      branchID: branchId
+    });
+    const connectionString = buildCredentialsConnectionString(credentials, {
+      database: databaseName
+    });
 
     const schema = await getBranchSchema(connectionString);
     const formattedSchema = formatSchemaForAI(schema);

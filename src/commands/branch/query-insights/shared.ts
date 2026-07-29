@@ -1,15 +1,14 @@
 import type { Types } from '@xata.io/api';
 import {
-  buildConnectionString,
   checkPgStatStatementsUsable,
   compileSql,
+  fetchBranchConnectionString,
   getPgStatStatementsStatus,
   PG_STAT_STATEMENTS_EXTENSION,
   type RawBuilder
 } from '@xata.io/sql';
 import chalk from 'chalk';
 import type postgres from 'postgres';
-import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
 import { getErrorMessage } from '~/lib/cli-utils';
@@ -48,7 +47,7 @@ export async function withBranchQueryInsightsSql<T>(
   const { organizationId, projectId, branchId, branch } = target;
 
   try {
-    return await withBranchAdminSql(context, branch, async (sql) => {
+    return await withBranchAdminSql(context, target, async (sql) => {
       if (options.requirePgStatStatements !== false) {
         const isUsable = await ensurePgStatStatementsUsable(context, sql, branch.name);
         if (!isUsable) return undefined;
@@ -65,15 +64,14 @@ export async function withBranchQueryInsightsSql<T>(
 
 export async function withBranchAdminSql<T>(
   context: LocalContext,
-  branch: Types.BranchMetadata,
+  { organizationId, projectId, branchId }: Omit<BranchSqlMeta, 'branch'>,
   run: (sql: postgres.Sql) => Promise<T>
 ): Promise<T> {
-  invariant(branch.connectionString, 'Branch should have a connection string');
-
-  const connectionString = buildConnectionString(branch.connectionString, {
-    database: ADMIN_DATABASE,
-    endpointType: 'rw'
-  });
+  const connectionString = await fetchBranchConnectionString(
+    context.api,
+    { organizationID: organizationId, projectID: projectId, branchID: branchId },
+    { database: ADMIN_DATABASE, endpointType: 'rw' }
+  );
 
   const sql = context.postgres(connectionString);
   try {

@@ -1,8 +1,7 @@
 import { buildCommand } from '@stricli/core';
-import { buildConnectionString } from '@xata.io/sql';
+import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import dedent from 'dedent';
-import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { getErrorMessage } from '~/lib/cli-utils';
 import { updateBranchConfig } from '~/lib/branch-config';
@@ -100,8 +99,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
     );
     return;
   }
-  invariant(branch.connectionString, 'Branch should have a connection string at this point.');
-  await ensureDatabase(this, branch.connectionString, databaseName);
+  const connectionString = await fetchBranchConnectionString(this.api, {
+    organizationID: organizationId,
+    projectID: projectId,
+    branchID: branchId
+  });
+  await ensureDatabase(this, connectionString, databaseName);
 
   await updateProjectConfig({
     organizationId,

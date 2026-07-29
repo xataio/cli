@@ -68,7 +68,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   }
 
   try {
-    await withBranchAdminSql(this, branch, async (sql) => {
+    await withBranchAdminSql(this, target, async (sql) => {
       const statusRows = await executeQuery<{ installed: boolean; preloaded: boolean }>(
         sql,
         getPgStatStatementsStatus.fn()

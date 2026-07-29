@@ -3,8 +3,7 @@ import type { LocalContext } from '~/context';
 import { DEFAULT_MIGRATIONS_DIRECTORY } from '~/lib/constants';
 import { getPgRoll } from '~/lib/pgroll/binary';
 import { checkMigrationsDirectory } from './migrate';
-import invariant from 'tiny-invariant';
-import { buildConnectionString } from '@xata.io/sql';
+import { buildCredentialsConnectionString, fetchBranchCredentials } from '@xata.io/sql';
 import { mapTypeToConnectionSuffix, validateBranchStatusForUrl } from '../branch/url';
 
 type Flags = {
@@ -32,24 +31,35 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     return;
   }
 
+  const credentials = await fetchBranchCredentials(this.api, {
+    organizationID: organizationId,
+    projectID: projectId,
+    branchID: branchId
+  });
+
   let latestSchema = '';
   try {
     const binary = await getPgRoll(this);
-    invariant(branch.connectionString, 'Branch should have a connection string at this point.');
-    const connectionString = buildConnectionString(branch.connectionString);
 
     // TODO(roll-url): do we need to support latest schema from remote case?
-    const r = Bun.spawnSync([binary, 'latest', 'schema', '--postgres-url', connectionString, '--local', targetDir]);
+    const r = Bun.spawnSync([
+      binary,
+      'latest',
+      'schema',
+      '--postgres-url',
+      buildCredentialsConnectionString(credentials),
+      '--local',
+      targetDir
+    ]);
     latestSchema = r.stdout.toString().trim();
   } catch (e) {
     console.error(e);
   }
 
   const database = await this.getDatabase(this, flags);
-  invariant(branch.connectionString, 'Branch should have a connection string at this point.');
 
   const endpointType = mapTypeToConnectionSuffix(flags.type);
-  const connectionString = buildConnectionString(branch.connectionString, {
+  const connectionString = buildCredentialsConnectionString(credentials, {
     database,
     searchPath: latestSchema,
     endpointType

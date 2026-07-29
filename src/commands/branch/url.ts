@@ -1,10 +1,9 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
-import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
 import type { Types } from '@xata.io/api';
-import { buildConnectionString } from '@xata.io/sql';
+import { fetchBranchConnectionString } from '@xata.io/sql';
 
 type Flags = {
   organization?: string;
@@ -57,13 +56,13 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   }
 
   const database = await this.getDatabase(this, flags);
-  invariant(branch.connectionString, 'Branch should have a connection string at this point.');
 
   const endpointType = mapTypeToConnectionSuffix(flags.type);
-  const connectionString = buildConnectionString(branch.connectionString, {
-    database,
-    endpointType
-  });
+  const connectionString = await fetchBranchConnectionString(
+    this.api,
+    { organizationID: organizationId, projectID: projectId, branchID: branchId },
+    { database, endpointType }
+  );
   if (flags.type === 'replica' && (!branch.configuration?.replicas || branch.configuration.replicas === 0)) {
     this.process.stderr.write(
       `Warning: Using read-only endpoint but the branch has no replicas. This endpoint will only work if the branch has 1 or more replicas.\n\n`

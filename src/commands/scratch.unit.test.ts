@@ -26,25 +26,26 @@ function buildContext() {
     id: 'scratch-branch-id',
     name: body.name,
     createdAt: '2026-06-09T00:00:00.000Z',
-    parentID: 'source-branch-id',
-    connectionString: 'postgresql://user:pass@localhost:5432/postgres' as string | null
+    parentID: 'source-branch-id'
   }));
   const deleteBranch = mock(async () => ({}));
   const listBranches = mock(async (): Promise<{ branches: { id: string; name: string }[] }> => ({ branches: [] }));
-  const describeBranch = mock(async () => ({
-    id: 'scratch-branch-id',
-    name: 'scratch-branch',
-    connectionString: 'postgresql://user:pass@localhost:5432/postgres' as string | null,
-    status: { statusType: 'STATUS_TYPE_HEALTHY', status: 'healthy' }
+  const getBranchCredentials = mock(async () => ({
+    username: 'user',
+    password: 'pass',
+    hostname: 'localhost',
+    port: 5432,
+    dbname: 'xata',
+    connectionString: 'postgresql://user:pass@localhost/xata'
   }));
 
   const context = {
     api: {
       branches: {
         createBranch,
-        describeBranch,
         deleteBranch,
-        listBranches
+        listBranches,
+        getBranchCredentials
       }
     },
     process: {
@@ -67,7 +68,18 @@ function buildContext() {
     postgres: mock(() => ({ unsafe, end }))
   } as unknown as LocalContext;
 
-  return { context, stdout, stderr, createBranch, deleteBranch, listBranches, describeBranch, unsafe, end, exit };
+  return {
+    context,
+    stdout,
+    stderr,
+    createBranch,
+    deleteBranch,
+    listBranches,
+    getBranchCredentials,
+    unsafe,
+    end,
+    exit
+  };
 }
 
 describe('scratch command', () => {
@@ -95,26 +107,13 @@ describe('scratch command', () => {
     expect(stderr.join('')).toContain('Deleted scratch branch scratch-');
   });
 
-  test('retries describing the scratch branch when create does not return a connection string', async () => {
-    const { context, createBranch, describeBranch, unsafe } = buildContext();
-    createBranch.mockImplementationOnce(async ({ body }: { body: { name: string } }) => ({
-      id: 'scratch-branch-id',
-      name: body.name,
-      createdAt: '2026-06-09T00:00:00.000Z',
-      parentID: 'source-branch-id',
-      connectionString: null
-    }));
-    describeBranch.mockImplementationOnce(async () => ({
-      id: 'scratch-branch-id',
-      name: 'scratch-branch',
-      connectionString: null,
-      status: { statusType: 'STATUS_TYPE_HEALTHY', status: 'healthy' }
-    }));
+  test('reads the credentials of the branch it just created', async () => {
+    const { context, getBranchCredentials, unsafe } = buildContext();
 
     await implementation.call(context, { execute: 'select 1', json: false });
 
-    expect(describeBranch).toHaveBeenCalledTimes(2);
-    expect(describeBranch).toHaveBeenCalledWith({
+    expect(getBranchCredentials).toHaveBeenCalledTimes(1);
+    expect(getBranchCredentials).toHaveBeenCalledWith({
       pathParams: { organizationID: 'org-id', projectID: 'project-id', branchID: 'scratch-branch-id' }
     });
     expect(unsafe).toHaveBeenCalledWith('select 1');

@@ -1,5 +1,5 @@
 import type { Definition } from '@xata.io/pgroll';
-import { buildConnectionString } from '@xata.io/sql';
+import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import dedent from 'dedent';
 import type { LocalContext } from '~/context';
@@ -8,7 +8,6 @@ import { branchConfig } from '../branch-config';
 import { isCLIConfigInitialized } from '../cli-config';
 import { projectConfig } from '../project-config';
 import { getPgRoll } from './binary';
-import invariant from 'tiny-invariant';
 
 export type PgRollCommands = (typeof Definition.commands)[number]['name'];
 export type PgRollSubCommands<Command extends PgRollCommands> = CommandDetails<Command>['subcommands'][number]['name'];
@@ -50,16 +49,16 @@ export async function runPgRoll<Command extends PgRollCommands>(
   const binary = await getPgRoll(context);
 
   if (isCLIConfigInitialized(context)) {
-    const branch = await context.api.branches.describeBranch({
-      pathParams: {
+    const databaseName = branchConfig.databaseName;
+    const connectionString = await fetchBranchConnectionString(
+      context.api,
+      {
         organizationID: projectConfig.organizationId,
         projectID: projectConfig.projectId,
         branchID: branchConfig.branchId
-      }
-    });
-    const databaseName = branchConfig.databaseName;
-    invariant(branch.connectionString, 'Branch should have a connection string at this point.');
-    const connectionString = buildConnectionString(branch.connectionString, { database: databaseName });
+      },
+      { database: databaseName }
+    );
     const safeConnectionString = buildConnectionString(connectionString, { mask: true });
     Bun.env.PGROLL_PG_URL = connectionString;
     if (context.debug) {

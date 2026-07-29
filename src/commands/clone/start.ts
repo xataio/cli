@@ -1,5 +1,5 @@
 import { buildCommand } from '@stricli/core';
-import { buildConnectionString } from '@xata.io/sql';
+import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import dedent from 'dedent';
 import invariant from 'tiny-invariant';
@@ -112,16 +112,16 @@ export async function implementation(
   }
 
   if (isCLIConfigInitialized(this)) {
-    const branch = await this.api.branches.describeBranch({
-      pathParams: {
+    const databaseName = branchConfig.databaseName;
+    const connectionString = await fetchBranchConnectionString(
+      this.api,
+      {
         organizationID: projectConfig.organizationId,
         projectID: projectConfig.projectId,
         branchID: branchConfig.branchId
-      }
-    });
-    const databaseName = branchConfig.databaseName;
-    invariant(branch.connectionString, 'Branch should have a connection string at this point.');
-    const connectionString = buildConnectionString(branch.connectionString, { database: databaseName });
+      },
+      { database: databaseName }
+    );
     const connectionStringWithPgrollInternalGUC = buildConnectionString(connectionString, { pgrollInternalGUC: true });
     const safeConnectionString = buildConnectionString(connectionString, { mask: true });
 

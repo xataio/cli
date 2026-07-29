@@ -8,7 +8,7 @@ import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { getConfigDir } from '../config';
 import { downloadToFile } from '../download';
-import invariant from 'tiny-invariant';
+import { fetchBranchCredentials } from '@xata.io/sql';
 
 const CONFIG_DIR = getConfigDir();
 const BIN_DIR = join(CONFIG_DIR, 'bin');
@@ -156,8 +156,12 @@ export async function checkBranchIsReachable(
     if (timeout === 0) {
       return;
     }
-    invariant(branch.connectionString, 'Branch should have a connection string at this point.');
-    const reachable = await isReachable(branch.connectionString, {
+    const { hostname, port } = await fetchBranchCredentials(context.api, {
+      organizationID: organizationId,
+      projectID: projectId,
+      branchID: branchId
+    });
+    const reachable = await isReachable(`${hostname}:${port}`, {
       signal: AbortSignal.timeout(timeout)
     });
     if (!reachable) {
