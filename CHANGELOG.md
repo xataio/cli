@@ -1,5 +1,15 @@
 # xata-cli
 
+## 1.4.19
+
+### Patch Changes
+
+- Updated dependencies [[`fd5e19d`](https://github.com/xataio/frontend/commit/fd5e19dfaa8ca7f1f1e1e625bf9b8e0d159eca97)]:
+  - @xata.io/api@0.1.4
+  - @xata.io/sql@0.1.7
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.4
+
 ## 1.4.18
 
 ### Patch Changes
