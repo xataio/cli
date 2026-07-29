@@ -1,5 +1,18 @@
 # xata-cli
 
+## 1.5.0
+
+### Minor Changes
+
+- [#2792](https://github.com/xataio/frontend/pull/2792) [`02654e8`](https://github.com/xataio/frontend/commit/02654e8a64eb45b4260cb6ed0d8967e9508677d2) Thanks [@SferaDev](https://github.com/SferaDev)! - Read branch connection strings from the credentials endpoint instead of the deprecated `connectionString` field on branch metadata. API keys used with the CLI now need the `credentials:read` scope.
+
+### Patch Changes
+
+- Updated dependencies [[`02654e8`](https://github.com/xataio/frontend/commit/02654e8a64eb45b4260cb6ed0d8967e9508677d2)]:
+  - @xata.io/sql@0.2.0
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.5
+
 ## 1.4.19
 
 ### Patch Changes
