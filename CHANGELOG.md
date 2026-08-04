@@ -1,5 +1,17 @@
 # xata-cli
 
+## 1.5.2
+
+### Patch Changes
+
+- [#2846](https://github.com/xataio/frontend/pull/2846) [`ed96a25`](https://github.com/xataio/frontend/commit/ed96a2584a9871b66975b2d5e478b549f1eab078) Thanks [@kvch](https://github.com/kvch)! - bump pgstream to v1.3.1
+
+- Updated dependencies [[`7f970ee`](https://github.com/xataio/frontend/commit/7f970ee80f9cb03f4b3453611ffeb18f73e49040), [`43b330b`](https://github.com/xataio/frontend/commit/43b330b14aec26f550403f31f44fc6523a1e4613)]:
+  - @xata.io/sql@0.2.2
+  - @xata.io/api@0.1.6
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.7
+
 ## 1.5.1
 
 ### Patch Changes
