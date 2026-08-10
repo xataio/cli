@@ -384,13 +384,14 @@ export const BranchSetCommand = buildCommand({
       kind: 'tuple',
       parameters: [
         {
-          brief: 'The field to set',
+          brief:
+            'The field to set: name, replicas, instance-type, storage, hibernate, scale-to-zero, inactivity-period or postgres-version',
           parse: String,
           placeholder: 'field',
           default: '.catalog'
         },
         {
-          brief: 'The value to set',
+          brief: 'The value to set. Prompted for when omitted in an interactive terminal',
           parse: String,
           placeholder: 'value',
           optional: true

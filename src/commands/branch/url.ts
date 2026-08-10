@@ -106,7 +106,7 @@ export const BranchURLCommand = buildCommand({
         kind: 'enum',
         values: ['primary', 'primary-or-replica', 'replica', 'pooler'],
         brief:
-          'Connection type: primary (direct access to the primary), primary-or-replica (routed access to primary or replicas), replica (read-only access to replicas only), pooler (pooled access to the primary)',
+          'Connection type: primary (direct access to the primary), primary-or-replica (routed access to primary or replicas), replica (read-only access to replicas only, requires at least one replica), pooler (pooled access to the primary, recommended for serverless and high-concurrency workloads)',
         default: 'primary'
       }
     },

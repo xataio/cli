@@ -406,7 +406,7 @@ export const BranchLogsCommand = buildCommand({
       },
       follow: {
         kind: 'boolean',
-        brief: 'Poll for new logs continuously',
+        brief: 'Poll for new logs continuously. Cannot be combined with --output json',
         default: false
       },
       output: {

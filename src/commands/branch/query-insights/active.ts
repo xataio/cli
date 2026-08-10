@@ -113,7 +113,7 @@ export const QueryInsightsActiveCommand = buildCommand({
       },
       watch: {
         kind: 'parsed',
-        brief: 'Refresh interval in seconds',
+        brief: 'Refresh interval in seconds. Cannot be combined with --json',
         parse: Number,
         optional: true
       },
