@@ -1,5 +1,18 @@
 # xata-cli
 
+## 1.5.4
+
+### Patch Changes
+
+- [#2874](https://github.com/xataio/frontend/pull/2874) [`81a100d`](https://github.com/xataio/frontend/commit/81a100d389a654e6522c2e72a7e9ce74120d4d12) Thanks [@SferaDev](https://github.com/SferaDev)! - [API]: Validate XataApi options ([#2874](https://github.com/xataio/frontend/issues/2874))
+
+- Updated dependencies [[`137660b`](https://github.com/xataio/frontend/commit/137660be905a061fef574db2e266de753988f1c7), [`dbb03c4`](https://github.com/xataio/frontend/commit/dbb03c4f5f856afd4e08450a8bebee4363fad733), [`d102803`](https://github.com/xataio/frontend/commit/d102803c1eb3eb10f38f57935f2eeb57066a8a74), [`81a100d`](https://github.com/xataio/frontend/commit/81a100d389a654e6522c2e72a7e9ce74120d4d12)]:
+  - @xata.io/pgstream@0.2.3
+  - @xata.io/api@0.1.8
+  - @xata.io/sql@0.2.4
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.9
+
 ## 1.5.3
 
 ### Patch Changes
