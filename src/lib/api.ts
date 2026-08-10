@@ -36,7 +36,7 @@ export async function getApi({
     return new XataApi({ ...options, xataAgent });
   } catch (e) {
     console.error(e);
-    return new XataApi({ baseUrl: '', token: null, xataAgent });
+    return new XataApi({ token: null, xataAgent });
   }
 }
 
@@ -55,7 +55,7 @@ export function getAuthConfig(customConfig?: CustomConfig) {
 function getApiOptions(profile: string): ApiOptions {
   // Not logged in, return a dummy client that will fail on any API request
   if (!config?.profiles?.[profile]) {
-    return new XataApi({ baseUrl: '', token: null });
+    return { token: null };
   }
 
   const profileData = config.profiles[profile];
