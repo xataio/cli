@@ -1,5 +1,13 @@
 # xata-cli
 
+## 1.5.5
+
+### Patch Changes
+
+- [#2894](https://github.com/xataio/frontend/pull/2894) [`004a83c`](https://github.com/xataio/frontend/commit/004a83cdbc7f4cc0b57e9918ed2b1a59c322de05) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Describe accepted values and flag conflicts in `--help`
+
+- [#2887](https://github.com/xataio/frontend/pull/2887) [`e2953b9`](https://github.com/xataio/frontend/commit/e2953b903e8ac75d8d1029f3400721d0f5686289) Thanks [@divyenduz](https://github.com/divyenduz)! - Allow `xata clone start` and `xata clone stream` to target a database other than the checked-out database with `--database`.
+
 ## 1.5.4
 
 ### Patch Changes
