@@ -17,6 +17,7 @@ import { VersionCommand } from './commands/version';
 import { OnboardCommand } from './commands/onboard';
 import { ScratchCommand } from './commands/scratch';
 import { CLI_NAME } from './lib/constants';
+import { addGlobalFlags } from './lib/global-flags';
 import { getCLIVersion, getLatestVersion } from './lib/updates';
 import { AiRoute } from './commands/ai';
 
@@ -57,7 +58,7 @@ const routes = buildRouteMap({
   }
 });
 
-export const app = buildApplication(routes, {
+export const app = buildApplication(addGlobalFlags(routes), {
   name: CLI_NAME,
   versionInfo: {
     currentVersion: getCLIVersion(),

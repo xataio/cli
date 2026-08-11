@@ -12,13 +12,17 @@ import {
   DEFAULT_API_ISSUER
 } from './constants';
 
-export async function getApi({
-  canonicalName,
-  cliInvocationId
-}: {
+export type ApiOptionsFromCommand = {
   canonicalName?: string;
   cliInvocationId?: string;
-} = {}): Promise<XataApi> {
+  profile?: string;
+};
+
+export async function getApi({
+  canonicalName,
+  cliInvocationId,
+  profile: profileFlag
+}: ApiOptionsFromCommand = {}): Promise<XataApi> {
   const agent = await determineAgent();
   const xataAgent: Record<string, string | undefined> = {
     service: 'cli',
@@ -30,7 +34,7 @@ export async function getApi({
   };
 
   try {
-    const profile = getProfile({});
+    const profile = getProfile({ profileFlag });
     const options = getApiOptions(profile);
 
     return new XataApi({ ...options, xataAgent });

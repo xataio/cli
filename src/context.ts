@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import postgres from 'postgres';
-import { getApi } from './lib/api';
+import { type ApiOptionsFromCommand, getApi } from './lib/api';
 import {
   getBranch,
   getCheckedOutBranch,
@@ -58,16 +58,14 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
   postgres: (connectionString: string) => postgres.Sql;
 }
 
-type BuildContextOptions = {
-  canonicalName?: string;
-  cliInvocationId?: string;
-};
-
 export function getIsInteractive(process: NodeJS.Process, { isCI, isAgent }: { isCI: boolean; isAgent: boolean }) {
   return process.stdin.isTTY === true && process.stdout.isTTY === true && !(isCI || isAgent);
 }
 
-export async function buildContext(process: NodeJS.Process, options: BuildContextOptions = {}): Promise<LocalContext> {
+export async function buildContext(
+  process: NodeJS.Process,
+  options: ApiOptionsFromCommand = {}
+): Promise<LocalContext> {
   const debug = Boolean(Bun.env.DEBUG);
   const usingEnvApiKey = Boolean(env.XATA_API_KEY);
   const xata = await getApi(options);
