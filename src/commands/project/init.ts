@@ -1,13 +1,13 @@
 import { buildCommand } from '@stricli/core';
 import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
-import dedent from 'dedent';
 import type { LocalContext } from '~/context';
 import { getErrorMessage } from '~/lib/cli-utils';
 import { updateBranchConfig } from '~/lib/branch-config';
 import { isCLIConfigInitialized } from '~/lib/cli-config';
 import { CLI_NAME } from '~/lib/constants';
-import { getProjectConfigDir, getProjectConfigPath, updateProjectConfig } from '~/lib/project-config';
+import { getLocalConfigDir } from '~/lib/config-dir';
+import { getProjectConfigPath, updateProjectConfig } from '~/lib/project-config';
 
 async function checkDatabaseExists(
   context: LocalContext,
@@ -117,17 +117,9 @@ export async function implementation(this: LocalContext, flags: Flags) {
     databaseName
   });
 
-  const dotGitIgnore = dedent`
-    project.json
-    branch.json
-  `;
-  this.fs.writeFileSync(this.path.join(getProjectConfigDir(), '.gitignore'), dotGitIgnore);
-
   if (!flags.json) {
     this.process.stdout.write(
-      chalk.green(
-        `Wrote project.json and branch.json to ${getProjectConfigDir()}. The following details were written\n`
-      )
+      chalk.green(`Wrote project.json and branch.json to ${getLocalConfigDir()}. The following details were written\n`)
     );
   }
 

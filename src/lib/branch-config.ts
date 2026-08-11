@@ -1,10 +1,10 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfigSync } from 'zod-config';
 import { envAdapter } from 'zod-config/env-adapter';
 import { jsonAdapter } from 'zod-config/json-adapter';
-import { CLI_NAME } from '~/lib/constants';
-import { env, loadEnvConfig } from './env';
+import { ensureLocalConfigDir, getLocalConfigDir } from './config-dir';
+import { loadEnvConfig } from './env';
 import { type BranchConfig, BranchConfigSchema } from './schemas';
 
 export const branchConfig = loadConfigSync({
@@ -25,7 +25,7 @@ export async function updateBranchConfig(newConfig: BranchConfig) {
   }
 
   try {
-    await mkdir(getBranchConfigDir(), { recursive: true });
+    await ensureLocalConfigDir();
     await writeFile(getBranchConfigPath(), JSON.stringify(newConfig, null, 2));
   } catch (error: any) {
     throw new Error(`Failed to update config file: ${error.message}`);
@@ -33,13 +33,5 @@ export async function updateBranchConfig(newConfig: BranchConfig) {
 }
 
 export function getBranchConfigPath() {
-  return path.resolve(getBranchConfigDir(), 'branch.json');
-}
-
-export function getBranchConfigDir() {
-  return path.resolve(env.XATA_CONFIG_DIR || getDefaultConfigDir(), `.${CLI_NAME}`);
-}
-
-function getDefaultConfigDir() {
-  return process.cwd();
+  return path.resolve(getLocalConfigDir(), 'branch.json');
 }
