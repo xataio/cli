@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import dedent from 'dedent';
 import { chmodSync, existsSync, mkdirSync } from 'node:fs';
-import isReachable from 'is-reachable';
+import { Socket } from 'node:net';
 import os from 'node:os';
 import { join } from 'node:path';
 import { match } from 'ts-pattern';
@@ -161,22 +161,39 @@ export async function checkBranchIsReachable(
       projectID: projectId,
       branchID: branchId
     });
-    const reachable = await isReachable(`${hostname}:${port}`, {
-      signal: AbortSignal.timeout(timeout)
-    });
+    const reachable = await isPortReachable(hostname, port, timeout);
     if (!reachable) {
       context.process.stderr.write(
         chalk.bold.red(
           dedent(`Private networking only: This branch does not have public internet access.
           Please make sure you are running this command from a machine within the same VPC as the branch.
-          
+
           Timeout is set to ${context.env.XATA_PRIVATE_BRANCH_TIMEOUT}ms.
           Please set XATA_PRIVATE_BRANCH_TIMEOUT=0 to disable this check.
           `)
         )
       );
+      context.process.exit(1);
     }
-    // TODO(is-reachable): ideally this would be a throw new Error. But isReachable is hanging after returning.
-    context.process.exit(1);
   }
+}
+
+/**
+ * Answers whether a TCP port accepts a connection within `timeout` ms. The socket is destroyed
+ * rather than ended on every path: a half-close lingers until the peer closes back, which would
+ * hold the process open after the command is done.
+ */
+export function isPortReachable(host: string, port: number, timeout: number) {
+  return new Promise<boolean>((resolve) => {
+    const socket = new Socket();
+    const settle = (reachable: boolean) => {
+      socket.destroy();
+      resolve(reachable);
+    };
+
+    socket.setTimeout(timeout);
+    socket.once('error', () => settle(false));
+    socket.once('timeout', () => settle(false));
+    socket.connect(port, host, () => settle(true));
+  });
 }
