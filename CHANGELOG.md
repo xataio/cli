@@ -1,5 +1,17 @@
 # xata-cli
 
+## 1.5.6
+
+### Patch Changes
+
+- [#2895](https://github.com/xataio/frontend/pull/2895) [`f8c7de3`](https://github.com/xataio/frontend/commit/f8c7de3e60edd9e22df42d1b6b9a2e675ea844ac) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Honour `--profile` on commands that talk to the API
+
+- [#2896](https://github.com/xataio/frontend/pull/2896) [`7caee52`](https://github.com/xataio/frontend/commit/7caee528162e4cd99f8079b4a2b8d9f068cc753b) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Move the reference prose into the command definitions
+
+- [#2898](https://github.com/xataio/frontend/pull/2898) [`960149a`](https://github.com/xataio/frontend/commit/960149a7bb59a4ccdd7442b0b65df423c4f8a0c9) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Run roll and clone against a reachable private branch instead of exiting 1
+
+- [#2899](https://github.com/xataio/frontend/pull/2899) [`9418918`](https://github.com/xataio/frontend/commit/9418918b6704c9c0bfbd8225cccf6375f92e7d95) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Ignore the project and branch config a checkout writes, not just the one init writes
+
 ## 1.5.5
 
 ### Patch Changes
