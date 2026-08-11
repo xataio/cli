@@ -89,7 +89,10 @@ function formatAge(start: Date | string) {
 
 export const QueryInsightsActiveCommand = buildCommand({
   docs: {
-    brief: 'List currently running queries for a branch'
+    brief: 'List currently running queries for a branch',
+    fullDescription:
+      'Reads `pg_stat_activity`, so it works without `pg_stat_statements` being loaded. The columns are PID, Age, State, Wait, DB, User, Client and Query.',
+    customUsage: [{ input: 'my-branch --watch 5', brief: 'What is running right now, refreshed every 5 seconds' }]
   },
   parameters: {
     flags: {

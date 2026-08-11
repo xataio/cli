@@ -83,7 +83,7 @@ export const RollUpdateCommand = buildCommand({
       parameters: [
         {
           brief: 'The directory that contains the migrations',
-          placeholder: 'folder to migrate',
+          placeholder: 'folder',
           parse: String,
           default: DEFAULT_MIGRATIONS_DIRECTORY
         }

@@ -336,7 +336,24 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const BranchLogsCommand = buildCommand({
   docs: {
-    brief: 'Retrieve logs for a branch'
+    brief: 'Retrieve the PostgreSQL logs of a branch',
+    fullDescription:
+      'Reads the logs of every instance of the branch, the primary and any replicas, which is where slow queries, connection issues and replication problems show up. Requires the `logs:read` scope on the API key. Of the output formats, `raw` prints `<timestamp> [<level> <instanceID> <process>] <message>` per line, `json` a single array, `ndjson` one object per line for streaming into another process, and `csv` the columns `timestamp,level,instanceID,process,message`. Follow mode polls every 2 seconds with a 5 second overlap and de-duplicates entries. Logs can contain connection strings and other credentials.',
+    customUsage: [
+      { input: 'my-branch --level error --start 15m', brief: 'Errors from the last 15 minutes' },
+      {
+        input: `my-branch -f --output ndjson | jq -r 'select(.level=="error") | .message'`,
+        brief: 'Follow errors and pull out the message text'
+      },
+      {
+        input: `my-branch --output raw | rg 'timeout|deadlock'`,
+        brief: 'Regex search, which --search does not do, by piping raw output'
+      },
+      {
+        input: 'my-branch --process postgres --instance <replica-id> --output csv > logs.csv',
+        brief: "Export one replica's Postgres process logs to a file"
+      }
+    ]
   },
   parameters: {
     flags: {

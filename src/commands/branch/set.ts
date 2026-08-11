@@ -352,7 +352,14 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
 
 export const BranchSetCommand = buildCommand({
   docs: {
-    brief: 'Set a field value for a branch'
+    brief: 'Set a field value for a branch',
+    fullDescription:
+      'The `postgres-version` field upgrades PostgreSQL, and only accepts compatible upgrades within the same major version and offering type.',
+    customUsage: [
+      { input: 'replicas 2 my-branch', brief: 'Set a field non-interactively' },
+      { input: 'postgres-version', brief: 'Select the target version interactively' },
+      { input: 'postgres-version postgres:17.7', brief: 'Upgrade to a specific PostgreSQL version' }
+    ]
   },
   parameters: {
     flags: {

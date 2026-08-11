@@ -74,7 +74,14 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const BranchURLCommand = buildCommand({
   docs: {
-    brief: 'Print URL (connection string) for a branch'
+    brief: 'Print URL (connection string) for a branch',
+    fullDescription:
+      'Reads the connection details from the credentials endpoint, so an API key needs the `credentials:read` scope.',
+    customUsage: [
+      { input: 'main', brief: 'Print the primary connection string' },
+      { input: 'main --type pooler', brief: 'Pooled connection string, for serverless workloads' },
+      { input: 'main --type replica', brief: 'Read-only connection string that targets replicas' }
+    ]
   },
   parameters: {
     flags: {

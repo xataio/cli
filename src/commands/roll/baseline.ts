@@ -72,14 +72,14 @@ export const RollBaselineCommand = buildCommand({
       // @ts-expect-error fix types
       parameters: [
         {
-          brief: 'Name of the migration',
-          placeholder: 'The version name for the baseline (e.g., "01_initial_schema")',
+          brief: 'Version name for the baseline, for example 01_initial_schema',
+          placeholder: 'version',
           parse: String,
           default: ''
         },
         {
           brief: 'The directory that contains the migrations',
-          placeholder: 'folder to migrate',
+          placeholder: 'folder',
           parse: String,
           default: DEFAULT_MIGRATIONS_DIRECTORY
         }

@@ -401,7 +401,17 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const BranchCreateCommand = buildCommand({
   docs: {
-    brief: 'Create a new branch'
+    brief: 'Create a new branch',
+    fullDescription:
+      'A branch is a running Postgres database that starts as a copy of its parent. It takes a moment to come up, so `xata branch wait-ready` is what to run before connecting to it. Creating a branch in a folder linked to a project also checks it out.',
+    customUsage: [
+      { input: '--name my-branch', brief: 'Branch the current branch' },
+      { input: '--name my-branch --parent-branch <branch-id>', brief: 'Branch another branch' },
+      {
+        input: '--name my-branch --instance-type <type> --replicas 1 --scale-to-zero true',
+        brief: 'Size the branch and let it scale to zero'
+      }
+    ]
   },
   parameters: {
     flags: {
@@ -431,25 +441,25 @@ export const BranchCreateCommand = buildCommand({
       },
       'instance-type': {
         kind: 'parsed',
-        brief: 'Please select the type of instance for this branch',
+        brief: 'Instance type for the branch',
         parse: String,
         optional: true
       },
       replicas: {
         kind: 'parsed',
         parse: String,
-        brief: 'Please select number of replicas for the branch',
+        brief: 'Number of read replicas for the branch',
         optional: true
       },
       region: {
         kind: 'parsed',
-        brief: 'Please select a region for the branch',
+        brief: 'Region to create the branch in',
         parse: String,
         optional: true
       },
       'postgres-version': {
         kind: 'parsed',
-        brief: 'Please select the PostgreSQL version for this branch',
+        brief: 'PostgreSQL version for the branch',
         parse: String,
         optional: true
       },

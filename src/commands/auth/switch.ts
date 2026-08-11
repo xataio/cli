@@ -1,6 +1,6 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
-import { CLI_NAME } from '~/lib/constants';
+import { PRODUCT_NAME } from '~/lib/constants';
 import { config, updateConfig } from '../../lib/config';
 import { getActiveProfile } from '../../lib/profile';
 
@@ -44,7 +44,7 @@ export async function implementation(this: LocalContext, {}: Flags, profile?: st
 
 export const AuthSwitchCommand = buildCommand({
   docs: {
-    brief: `Switch to a different ${CLI_NAME} account profile`
+    brief: `Switch to a different ${PRODUCT_NAME} account profile`
   },
   parameters: {
     positional: {

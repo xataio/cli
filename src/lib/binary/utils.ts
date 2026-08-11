@@ -179,6 +179,17 @@ export async function checkBranchIsReachable(
 }
 
 /**
+ * pgroll and pgstream describe their flags in lower case and write placeholders
+ * bare, the CLI writes them capitalized and as code.
+ */
+export function toBrief(description: string) {
+  // `<schema>.<table>` reads as one placeholder, not as two
+  const text = description.replace(/(?<!`)(<[^<>\s]+>(?:[.:/-]?<[^<>\s]+>)*)(?!`)/g, '`$1`');
+
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
  * Answers whether a TCP port accepts a connection within `timeout` ms. The socket is destroyed
  * rather than ended on every path: a half-close lingers until the peer closes back, which would
  * hold the process open after the command is done.

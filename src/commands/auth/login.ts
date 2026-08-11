@@ -5,7 +5,7 @@ import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { getAuthConfig } from '~/lib/api';
 import { config, updateConfig } from '~/lib/config';
-import { CLI_NAME } from '~/lib/constants';
+import { PRODUCT_NAME } from '~/lib/constants';
 import { DEFAULT_PROFILE } from '~/lib/profile';
 
 type Flags = {
@@ -111,7 +111,14 @@ async function loginWithApiKey(
 
 export const AuthLoginCommand = buildCommand({
   docs: {
-    brief: `Log in to a ${CLI_NAME} account`
+    brief: `Log in to a ${PRODUCT_NAME} account`,
+    fullDescription:
+      'Opens the device flow in a browser, or stores an API key with --api-key for non-interactive use. The issuer, API URL and client flags point the CLI at a deployment other than production, which is what Enterprise customers running their own cloud need.',
+    customUsage: [
+      { input: '--api-key xau_...', brief: 'Log in from a script or CI' },
+      { input: '--profile staging', brief: 'Log in as another profile' },
+      { input: '--profile staging --api-url https://api.staging.example.com', brief: 'Log in to another deployment' }
+    ]
   },
   parameters: {
     flags: {

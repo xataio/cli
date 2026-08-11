@@ -5,14 +5,12 @@ import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream }
 import {
   type CommandFlags,
   convertGlobalFlagsToRuntimeFlags,
-  getCommandDefinition,
   getCommandFlags,
   type GlobalFlags
 } from '~/lib/pgstream/stream-utils';
 
 const COMMAND = 'destroy';
 type CommandType = 'destroy';
-const commandDefinition = getCommandDefinition(COMMAND);
 const commandFlags = getCommandFlags(COMMAND);
 
 type Flags = {
@@ -66,7 +64,9 @@ export async function implementation(
 
 export const StreamDestroyCommand = buildCommand({
   docs: {
-    brief: commandDefinition?.short || '??'
+    brief: 'Remove the pgstream setup from a source database',
+    fullDescription:
+      'Drops the replication slot along with the tables, functions and triggers pgstream created, and the pgstream schema itself.'
   },
   parameters: {
     // @ts-expect-error fix types

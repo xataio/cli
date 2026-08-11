@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { match } from 'ts-pattern';
-import { CLI_NAME } from '~/lib/constants';
+import { CLI_NAME, PRODUCT_NAME } from '~/lib/constants';
 import { downloadToBuffer } from '~/lib/download';
 import { BUCKET_NAME, CLI_PATH } from '~/lib/updates';
 import { getPgRoll } from '~/lib/pgroll/binary';
@@ -100,7 +100,11 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const UpgradeCommand = buildCommand({
   docs: {
-    brief: `Upgrade the ${CLI_NAME} CLI`
+    brief: `Upgrade the ${PRODUCT_NAME} CLI`,
+    customUsage: [
+      { input: '--version 1.5.4', brief: 'Move to a specific version' },
+      { input: '--channel next', brief: 'Follow the pre-release channel' }
+    ]
   },
   parameters: {
     flags: {

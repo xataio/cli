@@ -218,7 +218,10 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
 
 export const ProjectSetCommand = buildCommand({
   docs: {
-    brief: 'Set a field value for a project'
+    brief: 'Set a field value for a project',
+    fullDescription:
+      'The fields are name, scale-to-zero-base, scale-to-zero-child, inactivity-period-base and inactivity-period-child. The scale to zero and inactivity fields are the defaults new branches inherit, base for branches without a parent and child for the rest. Run it without a field to list them.',
+    customUsage: [{ input: 'scale-to-zero-child true', brief: 'Let new child branches scale to zero' }]
   },
   parameters: {
     flags: {

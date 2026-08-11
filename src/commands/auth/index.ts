@@ -1,5 +1,5 @@
 import { buildRouteMap } from '@stricli/core';
-import { CLI_NAME } from '~/lib/constants';
+import { PRODUCT_NAME } from '~/lib/constants';
 import { AuthAccessTokenCommand } from './access-token';
 import { AuthListCommand } from './list';
 import { AuthLoginCommand } from './login';
@@ -10,7 +10,9 @@ import { AuthSwitchCommand } from './switch';
 
 export const AuthRoute = buildRouteMap({
   docs: {
-    brief: `Authenticate with ${CLI_NAME}`
+    brief: `Authenticate with ${PRODUCT_NAME}`,
+    fullDescription:
+      'Sessions are stored as profiles, so several accounts and environments can be used side by side. Commands run against the active profile unless `--profile` names another one.'
   },
   routes: {
     login: AuthLoginCommand,

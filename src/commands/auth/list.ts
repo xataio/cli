@@ -1,6 +1,6 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
-import { CLI_NAME } from '~/lib/constants';
+import { PRODUCT_NAME } from '~/lib/constants';
 import { config } from '../../lib/config';
 import { print, getUserInfo } from '../../lib/cli-utils';
 import { getActiveProfile } from '../../lib/profile';
@@ -49,7 +49,7 @@ export async function implementation(this: LocalContext, { json }: Flags) {
 
 export const AuthListCommand = buildCommand({
   docs: {
-    brief: `List all available ${CLI_NAME} account profiles`
+    brief: `List all available ${PRODUCT_NAME} account profiles`
   },
   parameters: {
     flags: {

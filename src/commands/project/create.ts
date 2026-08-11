@@ -139,19 +139,19 @@ export const ProjectCreateCommand = buildCommand({
       },
       'instance-type': {
         kind: 'parsed',
-        brief: 'Please select the type of instance for this branch',
+        brief: 'Instance type for the first branch',
         parse: String,
         optional: true
       },
       replicas: {
         kind: 'parsed',
         parse: String,
-        brief: 'Please select number of replicas for the branch',
+        brief: 'Number of read replicas for the first branch',
         optional: true
       },
       region: {
         kind: 'parsed',
-        brief: 'Please select a region for the branch',
+        brief: 'Region to create the project in',
         parse: String,
         optional: true
       },

@@ -68,7 +68,7 @@ export const RollPullCommand = buildCommand({
       parameters: [
         {
           brief: 'The target directory to pull migrations into',
-          placeholder: 'folder to pull migrations into',
+          placeholder: 'folder',
           parse: String,
           default: DEFAULT_MIGRATIONS_DIRECTORY
         }

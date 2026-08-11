@@ -1,3 +1,4 @@
+import { toBrief } from '~/lib/binary/utils';
 import { Definition } from '@xata.io/pgstream';
 import type { PgStreamCommands, PgStreamOptions } from '~/lib/pgstream/commands';
 
@@ -38,7 +39,7 @@ export function getCommandFlags<CommandType extends PgStreamCommands>(command: P
     commandFlags[flag.name] = {
       kind: 'parsed',
       parse: String,
-      brief: flag.description,
+      brief: toBrief(flag.description),
       /**
        * Note: we don't need to provide the default value here.
        * `pgroll` will automatically fall back to the default value
@@ -72,7 +73,7 @@ export function getGlobalFlags() {
     globalFlags[flag.name] = {
       kind: 'parsed',
       parse: String,
-      brief: flag.description,
+      brief: toBrief(flag.description),
       // Note: see comment in getCommandFlags regarding default values
       // default: flag.default
       optional: true

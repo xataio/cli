@@ -106,7 +106,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const QueryInsightsEnableCommand = buildCommand({
   docs: {
-    brief: 'Enable pg_stat_statements for query insights on a branch'
+    brief: 'Enable pg_stat_statements for query insights on a branch',
+    fullDescription:
+      'Creates the `pg_stat_statements` extension and adds it to the preloaded libraries, which needs a branch restart: wait for it with `xata branch wait-ready <branch> --wake`. Operations that rebuild a branch, such as a migration into it, can drop the extension, so run this again if query insights stop returning rows.'
   },
   parameters: {
     flags: {

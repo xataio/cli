@@ -16,6 +16,8 @@ import { RollURLCommand } from './url';
 export const RollRoute = buildRouteMap({
   docs: {
     brief: 'Run pgroll to manage PostgreSQL schema migrations',
+    fullDescription:
+      'The pgroll binary version is pinned by the CLI and can be overridden with the `XATA_PGROLL_BINARY_VERSION` environment variable.',
     hideRoute: {
       download: true,
       url: true

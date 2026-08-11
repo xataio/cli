@@ -42,7 +42,15 @@ export async function implementation(this: LocalContext, flags: Flags, queryId: 
 
 export const QueryInsightsShowCommand = buildCommand({
   docs: {
-    brief: 'Show full query statistics for a query ID'
+    brief: 'Show full query statistics for a query ID',
+    fullDescription:
+      'A query ID is not unique on its own, the same normalized statement is recorded once per database and role that ran it. When the ID matches more than one row the command exits non-zero, re-run it with `--db` and `--role`. Human output ends with the potential issues found for the query.',
+    customUsage: [
+      {
+        input: '-6744440887696913970 --db postgres --role postgres my-branch',
+        brief: 'Full detail for one query'
+      }
+    ]
   },
   parameters: {
     flags: {

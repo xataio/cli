@@ -31,7 +31,10 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const OrgKeysCreateCommand = buildCommand({
   docs: {
-    brief: 'Create a new API key'
+    brief: 'Create a new API key',
+    fullDescription:
+      'The key is printed once, when it is created. It belongs to the organization rather than to an account, which is what automation should use.',
+    customUsage: [{ input: '--name deploy', brief: 'Create a key for an organization' }]
   },
   parameters: {
     flags: {

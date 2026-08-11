@@ -222,7 +222,9 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const CloneConfigCommand = buildCommand({
   docs: {
-    brief: `Automatically configure the transforms for the clone command`
+    brief: 'Write the anonymization rules that clone start and stream apply',
+    fullDescription:
+      'Inspects the source database and writes `.xata/clone.yaml`, interactively or with AI, so the columns that carry personal data are transformed as they are copied.'
   },
   parameters: {
     flags: {

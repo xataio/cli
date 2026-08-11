@@ -13,7 +13,6 @@ import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream }
 import {
   type CommandFlags,
   convertGlobalFlagsToRuntimeFlags,
-  getCommandDefinition,
   getCommandFlags,
   type GlobalFlags
 } from '~/lib/pgstream/stream-utils';
@@ -24,7 +23,6 @@ import { getPgStreamStartEnv } from './env';
 
 const COMMAND = 'snapshot';
 type CommandType = 'snapshot';
-const commandDefinition = getCommandDefinition(COMMAND);
 const commandFlags = getCommandFlags(COMMAND);
 
 type Flags = {
@@ -164,7 +162,9 @@ export async function implementation(
 
 export const CloneStartCommand = buildCommand({
   docs: {
-    brief: commandDefinition?.short || '??'
+    brief: 'Snapshot a PostgreSQL database into a Xata branch',
+    fullDescription:
+      'Copies the source database into the branch once. The anonymization rules in `.xata/clone.yaml` are applied on the way in, and strict validation refuses to run until every table and column is covered by them.'
   },
   parameters: {
     // @ts-expect-error fix types

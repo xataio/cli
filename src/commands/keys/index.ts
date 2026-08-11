@@ -4,7 +4,9 @@ import { KeysUserRoute } from './user';
 
 export const KeysRoute = buildRouteMap({
   docs: {
-    brief: 'Manage API keys'
+    brief: 'Create, list, and delete API keys',
+    fullDescription:
+      'User keys act as the account that created them, organization keys are scoped to one organization and outlive their author, which is what automation should use.'
   },
   routes: {
     user: KeysUserRoute,

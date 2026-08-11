@@ -2,7 +2,7 @@ import { buildCommand } from '@stricli/core';
 
 import type { LocalContext } from '~/context';
 import { getCurrentVersion } from '~/lib/binary/utils';
-import { CLI_NAME } from '~/lib/constants';
+import { CLI_NAME, PRODUCT_NAME } from '~/lib/constants';
 import { getPgRoll } from '~/lib/pgroll/binary';
 import { getPgStream } from '~/lib/pgstream/binary';
 import { getCLIVersion } from '~/lib/updates';
@@ -41,7 +41,7 @@ export async function implementation(this: LocalContext, { json, 'skip-download'
 
 export const VersionCommand = buildCommand({
   docs: {
-    brief: `Get the version of the ${CLI_NAME} CLI, pgroll and pgstream`
+    brief: `Get the version of the ${PRODUCT_NAME} CLI, pgroll and pgstream`
   },
   parameters: {
     flags: {

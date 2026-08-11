@@ -1,4 +1,5 @@
 export const CLI_NAME = 'xata';
+export const PRODUCT_NAME = 'Xata';
 export const DEFAULT_API_BASE_URL = 'https://api.xata.tech';
 export const DEFAULT_API_ISSUER = 'https://auth.xata.io/realms/xata';
 export const DEFAULT_API_CLIENT_ID = 'cli';

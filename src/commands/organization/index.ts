@@ -9,7 +9,9 @@ import { OrganizationMembersRoute } from './members';
 
 export const OrganizationRoute = buildRouteMap({
   docs: {
-    brief: 'Create, list, and manage organizations'
+    brief: 'Create, list, and manage organizations',
+    fullDescription:
+      'An organization owns projects and their billing, and the people who can reach them. Members belong to it, invitations bring them in.'
   },
   routes: {
     list: OrganizationListCommand,

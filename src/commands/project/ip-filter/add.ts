@@ -82,7 +82,11 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
 
 export const IpFilterAddCommand = buildCommand({
   docs: {
-    brief: 'Add a CIDR entry to the IP filter allow list'
+    brief: 'Add a CIDR entry to the IP filter allow list',
+    customUsage: [
+      { input: '203.0.113.4', brief: 'Allow a single address' },
+      { input: '203.0.113.0/24 --label office', brief: 'Allow a range and label it' }
+    ]
   },
   parameters: {
     flags: {

@@ -51,7 +51,9 @@ export async function implementation(this: LocalContext, { json }: Flags) {
 
 export const StatusCommand = buildCommand({
   docs: {
-    brief: `Get the status of the ${CLI_NAME} CLI`
+    brief: 'Show the organization, project, and branch this folder uses',
+    fullDescription:
+      'Resolves the context the way every other command does, from flags, XATA_* variables and the local config, so it is the quickest way to see which branch commands will act on.'
   },
   parameters: {
     flags: {

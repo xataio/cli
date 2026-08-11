@@ -377,7 +377,13 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
 
 export const ScratchCommand = buildCommand({
   docs: {
-    brief: 'Run SQL or a Postgres client command against a temporary scratch branch'
+    brief: 'Run SQL or a Postgres client command against a temporary scratch branch',
+    fullDescription:
+      'Creates a branch from the parent given, runs what it is asked to, and deletes the branch afterwards, so a query or a migration can be tried against real data without touching an existing branch.',
+    customUsage: [
+      { input: '--execute "select count(*) from users"', brief: 'Run a query against a throwaway copy' },
+      { input: 'psql', brief: 'Open a Postgres client on the scratch branch' }
+    ]
   },
   parameters: {
     flags: {

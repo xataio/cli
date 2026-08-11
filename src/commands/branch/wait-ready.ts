@@ -56,7 +56,13 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const BranchWaitReadyCommand = buildCommand({
   docs: {
-    brief: 'Wait for a branch to be ready'
+    brief: 'Wait for a branch to be ready',
+    fullDescription:
+      'Blocks until the branch is healthy, which is what a script needs after creating one or after a change that restarts it. A hibernated branch stays hibernated unless `--wake` is passed.',
+    customUsage: [
+      { input: 'my-branch', brief: 'Wait for a branch to come up' },
+      { input: 'my-branch --wake', brief: 'Wake a hibernated branch and wait for it' }
+    ]
   },
   parameters: {
     flags: {

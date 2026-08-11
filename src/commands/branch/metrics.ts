@@ -367,7 +367,17 @@ function formatMetricStatus(
 
 export const BranchMetricsCommand = buildCommand({
   docs: {
-    brief: 'Show branch metrics'
+    brief: 'Show CPU, memory and disk usage for a branch',
+    fullDescription:
+      'Reports the metrics of every instance of the branch, the primary and any replicas, as a snapshot or continuously with --watch.',
+    customUsage: [
+      { input: 'my-branch', brief: 'One-shot snapshot of the default metrics' },
+      { input: 'my-branch --watch', brief: 'Continuously refresh metrics in the TUI' },
+      {
+        input: 'my-branch -w --refresh 5s --instances primary --output ndjson',
+        brief: 'Stream NDJSON updates every 5 seconds for the primary instance'
+      }
+    ]
   },
   parameters: {
     flags: {

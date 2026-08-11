@@ -72,7 +72,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const BranchRotatePasswordCommand = buildCommand({
   docs: {
-    brief: 'Rotate the database password for a branch'
+    brief: 'Rotate the database password for a branch',
+    fullDescription:
+      'Reads the current username from the credentials endpoint, so an API key needs the `credentials:read` scope.'
   },
   parameters: {
     flags: {

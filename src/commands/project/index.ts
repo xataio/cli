@@ -12,6 +12,8 @@ import { ProjectSetCommand } from './set';
 export const ProjectRoute = buildRouteMap({
   docs: {
     brief: 'Create, list, and manage projects',
+    fullDescription:
+      'A project holds branches and the defaults they inherit, such as whether they scale to zero and how long they stay idle first. IP filtering is set per project.',
     hideRoute: {
       backup: true
     }

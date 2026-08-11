@@ -99,7 +99,23 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const QueryInsightsListCommand = buildCommand({
   docs: {
-    brief: 'List historical query statistics for a branch'
+    brief: 'List historical query statistics for a branch, slowest first',
+    fullDescription:
+      'In table output a leading `!` marks a row with a high mean execution time or a low cache hit rate, and the command prints the `show` command for each flagged query. Both `json` and `ndjson` emit `{ "total", "limit", "offset", "queries" }`, with the statements under `queries`.',
+    customUsage: [
+      {
+        input: 'my-branch --performance slow --sort mean-time',
+        brief: 'The slowest statements by average execution time'
+      },
+      {
+        input: 'xata branch qi my-branch --sort mean-time',
+        brief: 'Same thing, through the alias and default subcommand'
+      },
+      {
+        input: `my-branch --limit 100 --output ndjson | jq -r '.queries[].query'`,
+        brief: 'Feed the top 100 statements to another process'
+      }
+    ]
   },
   parameters: {
     flags: {

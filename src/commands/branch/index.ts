@@ -1,5 +1,5 @@
 import { buildRouteMap } from '@stricli/core';
-import { CLI_NAME } from '~/lib/constants';
+import { PRODUCT_NAME } from '~/lib/constants';
 import { BranchCheckoutCommand } from './checkout';
 import { BranchCreateCommand } from './create';
 import { BranchDeleteCommand } from './delete';
@@ -17,7 +17,9 @@ import { BranchQueryInsightsRoute } from './query-insights';
 
 export const BranchRoute = buildRouteMap({
   docs: {
-    brief: `Create, list, and manage ${CLI_NAME} branches`,
+    brief: `Create, list, and manage ${PRODUCT_NAME} branches`,
+    fullDescription:
+      'A branch is a running Postgres database. Creating one copies the data of its parent, and the branch checked out in this folder is the one commands act on when no branch is given.',
     hideRoute: {}
   },
   routes: {

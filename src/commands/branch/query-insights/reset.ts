@@ -43,7 +43,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const QueryInsightsResetCommand = buildCommand({
   docs: {
-    brief: 'Reset accumulated query statistics for a branch'
+    brief: 'Reset accumulated query statistics for a branch',
+    fullDescription:
+      'Calls `pg_stat_statements_reset()`, so it is branch-wide and cannot be undone: all historical counters are discarded and rebuild as new queries run. The function requires elevated privileges.'
   },
   parameters: {
     flags: {

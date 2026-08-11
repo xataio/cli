@@ -52,7 +52,16 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const BranchCheckoutCommand = buildCommand({
   docs: {
-    brief: 'Checkout a branch'
+    brief: 'Check out a branch in this folder',
+    fullDescription:
+      'Writes the branch to `.xata/` in this folder, so later commands run against it without being told which branch to use.',
+    customUsage: [
+      { input: 'main', brief: 'Check out a branch of the current project' },
+      {
+        input: 'feature-branch --organization org-123 --project proj-456',
+        brief: 'Check out a branch of another project'
+      }
+    ]
   },
   parameters: {
     flags: {

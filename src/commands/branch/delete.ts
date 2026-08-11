@@ -59,7 +59,13 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
 export const BranchDeleteCommand = buildCommand({
   docs: {
-    brief: 'Delete a branch'
+    brief: 'Delete a branch',
+    fullDescription:
+      'Deleting a branch destroys its database and cannot be undone. The branch checked out in this folder cannot be deleted, and outside an interactive terminal the confirmation has to come from `--yes`.',
+    customUsage: [
+      { input: 'my-branch', brief: 'Delete a branch, asking for confirmation' },
+      { input: 'my-branch --yes', brief: 'Delete a branch from a script' }
+    ]
   },
   parameters: {
     flags: {

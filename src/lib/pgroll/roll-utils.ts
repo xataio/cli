@@ -1,3 +1,4 @@
+import { toBrief } from '~/lib/binary/utils';
 import { Definition } from '@xata.io/pgroll';
 import type { PgRollCommands, PgRollOptions, PgRollSubCommands } from '~/lib/pgroll/commands';
 
@@ -59,7 +60,7 @@ export function getCommandFlags<CommandType extends PgRollCommands>(command: PgR
     commandFlags[flag.name] = {
       kind: 'parsed',
       parse: String,
-      brief: flag.description,
+      brief: toBrief(flag.description),
       /**
        * Note: we don't need to provide the default value here.
        * `pgroll` will automatically fall back to the default value
@@ -93,7 +94,7 @@ export function getGlobalFlags() {
     globalFlags[flag.name] = {
       kind: 'parsed',
       parse: String,
-      brief: flag.description,
+      brief: toBrief(flag.description),
       // Note: see comment in getCommandFlags regarding default values
       // default: flag.default
       optional: true

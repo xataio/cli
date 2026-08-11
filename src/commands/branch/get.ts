@@ -77,7 +77,12 @@ export async function implementation(this: LocalContext, flags: Flags, ...args: 
 
 export const BranchGetCommand = buildCommand({
   docs: {
-    brief: 'Get a field from a branch description'
+    brief: 'Get a field from a branch description',
+    fullDescription: 'Run it without a field to list the fields the description holds.',
+    customUsage: [
+      { input: 'status', brief: 'Read one field of the checked out branch' },
+      { input: 'my-branch status', brief: 'Read one field of another branch' }
+    ]
   },
   parameters: {
     flags: {

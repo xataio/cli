@@ -13,7 +13,6 @@ import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream }
 import {
   type CommandFlags,
   convertGlobalFlagsToRuntimeFlags,
-  getCommandDefinition,
   getCommandFlags,
   type GlobalFlags
 } from '~/lib/pgstream/stream-utils';
@@ -24,7 +23,6 @@ import { getPgStreamStreamEnv } from './env';
 
 const COMMAND = 'run';
 type CommandType = 'run';
-const commandDefinition = getCommandDefinition(COMMAND);
 const commandFlags = getCommandFlags(COMMAND);
 
 type Flags = {
@@ -231,7 +229,9 @@ export async function implementation(
 
 export const CloneStreamCommand = buildCommand({
   docs: {
-    brief: commandDefinition?.short || '??'
+    brief: 'Stream a PostgreSQL database into a Xata branch continuously',
+    fullDescription:
+      'Starts from a snapshot and then follows the source through logical replication, so the branch keeps up with it until the command is stopped.'
   },
   parameters: {
     // @ts-expect-error fix types

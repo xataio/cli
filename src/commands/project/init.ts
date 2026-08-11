@@ -140,7 +140,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
 export const ProjectInitCommand = buildCommand({
   docs: {
-    brief: 'Link a project to the folder'
+    brief: 'Link this folder to a project and branch',
+    fullDescription:
+      'Writes the organization, project, branch and database to `.xata/` in this folder, so the commands run here no longer need them passed in.',
+    customUsage: [
+      { input: '--organization <org-id> --project <project-id> --branch <branch-id>', brief: 'Link without prompts' }
+    ]
   },
   parameters: {
     flags: {
