@@ -31,6 +31,7 @@ type Flags = {
   organization?: string;
   project?: string;
   branch?: string;
+  database?: string;
   'filter-tables': string;
   'validation-mode': ValidationMode | 'prompt';
   role?: string;
@@ -114,7 +115,7 @@ export async function implementation(
   }
 
   if (isCLIConfigInitialized(this)) {
-    const databaseName = branchConfig.databaseName;
+    const databaseName = await this.getDatabase(this, flags);
     const connectionString = await fetchBranchConnectionString(
       this.api,
       {
@@ -257,6 +258,12 @@ export const CloneStreamCommand = buildCommand({
       branch: {
         kind: 'parsed',
         brief: 'Branch ID',
+        parse: String,
+        optional: true
+      },
+      database: {
+        kind: 'parsed',
+        brief: 'Target database name on the checked-out Xata branch',
         parse: String,
         optional: true
       },
