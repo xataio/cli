@@ -28,7 +28,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
 export const UserKeysCreateCommand = buildCommand({
   docs: {
     brief: 'Create a new API key',
-    fullDescription: 'The key is printed once, when it is created, and acts as the account that created it.',
+    fullDescription:
+      'Creates a key for the account you are logged in with. It is printed once, when it is created, and cannot be read again.',
     customUsage: [
       { input: '--name ci', brief: 'Create a key that does not expire' },
       { input: '--name ci --expiry 2026-12-31', brief: 'Create a key that expires' }
@@ -44,7 +45,7 @@ export const UserKeysCreateCommand = buildCommand({
       },
       expiry: {
         kind: 'parsed',
-        brief: 'Expiration date (ISO format) or empty for no expiry',
+        brief: `Expiry, as a date or a phrase such as 'in 1 week', or 'never'`,
         parse: String,
         optional: true
       },

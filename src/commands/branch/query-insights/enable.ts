@@ -108,7 +108,7 @@ export const QueryInsightsEnableCommand = buildCommand({
   docs: {
     brief: 'Enable pg_stat_statements for query insights on a branch',
     fullDescription:
-      'Creates the `pg_stat_statements` extension and adds it to the preloaded libraries, which needs a branch restart: wait for it with `xata branch wait-ready <branch> --wake`. Operations that rebuild a branch, such as a migration into it, can drop the extension, so run this again if query insights stop returning rows.'
+      'Adds `pg_stat_statements` to the preloaded libraries, which restarts the branch, and creates the extension. Run it, wait for the branch with `xata branch wait-ready <branch> --wake`, then run it again to create the extension. Operations that rebuild a branch, such as a migration into it, can drop the extension, so run this again if query insights stop returning rows. The same can be done from the console, by adding it to the preloaded libraries in the branch settings, see https://xata.io/docs/platform/extensions.'
   },
   parameters: {
     flags: {

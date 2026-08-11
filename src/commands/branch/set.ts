@@ -354,7 +354,7 @@ export const BranchSetCommand = buildCommand({
   docs: {
     brief: 'Set a field value for a branch',
     fullDescription:
-      'The `postgres-version` field upgrades PostgreSQL, and only accepts compatible upgrades within the same major version and offering type.',
+      'The `postgres-version` field upgrades PostgreSQL, and only accepts compatible upgrades within the same major version and offering type, see https://xata.io/docs/platform/branch#upgrading-postgresql-versions.',
     customUsage: [
       { input: 'replicas 2 my-branch', brief: 'Set a field non-interactively' },
       { input: 'postgres-version', brief: 'Select the target version interactively' },

@@ -231,7 +231,7 @@ export const CloneStreamCommand = buildCommand({
   docs: {
     brief: 'Stream a PostgreSQL database into a Xata branch continuously',
     fullDescription:
-      'Starts from a snapshot and then follows the source through logical replication, so the branch keeps up with it until the command is stopped.'
+      'Follows the source through logical replication, so the branch keeps up with it until the command is stopped. Passing `--snapshot-tables` copies those tables first, otherwise only the changes from now on are streamed.'
   },
   parameters: {
     // @ts-expect-error fix types

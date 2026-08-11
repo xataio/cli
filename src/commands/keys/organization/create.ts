@@ -33,7 +33,7 @@ export const OrgKeysCreateCommand = buildCommand({
   docs: {
     brief: 'Create a new API key',
     fullDescription:
-      'The key is printed once, when it is created. It belongs to the organization rather than to an account, which is what automation should use.',
+      'Creates a key for an organization rather than for an account. It is printed once, when it is created, and cannot be read again.',
     customUsage: [{ input: '--name deploy', brief: 'Create a key for an organization' }]
   },
   parameters: {
@@ -52,7 +52,7 @@ export const OrgKeysCreateCommand = buildCommand({
       },
       expiry: {
         kind: 'parsed',
-        brief: 'Expiration date (ISO format) or empty for no expiry',
+        brief: `Expiry, as a date or a phrase such as 'in 1 week', or 'never'`,
         parse: String,
         optional: true
       },

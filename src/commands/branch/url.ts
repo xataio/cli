@@ -76,7 +76,7 @@ export const BranchURLCommand = buildCommand({
   docs: {
     brief: 'Print URL (connection string) for a branch',
     fullDescription:
-      'Reads the connection details from the credentials endpoint, so an API key needs the `credentials:read` scope.',
+      'Reads the connection details from the credentials endpoint, so an API key needs the `credentials:read` scope, see https://xata.io/docs/cli#required-scopes.',
     customUsage: [
       { input: 'main', brief: 'Print the primary connection string' },
       { input: 'main --type pooler', brief: 'Pooled connection string, for serverless workloads' },

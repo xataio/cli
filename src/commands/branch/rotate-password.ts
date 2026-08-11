@@ -74,7 +74,7 @@ export const BranchRotatePasswordCommand = buildCommand({
   docs: {
     brief: 'Rotate the database password for a branch',
     fullDescription:
-      'Reads the current username from the credentials endpoint, so an API key needs the `credentials:read` scope.'
+      'Reads the current username from the credentials endpoint, so an API key needs the `credentials:read` scope, see https://xata.io/docs/cli#required-scopes.'
   },
   parameters: {
     flags: {

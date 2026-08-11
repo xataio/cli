@@ -6,7 +6,7 @@ export const KeysRoute = buildRouteMap({
   docs: {
     brief: 'Create, list, and delete API keys',
     fullDescription:
-      'User keys act as the account that created them, organization keys are scoped to one organization and outlive their author, which is what automation should use.'
+      'A user key belongs to the account that created it, an organization key to an organization. Both are printed once, when they are created.'
   },
   routes: {
     user: KeysUserRoute,

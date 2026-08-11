@@ -338,7 +338,7 @@ export const BranchLogsCommand = buildCommand({
   docs: {
     brief: 'Retrieve the PostgreSQL logs of a branch',
     fullDescription:
-      'Reads the logs of every instance of the branch, the primary and any replicas, which is where slow queries, connection issues and replication problems show up. Requires the `logs:read` scope on the API key. Of the output formats, `raw` prints `<timestamp> [<level> <instanceID> <process>] <message>` per line, `json` a single array, `ndjson` one object per line for streaming into another process, and `csv` the columns `timestamp,level,instanceID,process,message`. Follow mode polls every 2 seconds with a 5 second overlap and de-duplicates entries. Logs can contain connection strings and other credentials.',
+      'Reads the logs of every instance of the branch, the primary and any replicas, which is where slow queries, connection issues and replication problems show up. Requires the `logs:read` scope on the API key. Of the output formats, `raw` prints `<timestamp> [<level> <instanceID> <process>] <message>` per line, `json` a single array, `ndjson` one object per line for streaming into another process, and `csv` the columns `timestamp,level,instanceID,process,message`. Follow mode polls every 2 seconds with a 5 second overlap and de-duplicates entries. Logs can contain connection strings and other credentials, see https://xata.io/docs/platform/logs for what is redacted.',
     customUsage: [
       { input: 'my-branch --level error --start 15m', brief: 'Errors from the last 15 minutes' },
       {

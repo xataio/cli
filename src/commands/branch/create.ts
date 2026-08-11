@@ -403,7 +403,7 @@ export const BranchCreateCommand = buildCommand({
   docs: {
     brief: 'Create a new branch',
     fullDescription:
-      'A branch is a running Postgres database that starts as a copy of its parent. It takes a moment to come up, so `xata branch wait-ready` is what to run before connecting to it. Creating a branch in a folder linked to a project also checks it out.',
+      'A branch is a running Postgres database that starts as a copy of its parent. It takes a moment to come up, so `xata branch wait-ready` is what to run before connecting to it. It is checked out afterwards when this folder already has an organization, project and branch to work from.',
     customUsage: [
       { input: '--name my-branch', brief: 'Branch the current branch' },
       { input: '--name my-branch --parent-branch <branch-id>', brief: 'Branch another branch' },

@@ -113,7 +113,7 @@ export const AuthLoginCommand = buildCommand({
   docs: {
     brief: `Log in to a ${PRODUCT_NAME} account`,
     fullDescription:
-      'Opens the device flow in a browser, or stores an API key with --api-key for non-interactive use. The issuer, API URL and client flags point the CLI at a deployment other than production, which is what Enterprise customers running their own cloud need.',
+      'Prints a URL and a code to authorize this machine, or stores an API key with `--api-key` for non-interactive use. The issuer, API URL and client flags log in against a deployment other than production, which is how Enterprise customers connect the CLI to a custom deployment in their own cloud. Omit them and the CLI uses the default production values.',
     customUsage: [
       { input: '--api-key xau_...', brief: 'Log in from a script or CI' },
       { input: '--profile staging', brief: 'Log in as another profile' },
