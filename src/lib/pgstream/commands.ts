@@ -28,6 +28,7 @@ export type PgStreamOptions<Command extends PgStreamCommands> = {
   args?: CommandArgs<Command>;
   flags?: Array<CommandFlags<Command> | GlobalFlagsType>;
   captureOutput?: boolean;
+  signal?: AbortSignal;
 };
 
 type PgStreamResultBase = {
@@ -63,7 +64,7 @@ export async function runPgStream<Command extends PgStreamCommands>(
   options: PgStreamOptions<Command> = {},
   logLevel: LogLevel = 'info'
 ): Promise<PgStreamResultBase | PgStreamResultWithOutput> {
-  const { flags = [], args = [], captureOutput = false } = options;
+  const { flags = [], args = [], captureOutput = false, signal } = options;
   const binary = await getPgStream(context);
 
   const commandParts = Array.isArray(command) ? command : [command];
@@ -74,24 +75,34 @@ export async function runPgStream<Command extends PgStreamCommands>(
     stderr: captureOutput ? 'pipe' : 'inherit'
   });
 
-  if (captureOutput) {
-    const [stdout, stderr, exitCode] = await Promise.all([
-      new Response(proc.stdout).text(),
-      new Response(proc.stderr).text(),
-      proc.exited
-    ]);
+  const interrupt = () => proc.kill('SIGINT');
+  if (signal?.aborted) {
+    interrupt();
+  }
+  signal?.addEventListener('abort', interrupt, { once: true });
 
+  try {
+    if (captureOutput) {
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited
+      ]);
+
+      return {
+        success: exitCode === 0,
+        exitCode,
+        stdout,
+        stderr
+      };
+    }
+
+    const exitCode = await proc.exited;
     return {
       success: exitCode === 0,
-      exitCode,
-      stdout,
-      stderr
+      exitCode
     };
+  } finally {
+    signal?.removeEventListener('abort', interrupt);
   }
-
-  const exitCode = await proc.exited;
-  return {
-    success: exitCode === 0,
-    exitCode
-  };
 }

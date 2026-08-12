@@ -47,7 +47,8 @@ export function getPgStreamStartEnv(
   targetUrl: string,
   filterTables: string,
   role?: string,
-  copyRoles = false
+  copyRoles = false,
+  tuning?: { sessionSettings: string[] }
 ) {
   const { rolesMode, noOwner, noPrivileges } = getRoleEnvDefaults(copyRoles);
 
@@ -67,7 +68,11 @@ export function getPgStreamStartEnv(
     PGSTREAM_TRANSFORMER_RULES_FILE: doesCloneYamlFileExist(context)
       ? z.string().default(DEFAULT_CLONE_RULES_FILE)
       : z.string().optional(),
-    PGSTREAM_POSTGRES_SNAPSHOT_ROLE: role ? z.string().default(role) : z.string().optional()
+    PGSTREAM_POSTGRES_SNAPSHOT_ROLE: role ? z.string().default(role) : z.string().optional(),
+    PGSTREAM_POSTGRES_SNAPSHOT_INDEX_CONSTRAINT_SESSION_SETTINGS:
+      tuning && tuning.sessionSettings.length > 0
+        ? z.string().default(tuning.sessionSettings.join(' '))
+        : z.string().optional()
   });
   logPgStreamEnv(context, 'PGStream Start Environment Variables:', schema, sourceUrl, targetUrl, targetUrl);
   return schema.parse(process.env);

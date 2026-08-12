@@ -20,6 +20,7 @@ import { projectConfig } from '~/lib/project-config';
 import { readConfigFile } from './clone-config-utils';
 import type { ValidationMode } from './config';
 import { getPgStreamStartEnv } from './env';
+import { applyTargetDatabaseTuning, revertTargetDatabaseTuning, type TargetTuning } from './target-tuning';
 
 const COMMAND = 'snapshot';
 type CommandType = 'snapshot';
@@ -35,6 +36,7 @@ type Flags = {
   role?: string;
   'log-level'?: LogLevel;
   'copy-roles': boolean;
+  'tune-target': boolean;
 } & GlobalFlags &
   CommandFlags<CommandType> & {
     'source-url': string;
@@ -45,6 +47,20 @@ export function doesCloneYamlFileExist(context: LocalContext) {
     return false;
   }
   return true;
+}
+
+const SIGNAL_EXIT_CODES = { SIGINT: 130, SIGTERM: 143 } as const;
+const INTERRUPT_SIGNALS = Object.keys(SIGNAL_EXIT_CODES) as (keyof typeof SIGNAL_EXIT_CODES)[];
+
+function listenForInterrupts(context: LocalContext, handle: (signal: keyof typeof SIGNAL_EXIT_CODES) => void) {
+  for (const signal of INTERRUPT_SIGNALS) {
+    context.process.on(signal, handle);
+  }
+  return () => {
+    for (const signal of INTERRUPT_SIGNALS) {
+      context.process.off(signal, handle);
+    }
+  };
 }
 
 export function getSourceUrl(context: LocalContext, flags: Pick<Flags, 'source-url'>) {
@@ -111,44 +127,75 @@ export async function implementation(
   }
 
   if (isCLIConfigInitialized(this)) {
-    const databaseName = await this.getDatabase(this, flags);
-    const connectionString = await fetchBranchConnectionString(
-      this.api,
-      {
-        organizationID: projectConfig.organizationId,
-        projectID: projectConfig.projectId,
-        branchID: branchConfig.branchId
-      },
-      { database: databaseName }
-    );
-    const connectionStringWithPgrollInternalGUC = buildConnectionString(connectionString, { pgrollInternalGUC: true });
-    const safeConnectionString = buildConnectionString(connectionString, { mask: true });
+    const interruption = new AbortController();
+    let interruptedBy: keyof typeof SIGNAL_EXIT_CODES | undefined;
 
-    const env = getPgStreamStartEnv(
-      this,
-      sourceUrl,
-      connectionStringWithPgrollInternalGUC,
-      flags['filter-tables'],
-      flags.role,
-      flags['copy-roles']
-    );
+    const stopListening = flags['tune-target']
+      ? listenForInterrupts(this, (signal) => {
+          interruptedBy = signal;
+          this.process.stderr.write(
+            chalk.yellow(`\nStopping the clone (${signal}) and reverting the tuning. Interrupt again to skip it.\n`)
+          );
+          interruption.abort();
+        })
+      : undefined;
 
-    if (this.debug) {
-      this.process.stdout.write(`DEBUG: Using ${safeConnectionString}\n`);
+    let tuning: TargetTuning | undefined;
+    try {
+      tuning = flags['tune-target'] ? await applyTargetDatabaseTuning(this, flags) : undefined;
+
+      const databaseName = await this.getDatabase(this, flags);
+      const connectionString = await fetchBranchConnectionString(
+        this.api,
+        {
+          organizationID: projectConfig.organizationId,
+          projectID: projectConfig.projectId,
+          branchID: branchConfig.branchId
+        },
+        { database: databaseName }
+      );
+      const connectionStringWithPgrollInternalGUC = buildConnectionString(connectionString, {
+        pgrollInternalGUC: true
+      });
+      const safeConnectionString = buildConnectionString(connectionString, { mask: true });
+
+      const env = getPgStreamStartEnv(
+        this,
+        sourceUrl,
+        connectionStringWithPgrollInternalGUC,
+        flags['filter-tables'],
+        flags.role,
+        flags['copy-roles'],
+        tuning
+      );
+
+      if (this.debug) {
+        this.process.stdout.write(`DEBUG: Using ${safeConnectionString}\n`);
+      }
+
+      const { success, exitCode } = await runPgStream<CommandType>(
+        this,
+        COMMAND,
+        env,
+        {
+          flags: runtimeFlags,
+          args: args,
+          signal: interruption.signal
+        },
+        flags['log-level']
+      );
+      if (!success && !interruptedBy) {
+        throw new Error(`Error: pgstream binary execution failed with exit code ${exitCode}`);
+      }
+    } finally {
+      stopListening?.();
+      if (tuning) {
+        await revertTargetDatabaseTuning(this, tuning);
+      }
     }
 
-    const { success, exitCode } = await runPgStream<CommandType>(
-      this,
-      COMMAND,
-      env,
-      {
-        flags: runtimeFlags,
-        args: args
-      },
-      flags['log-level']
-    );
-    if (!success) {
-      throw new Error(`Error: pgstream binary execution failed with exit code ${exitCode}`);
+    if (interruptedBy) {
+      this.process.exitCode = SIGNAL_EXIT_CODES[interruptedBy];
     }
   } else {
     throw new Error(
@@ -227,6 +274,12 @@ export const CloneStartCommand = buildCommand({
       'copy-roles': {
         kind: 'boolean',
         brief: 'Copy roles, owners, and privileges to the target',
+        default: false
+      },
+      'tune-target': {
+        kind: 'boolean',
+        brief:
+          'Temporarily tune the target branch for bulk loading, reverting the change when the clone stops. Raises max_wal_size on the branch and the maintenance settings on the index rebuild.',
         default: false
       }
     }

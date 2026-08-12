@@ -60,6 +60,32 @@ describe('clone env tests', () => {
       });
     });
 
+    describe('target tuning', () => {
+      it('should leave the session settings unset when not tuning', () => {
+        const env = getPgStreamStartEnv(context, mockSourceUrl, mockTargetUrl, mockFilterTables);
+
+        expect(env.PGSTREAM_POSTGRES_SNAPSHOT_INDEX_CONSTRAINT_SESSION_SETTINGS).toBeUndefined();
+      });
+
+      it('should never override bulk ingest, which pgstream defaults per command', () => {
+        const env = getPgStreamStartEnv(context, mockSourceUrl, mockTargetUrl, mockFilterTables, undefined, false, {
+          sessionSettings: ['maintenance_work_mem=8GB']
+        });
+
+        expect(env).not.toHaveProperty('PGSTREAM_POSTGRES_WRITER_BULK_INGEST_ENABLED');
+      });
+
+      it('should join session settings with a space, which is how viper reads the list', () => {
+        const env = getPgStreamStartEnv(context, mockSourceUrl, mockTargetUrl, mockFilterTables, undefined, false, {
+          sessionSettings: ['maintenance_work_mem=8GB', 'max_parallel_maintenance_workers=8']
+        });
+
+        expect(env.PGSTREAM_POSTGRES_SNAPSHOT_INDEX_CONSTRAINT_SESSION_SETTINGS).toBe(
+          'maintenance_work_mem=8GB max_parallel_maintenance_workers=8'
+        );
+      });
+    });
+
     describe('common environment variables', () => {
       it('should set all required pgstream environment variables', () => {
         const env = getPgStreamStartEnv(context, mockSourceUrl, mockTargetUrl, mockFilterTables);
