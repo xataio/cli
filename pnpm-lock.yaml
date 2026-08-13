@@ -229,8 +229,8 @@ packages:
     resolution: {integrity: sha512-r3ZZhRjEcfEdKIZnoB1RusNgvHuaBRqfCzV4Gi+5A9yUX0S4HTws/ASWqt13wL4y4I+0rqsWGdA2w7EQXHi3+Q==}
     engines: {node: '>=19.0.0'}
 
-  '@smithy/core@3.32.0':
-    resolution: {integrity: sha512-NAiCSC78fzbNIEWoheoF74Ob5ZorLijCHpMY26Fqvqg/+9LuyIqMfHDg2p8Yk1rqOyowtiL3y7WX0AW+teL6zw==}
+  '@smithy/core@3.33.0':
+    resolution: {integrity: sha512-uKbkxgqLyepQDZoq8aRSdUqD1ID//rOqG96ixBhp++O7vBtmwYM6fwldGhr9HJP0iYrdc7GP/AlgzPWEZIrNRg==}
     engines: {node: '>=18.0.0'}
 
   '@smithy/credential-provider-imds@4.5.0':
@@ -241,8 +241,8 @@ packages:
     resolution: {integrity: sha512-W/exA8T0LEzCQtJ02w4IzaEQPIspgarqZprb7W8FwnYiDowgCrjl2fTQ6FvuSSUnJORuepBF81abmBJwqh+0XQ==}
     engines: {node: '>=18.0.0'}
 
-  '@smithy/node-http-handler@4.10.0':
-    resolution: {integrity: sha512-nrh7VxqzPQS/ip1hS293aI/OAWDWARQvjUxCfuKhyrfHa2gTdk28066RNeWLI1uuoHXaKAkOF8IcSAHuOp0+SA==}
+  '@smithy/node-http-handler@4.11.0':
+    resolution: {integrity: sha512-ssHIZsadPUA3lGdnoByxfnjtb9xPYQLvdfJRLKIwxOoa6tO1suG4sLFSsgd7D/CsvYd8QbBIuKTImuJha5l6aQ==}
     engines: {node: '>=18.0.0'}
 
   '@smithy/signature-v4@5.7.0':
@@ -596,7 +596,7 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -608,9 +608,9 @@ snapshots:
       '@aws-sdk/middleware-sdk-s3': 3.972.73
       '@aws-sdk/signature-v4-multi-region': 3.996.44
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/fetch-http-handler': 5.7.0
-      '@smithy/node-http-handler': 4.10.0
+      '@smithy/node-http-handler': 4.11.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -619,7 +619,7 @@ snapshots:
       '@aws-sdk/types': 3.974.3
       '@aws-sdk/xml-builder': 3.972.38
       '@aws/lambda-invoke-store': 0.3.0
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/signature-v4': 5.7.0
       '@smithy/types': 4.17.0
       bowser: 2.14.1
@@ -629,7 +629,7 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -637,9 +637,9 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/fetch-http-handler': 5.7.0
-      '@smithy/node-http-handler': 4.10.0
+      '@smithy/node-http-handler': 4.11.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -654,7 +654,7 @@ snapshots:
       '@aws-sdk/credential-provider-web-identity': 3.972.74
       '@aws-sdk/nested-clients': 3.997.42
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/credential-provider-imds': 4.5.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
@@ -664,7 +664,7 @@ snapshots:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/nested-clients': 3.997.42
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -677,7 +677,7 @@ snapshots:
       '@aws-sdk/credential-provider-sso': 3.973.12
       '@aws-sdk/credential-provider-web-identity': 3.972.74
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/credential-provider-imds': 4.5.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
@@ -686,7 +686,7 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -696,7 +696,7 @@ snapshots:
       '@aws-sdk/nested-clients': 3.997.42
       '@aws-sdk/token-providers': 3.1108.0
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -705,7 +705,7 @@ snapshots:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/nested-clients': 3.997.42
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -714,7 +714,7 @@ snapshots:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/signature-v4-multi-region': 3.996.44
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -723,9 +723,9 @@ snapshots:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/signature-v4-multi-region': 3.996.44
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/fetch-http-handler': 5.7.0
-      '@smithy/node-http-handler': 4.10.0
+      '@smithy/node-http-handler': 4.11.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -741,7 +741,7 @@ snapshots:
       '@aws-sdk/core': 3.977.7
       '@aws-sdk/nested-clients': 3.997.42
       '@aws-sdk/types': 3.974.3
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
@@ -772,32 +772,32 @@ snapshots:
 
   '@neondatabase/serverless@1.1.0': {}
 
-  '@smithy/core@3.32.0':
+  '@smithy/core@3.33.0':
     dependencies:
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
   '@smithy/credential-provider-imds@4.5.0':
     dependencies:
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
   '@smithy/fetch-http-handler@5.7.0':
     dependencies:
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
-  '@smithy/node-http-handler@4.10.0':
+  '@smithy/node-http-handler@4.11.0':
     dependencies:
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 
   '@smithy/signature-v4@5.7.0':
     dependencies:
-      '@smithy/core': 3.32.0
+      '@smithy/core': 3.33.0
       '@smithy/types': 4.17.0
       tslib: 2.8.1
 

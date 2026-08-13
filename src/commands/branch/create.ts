@@ -22,6 +22,7 @@ type Flags = {
   project?: string;
   name?: string;
   'parent-branch'?: string;
+  'no-parent': boolean;
   replicas?: string;
   'instance-type'?: string;
   region?: string;
@@ -267,6 +268,11 @@ export async function getImage(
 }
 
 export async function implementation(this: LocalContext, flags: Flags) {
+  if (flags['parent-branch'] && flags['no-parent']) {
+    this.process.stderr.write(chalk.red('Cannot use --parent-branch together with --no-parent.\n'));
+    this.process.exit(1);
+  }
+
   const organizationId = await this.getOrganization(this, flags, {});
   const projectId = await this.getProject(this, flags, { organizationId });
 
@@ -287,7 +293,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
-  if (!flags['parent-branch']) {
+  if (!flags['parent-branch'] && !flags['no-parent']) {
     const branches = await this.api.branches.listBranches({
       pathParams: { organizationID: organizationId, projectID: projectId }
     });
@@ -297,7 +303,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     }
   }
 
-  const parentBranchId = flags['parent-branch'];
+  const parentBranchId = flags['parent-branch'] ?? '';
 
   // Determine if this will be a base branch (no parent)
   const isRootBranch = !parentBranchId;
@@ -407,6 +413,7 @@ export const BranchCreateCommand = buildCommand({
     customUsage: [
       { input: '--name my-branch', brief: 'Branch the current branch' },
       { input: '--name my-branch --parent-branch <branch-id>', brief: 'Branch another branch' },
+      { input: '--name my-branch --no-parent', brief: 'Create a root branch with no parent' },
       {
         input: '--name my-branch --instance-type <type> --replicas 1 --scale-to-zero true',
         brief: 'Size the branch and let it scale to zero'
@@ -429,9 +436,14 @@ export const BranchCreateCommand = buildCommand({
       },
       'parent-branch': {
         kind: 'parsed',
-        brief: 'Parent branch ID. Pass "None" to create a branch without a parent.',
+        brief: 'Parent branch ID to fork from. Cannot be combined with --no-parent.',
         parse: String,
         optional: true
+      },
+      'no-parent': {
+        kind: 'boolean',
+        brief: 'Create a root branch with no parent, instead of forking one',
+        default: false
       },
       name: {
         kind: 'parsed',
