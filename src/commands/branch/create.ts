@@ -53,7 +53,7 @@ export function buildInstanceTypeChoices(
   return instances.map((instanceType) => {
     const parts = [`${instanceType.name} / ${instanceType.vcpus} milli-vCPU / ${instanceType.ram} GB RAM`];
     if (showPricing) {
-      const instanceMonthlyCost = monthlyComputeCost(instanceType, 1);
+      const instanceMonthlyCost = monthlyComputeCost({ instanceType });
       parts.push(chalk.gray(`$${instanceMonthlyCost.display} per mo`));
     }
     if (maxAllowedVCPUs !== undefined && instanceType.vcpus > maxAllowedVCPUs) {
