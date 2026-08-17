@@ -259,8 +259,8 @@ export const BackupConfigureCommand = buildCommand({
       kind: 'tuple',
       parameters: [
         {
-          brief: 'Branch name to configure backups for',
-          placeholder: 'branch-name',
+          brief: 'Branch ID or name to configure backups for',
+          placeholder: 'branch',
           parse: String,
           optional: true
         }

@@ -1,6 +1,8 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it, mock } from 'bun:test';
+import { ApiError } from '@xata.io/api';
 import stripAnsi from 'strip-ansi';
-import { getErrorMessage, groupAndSortRegions, print } from './cli-utils';
+import type { LocalContext } from '~/context';
+import { getBranch, getErrorMessage, groupAndSortRegions, print, resolveBranchIdOrName } from './cli-utils';
 import { renderTable } from './table';
 
 type Region = {
@@ -150,6 +152,146 @@ describe('groupAndSortRegions', () => {
 
       expect(stripMessages(result)).toEqual([{ name: 'org-region-1', message: 'org-region-1 (AWS)' }]);
     });
+  });
+});
+
+const BRANCH_ID = 'oansf546nh1bf3blhj75d674gs';
+
+const branchLookupOptions = { organizationId: 'org-id', projectId: 'project-id' };
+
+function branchNotFound() {
+  return new ApiError(404, { message: 'not found' }, `Branch with ID [${BRANCH_ID}]: not found`);
+}
+
+function buildBranchContext({
+  describeBranch = async () => {
+    throw branchNotFound();
+  },
+  branches = []
+}: {
+  describeBranch?: () => Promise<{ id: string }>;
+  branches?: { id: string; name: string }[];
+} = {}) {
+  const describeBranchMock = mock(describeBranch);
+  const listBranches = mock(async () => ({ branches }));
+  const stderr: string[] = [];
+  const exit = mock((code?: number) => {
+    throw new Error(`exit:${code}`);
+  });
+
+  const context = {
+    api: { branches: { describeBranch: describeBranchMock, listBranches } },
+    process: { stderr: { write: (value: string) => stderr.push(value) }, exit },
+    isInteractive: false
+  } as unknown as LocalContext;
+
+  return { context, describeBranch: describeBranchMock, listBranches, stderr, exit };
+}
+
+describe('resolveBranchIdOrName', () => {
+  it('should resolve a branch ID without listing the branches', async () => {
+    const { context, describeBranch, listBranches } = buildBranchContext({
+      describeBranch: async () => ({ id: BRANCH_ID })
+    });
+
+    expect(await resolveBranchIdOrName(context, BRANCH_ID, branchLookupOptions)).toBe(BRANCH_ID);
+    expect(describeBranch).toHaveBeenCalledTimes(1);
+    expect(listBranches).not.toHaveBeenCalled();
+  });
+
+  it('should resolve a branch name without describing it as an ID', async () => {
+    const { context, describeBranch, listBranches } = buildBranchContext({
+      branches: [
+        { id: 'other-branch-id', name: 'staging' },
+        { id: BRANCH_ID, name: 'main' }
+      ]
+    });
+
+    expect(await resolveBranchIdOrName(context, 'main', branchLookupOptions)).toBe(BRANCH_ID);
+    expect(listBranches).toHaveBeenCalledTimes(1);
+    expect(describeBranch).not.toHaveBeenCalled();
+  });
+
+  it('should fall back to the name when a value shaped like an ID is not one', async () => {
+    const { context, describeBranch, listBranches } = buildBranchContext({
+      branches: [{ id: 'other-branch-id', name: BRANCH_ID }]
+    });
+
+    expect(await resolveBranchIdOrName(context, BRANCH_ID, branchLookupOptions)).toBe('other-branch-id');
+    expect(describeBranch).toHaveBeenCalledTimes(1);
+    expect(listBranches).toHaveBeenCalledTimes(1);
+  });
+
+  it('should fall back to the ID when a value not shaped like one still describes', async () => {
+    const { context, describeBranch, listBranches } = buildBranchContext({
+      describeBranch: async () => ({ id: '0ansf546nh1bf3blhj75d674gs' }),
+      branches: [{ id: BRANCH_ID, name: 'main' }]
+    });
+
+    expect(await resolveBranchIdOrName(context, '0ansf546nh1bf3blhj75d674gs', branchLookupOptions)).toBe(
+      '0ansf546nh1bf3blhj75d674gs'
+    );
+    expect(listBranches).toHaveBeenCalledTimes(1);
+    expect(describeBranch).toHaveBeenCalledTimes(1);
+  });
+
+  it('should return undefined when neither the ID nor the name matches', async () => {
+    const { context } = buildBranchContext({ branches: [{ id: BRANCH_ID, name: 'main' }] });
+
+    expect(await resolveBranchIdOrName(context, 'nope', branchLookupOptions)).toBeUndefined();
+  });
+
+  it('should rethrow an API failure that is not a 404', async () => {
+    const { context, listBranches } = buildBranchContext({
+      describeBranch: async () => {
+        throw new ApiError(500, undefined, 'Internal server error');
+      },
+      branches: [{ id: BRANCH_ID, name: 'main' }]
+    });
+
+    await expect(resolveBranchIdOrName(context, BRANCH_ID, branchLookupOptions)).rejects.toThrow(
+      'Internal server error'
+    );
+    expect(listBranches).not.toHaveBeenCalled();
+  });
+});
+
+describe('getBranch', () => {
+  it('should resolve a branch name passed to the --branch flag', async () => {
+    const { context, describeBranch } = buildBranchContext({
+      branches: [{ id: BRANCH_ID, name: 'main' }]
+    });
+
+    expect(await getBranch(context, { branch: 'main' }, branchLookupOptions)).toBe(BRANCH_ID);
+    expect(describeBranch).not.toHaveBeenCalled();
+  });
+
+  it('should resolve a branch ID passed to the --branch flag', async () => {
+    const { context, listBranches } = buildBranchContext({
+      describeBranch: async () => ({ id: BRANCH_ID })
+    });
+
+    expect(await getBranch(context, { branch: BRANCH_ID }, branchLookupOptions)).toBe(BRANCH_ID);
+    expect(listBranches).not.toHaveBeenCalled();
+  });
+
+  it('should resolve a branch ID passed as the positional argument', async () => {
+    const { context, listBranches } = buildBranchContext({
+      describeBranch: async () => ({ id: BRANCH_ID })
+    });
+
+    expect(await getBranch(context, {}, { ...branchLookupOptions, branchName: BRANCH_ID })).toBe(BRANCH_ID);
+    expect(listBranches).not.toHaveBeenCalled();
+  });
+
+  it('should report a branch passed to the --branch flag that does not exist', async () => {
+    const { context, stderr, exit } = buildBranchContext({ branches: [{ id: BRANCH_ID, name: 'main' }] });
+
+    await expect(getBranch(context, { branch: 'nope' }, branchLookupOptions)).rejects.toThrow('exit:1');
+    expect(exit).toHaveBeenCalledWith(1);
+    expect(stripAnsi(stderr.join(''))).toContain(
+      'Invalid branch: nope. No branch in this project has that ID or name.'
+    );
   });
 });
 

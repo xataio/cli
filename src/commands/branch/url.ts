@@ -99,7 +99,7 @@ export const BranchURLCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID',
+        brief: 'Branch ID or name',
         parse: String,
         optional: true
       },
@@ -123,7 +123,7 @@ export const BranchURLCommand = buildCommand({
         {
           brief: 'The branch to get URL for',
           parse: String,
-          placeholder: 'branch name',
+          placeholder: 'branch',
           optional: true
         }
       ]

@@ -148,6 +148,29 @@ describe('checkBranchIsReachable', () => {
     expect(stderr.join('')).toContain('XATA_PRIVATE_BRANCH_TIMEOUT=0');
   });
 
+  // `clone start` and `clone stream` clone into what this returns. They used to read the
+  // checked-out branch out of `.xata` instead, so `--branch` picked the branch to check and
+  // then a different one to write to.
+  test('returns the branch it resolved, so the caller writes to the one it checked', async () => {
+    const { context } = fakeContext({ publicAccess: true });
+
+    expect(await checkBranchIsReachable(context, {})).toEqual({
+      organizationId: 'org',
+      projectId: 'project',
+      branchId: 'branch'
+    });
+  });
+
+  test('returns the branch it resolved when the timeout is disabled', async () => {
+    const { context } = fakeContext({ publicAccess: false, port: await refusedPort() }, '0');
+
+    expect(await checkBranchIsReachable(context, {})).toEqual({
+      organizationId: 'org',
+      projectId: 'project',
+      branchId: 'branch'
+    });
+  });
+
   test('skips the check when the timeout is disabled', async () => {
     const { context, exitCodes, credentialCalls } = fakeContext(
       { publicAccess: false, port: await refusedPort() },

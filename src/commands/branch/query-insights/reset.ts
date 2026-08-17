@@ -58,7 +58,7 @@ export const QueryInsightsResetCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID',
+        brief: 'Branch ID or name',
         parse: String,
         optional: true
       },
@@ -79,7 +79,7 @@ export const QueryInsightsResetCommand = buildCommand({
         {
           brief: 'The branch to reset query statistics for',
           parse: String,
-          placeholder: 'branch name',
+          placeholder: 'branch',
           optional: true
         }
       ]

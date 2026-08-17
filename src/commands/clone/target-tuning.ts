@@ -94,17 +94,14 @@ function printTuningHelp(context: LocalContext, branchTuning: Record<string, str
 
 export async function applyTargetDatabaseTuning(
   context: LocalContext,
-  flags: { organization?: string; project?: string; branch?: string }
+  target: { organizationId: string; projectId: string; branchId: string }
 ) {
-  const organizationId = await context.getOrganization(context, flags, {});
-  const projectId = await context.getProject(context, flags, { organizationId });
-  const branchId = await context.getBranch(context, flags, { organizationId, projectId });
-  const pathParams = { organizationID: organizationId, projectID: projectId, branchID: branchId };
+  const pathParams = { organizationID: target.organizationId, projectID: target.projectId, branchID: target.branchId };
 
   const branch = await context.api.branches.describeBranch({ pathParams });
 
   const { instanceTypes } = await context.api.projects.listInstanceTypes({
-    pathParams: { organizationID: organizationId },
+    pathParams: { organizationID: target.organizationId },
     queryParams: { region: branch.region }
   });
   const instance = instanceTypes.find((instanceType) => instanceType.name === branch.configuration.instanceType);

@@ -10,8 +10,8 @@ import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 import type { Types } from '@xata.io/api';
 import { pickLatestPostgresImage, sortPostgresImagesDesc } from '@xata.io/utils';
 import invariant from 'tiny-invariant';
-import type { ProjectOptions } from '~/lib/cli-utils';
-import { groupAndSortRegions } from '~/lib/cli-utils';
+import type { BranchLookupOptions, ProjectOptions } from '~/lib/cli-utils';
+import { exitWithUnknownBranch, groupAndSortRegions, resolveBranchIdOrName } from '~/lib/cli-utils';
 import { isCLIConfigInitialized } from '~/lib/cli-config';
 import { config } from '~/lib/config';
 import { implementation as checkout } from './checkout';
@@ -121,6 +121,24 @@ export async function createChildBranch(
     }
   });
   return branch;
+}
+
+export async function getParentBranchId(context: LocalContext, parentBranch: string, options: BranchLookupOptions) {
+  const branchId = await resolveBranchIdOrName(context, parentBranch, options);
+  if (!branchId) {
+    return exitWithUnknownBranch(context, 'parent branch', parentBranch);
+  }
+  return branchId;
+}
+
+export async function promptForParentBranchId(context: LocalContext, options: BranchLookupOptions) {
+  const { branches } = await context.api.branches.listBranches({
+    pathParams: { organizationID: options.organizationId, projectID: options.projectId }
+  });
+  if (branches.length === 0) {
+    return '';
+  }
+  return await context.getBranch(context, {}, options);
 }
 
 export async function getRegion(context: LocalContext, flags: { region?: string }, options: ProjectOptions) {
@@ -293,17 +311,11 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
-  if (!flags['parent-branch'] && !flags['no-parent']) {
-    const branches = await this.api.branches.listBranches({
-      pathParams: { organizationID: organizationId, projectID: projectId }
-    });
-    flags['parent-branch'] = '';
-    if (branches.branches.length > 0) {
-      flags['parent-branch'] = await this.getBranch(this, {}, { organizationId, projectId });
-    }
-  }
-
-  const parentBranchId = flags['parent-branch'] ?? '';
+  const parentBranchId = flags['no-parent']
+    ? ''
+    : flags['parent-branch']
+      ? await getParentBranchId(this, flags['parent-branch'], { organizationId, projectId })
+      : await promptForParentBranchId(this, { organizationId, projectId });
 
   // Determine if this will be a base branch (no parent)
   const isRootBranch = !parentBranchId;
@@ -412,7 +424,7 @@ export const BranchCreateCommand = buildCommand({
       'A branch is a running Postgres database that starts as a copy of its parent. It takes a moment to come up, so `xata branch wait-ready` is what to run before connecting to it. It is checked out afterwards when this folder already has an organization, project and branch to work from.',
     customUsage: [
       { input: '--name my-branch', brief: 'Branch the current branch' },
-      { input: '--name my-branch --parent-branch <branch-id>', brief: 'Branch another branch' },
+      { input: '--name my-branch --parent-branch main', brief: 'Branch another branch, by ID or by name' },
       { input: '--name my-branch --no-parent', brief: 'Create a root branch with no parent' },
       {
         input: '--name my-branch --instance-type <type> --replicas 1 --scale-to-zero true',
@@ -436,7 +448,7 @@ export const BranchCreateCommand = buildCommand({
       },
       'parent-branch': {
         kind: 'parsed',
-        brief: 'Parent branch ID to fork from. Cannot be combined with --no-parent.',
+        brief: 'Parent branch ID or name to fork from. Cannot be combined with --no-parent.',
         parse: String,
         optional: true
       },

@@ -6,7 +6,7 @@ import { parse } from 'pg-connection-string';
 import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { renderTable } from '~/lib/table';
-import { createChildBranch } from './branch/create';
+import { createChildBranch, getParentBranchId } from './branch/create';
 
 type Flags = {
   organization?: string;
@@ -233,11 +233,9 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
   const organizationId = await this.getOrganization(this, flags, {});
   const projectId = await this.getProject(this, flags, { organizationId });
 
-  if (!flags['parent-branch']) {
-    flags['parent-branch'] = await this.getBranch(this, {}, { organizationId, projectId });
-  }
-
-  const parentBranchId = flags['parent-branch'];
+  const parentBranchId = flags['parent-branch']
+    ? await getParentBranchId(this, flags['parent-branch'], { organizationId, projectId })
+    : await this.getBranch(this, {}, { organizationId, projectId });
   if (!parentBranchId) {
     this.process.stderr.write(
       chalk.red('Expected a source branch. Pass --parent-branch or initialize the project with xata init.\n')
@@ -401,7 +399,7 @@ export const ScratchCommand = buildCommand({
       },
       'parent-branch': {
         kind: 'parsed',
-        brief: 'Source branch ID for the scratch branch',
+        brief: 'Source branch ID or name for the scratch branch',
         parse: String,
         optional: true
       },

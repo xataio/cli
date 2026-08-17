@@ -371,7 +371,7 @@ export const BranchLogsCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID',
+        brief: 'Branch ID or name',
         parse: String,
         optional: true
       },
@@ -444,7 +444,7 @@ export const BranchLogsCommand = buildCommand({
         {
           brief: 'The branch to retrieve logs for',
           parse: String,
-          placeholder: 'branch name',
+          placeholder: 'branch',
           optional: true
         }
       ]

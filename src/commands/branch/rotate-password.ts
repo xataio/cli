@@ -91,7 +91,7 @@ export const BranchRotatePasswordCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID',
+        brief: 'Branch ID or name',
         parse: String,
         optional: true
       },
@@ -112,7 +112,7 @@ export const BranchRotatePasswordCommand = buildCommand({
         {
           brief: 'The branch to rotate the password for',
           parse: String,
-          placeholder: 'branch name',
+          placeholder: 'branch',
           optional: true
         }
       ]

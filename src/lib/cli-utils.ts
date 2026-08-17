@@ -1,11 +1,12 @@
 import chalk from 'chalk';
 import invariant from 'tiny-invariant';
 import { decodeJwt } from 'jose';
+import { ApiError } from '@xata.io/api';
 import type { LocalContext } from '~/context';
 import { branchConfig } from './branch-config';
 import { isCLIConfigInitialized } from './cli-config';
 import { config } from './config';
-import { DEFAULT_DATABASE_NAME } from './constants';
+import { CLI_NAME, DEFAULT_DATABASE_NAME } from './constants';
 import { getProfile } from './profile';
 import { projectConfig } from './project-config';
 import { renderTable } from './table';
@@ -141,22 +142,20 @@ export const getBranch = async (
   if (options.branchName && flags.branch) {
     invariant(false, 'expected input for flag --branch OR positional argument');
   }
-  if (options.branchName) {
-    const branch = await getBranchByName(context, {
-      organizationId: options.organizationId,
-      projectId: options.projectId,
-      branchName: options.branchName
-    });
-    return branch.id;
+  const branchIdOrName = options.branchName ?? flags.branch;
+  if (branchIdOrName) {
+    const branchId = await resolveBranchIdOrName(context, branchIdOrName, options);
+    if (!branchId) {
+      return exitWithUnknownBranch(context, 'branch', branchIdOrName);
+    }
+    return branchId;
   }
-  const title = options?.title || 'Select a branch';
-  const skipProjectConfig = options?.skipProjectConfig || false;
-  if (flags.branch) {
-    return flags.branch;
-  }
-  if (!skipProjectConfig && isCLIConfigInitialized(context)) {
+  // The checked-out branch only stands in for this project's default, never another project's.
+  if (!options.skipProjectConfig && isCLIConfigInitialized(context) && projectConfig.projectId === options.projectId) {
     return branchConfig.branchId;
   }
+
+  const title = options.title || 'Select a branch';
 
   const branchesQuery = await context.api.branches.listBranches({
     pathParams: { organizationID: options.organizationId, projectID: options.projectId }
@@ -199,20 +198,61 @@ export const getDatabase = async (context: LocalContext, flags: { database?: str
   return databaseName;
 };
 
-type GetBranchByNameOptions = {
+export type BranchLookupOptions = {
   organizationId: string;
   projectId: string;
-  branchName?: string;
 };
 
-async function getBranchByName(context: LocalContext, options: GetBranchByNameOptions) {
-  const { organizationId, projectId, branchName } = options;
+/** Branch IDs are a UUID in unpadded base32hex, never starting with a digit (maki `internal/idgen`). */
+const BRANCH_ID_PATTERN = /^[a-v][0-9a-v]{25}$/;
+
+async function findBranchById(context: LocalContext, branchId: string, options: BranchLookupOptions) {
+  try {
+    const branch = await context.api.branches.describeBranch({
+      pathParams: { organizationID: options.organizationId, projectID: options.projectId, branchID: branchId }
+    });
+    return branch.id;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return undefined;
+    }
+    throw error;
+  }
+}
+
+async function findBranchIdByName(context: LocalContext, branchName: string, options: BranchLookupOptions) {
   const { branches } = await context.api.branches.listBranches({
-    pathParams: { organizationID: organizationId, projectID: projectId }
+    pathParams: { organizationID: options.organizationId, projectID: options.projectId }
   });
-  const branch = branches.find((b) => b.name === branchName);
-  invariant(branch, `Branch ${branchName} not found`);
-  return branch;
+  return branches.find((branch) => branch.name === branchName)?.id;
+}
+
+export const resolveBranchIdOrName = async (
+  context: LocalContext,
+  branchIdOrName: string,
+  options: BranchLookupOptions
+) => {
+  const lookups = BRANCH_ID_PATTERN.test(branchIdOrName)
+    ? [findBranchById, findBranchIdByName]
+    : [findBranchIdByName, findBranchById];
+
+  for (const lookup of lookups) {
+    const branchId = await lookup(context, branchIdOrName, options);
+    if (branchId) {
+      return branchId;
+    }
+  }
+
+  return undefined;
+};
+
+export function exitWithUnknownBranch(context: LocalContext, label: string, branchIdOrName: string): never {
+  context.process.stderr.write(
+    chalk.red(
+      `Invalid ${label}: ${branchIdOrName}. No branch in this project has that ID or name. Run \`${CLI_NAME} branch list\` to see them.\n`
+    )
+  );
+  return context.process.exit(1);
 }
 
 type GetOrganizationByNameOptions = {

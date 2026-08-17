@@ -45,8 +45,8 @@ importers:
         specifier: 0.0.2
         version: 0.0.2
       '@xata.io/utils':
-        specifier: 0.2.0
-        version: 0.2.0
+        specifier: 0.2.1
+        version: 0.2.1
       chalk:
         specifier: 6.0.0
         version: 6.0.0
@@ -112,8 +112,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@xata.io/test-utils':
-        specifier: 0.0.11
-        version: 0.0.11
+        specifier: 0.0.12
+        version: 0.0.12
 
 packages:
 
@@ -314,14 +314,14 @@ packages:
   '@xata.io/sql@0.2.4':
     resolution: {integrity: sha512-0hlTcieuDqUGnbgNtDOo+LpEaOYRcl5bHp3BIbdYSCSeXG3g0hV/khyIktQGPZ0EGA0WNDh+mdPWcykYOB68zw==}
 
-  '@xata.io/test-utils@0.0.11':
-    resolution: {integrity: sha512-24iDn+tgslU3WNTMdEdx3isyAXsPKpHMxkkO1VwlfNpiAuEm0zWg4OstJATOji6jnbE+jRfCHTCLRLA7j8/sPA==}
+  '@xata.io/test-utils@0.0.12':
+    resolution: {integrity: sha512-3qDE8fzge8gzdbfTHatTtHMwtel3Fd/lLhwKenpNVwrPh7UqfA6rHeJbI/sy2r2alXwlIZqtJn48jAi9obgynQ==}
 
   '@xata.io/tsconfig@0.0.2':
     resolution: {integrity: sha512-7uY1tUBZbA1g7PTSrJ+DWEo1qOxIpN3DU1W94ttWL7Ns76+DmL1JVYtXOw6i9Ta7SYeEii3pxQZnaOQRLe/EAw==}
 
-  '@xata.io/utils@0.2.0':
-    resolution: {integrity: sha512-RrfNCg10pqwXGhNgWx2WqNZPQnmaR8ytY2+XgdY0DIKP4oZGuWQFOiWj8mwPFCUKFFmQdieHJ9o0ZPvPMonUDA==}
+  '@xata.io/utils@0.2.1':
+    resolution: {integrity: sha512-TCEvlQlrQfj8XE9A4/WByEWpmE/5bnbevdfclK+r7iK2yi09IMPsDRzQbevCPYzIuk80cvJ9ZMvhQuLFJx0XAA==}
 
   ai@7.0.22:
     resolution: {integrity: sha512-iAXYwQtR18qN7GXwNmGVAQM4uSJOh2+nZ5RP9NtDXfH5d4tlYyYzAM133O3U+eVcyWrvNRzecN9yW58xpCdfMg==}
@@ -885,17 +885,17 @@ snapshots:
       tiny-invariant: 1.3.3
       zod: 4.4.3
 
-  '@xata.io/test-utils@0.0.11':
+  '@xata.io/test-utils@0.0.12':
     dependencies:
       '@neondatabase/serverless': 1.1.0
       '@xata.io/api': 0.1.8
       '@xata.io/lang': 0.0.4
       '@xata.io/sql': 0.2.4
-      '@xata.io/utils': 0.2.0
+      '@xata.io/utils': 0.2.1
 
   '@xata.io/tsconfig@0.0.2': {}
 
-  '@xata.io/utils@0.2.0':
+  '@xata.io/utils@0.2.1':
     dependencies:
       '@xata.io/lang': 0.0.4
       tiny-invariant: 1.3.3

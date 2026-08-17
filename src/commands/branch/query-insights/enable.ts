@@ -126,7 +126,7 @@ export const QueryInsightsEnableCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID',
+        brief: 'Branch ID or name',
         parse: String,
         optional: true
       },
@@ -142,7 +142,7 @@ export const QueryInsightsEnableCommand = buildCommand({
         {
           brief: 'The branch to enable query insights for',
           parse: String,
-          placeholder: 'branch name',
+          placeholder: 'branch',
           optional: true
         }
       ]

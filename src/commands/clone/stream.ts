@@ -6,7 +6,6 @@ import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { checkBranchIsReachable } from '~/lib/binary/utils';
 
-import { branchConfig } from '~/lib/branch-config';
 import { isCLIConfigInitialized } from '~/lib/cli-config';
 import { CLI_NAME, DEFAULT_CLONE_RULES_FILE } from '~/lib/constants';
 import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream } from '~/lib/pgstream/commands';
@@ -16,7 +15,6 @@ import {
   getCommandFlags,
   type GlobalFlags
 } from '~/lib/pgstream/stream-utils';
-import { projectConfig } from '~/lib/project-config';
 import { readConfigFile } from './clone-config-utils';
 import type { ValidationMode } from './config';
 import { getPgStreamStreamEnv } from './env';
@@ -68,7 +66,7 @@ export async function implementation(
   if (this.debug) {
     console.log(`DEBUG: ${COMMAND}`, { args, flags });
   }
-  await checkBranchIsReachable(this, flags);
+  const target = await checkBranchIsReachable(this, flags);
 
   let validationMode: ValidationMode = 'strict';
   if (flags['validation-mode'] === 'prompt') {
@@ -117,9 +115,9 @@ export async function implementation(
     const connectionString = await fetchBranchConnectionString(
       this.api,
       {
-        organizationID: projectConfig.organizationId,
-        projectID: projectConfig.projectId,
-        branchID: branchConfig.branchId
+        organizationID: target.organizationId,
+        projectID: target.projectId,
+        branchID: target.branchId
       },
       { database: databaseName }
     );
@@ -257,7 +255,7 @@ export const CloneStreamCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID',
+        brief: 'Branch ID or name',
         parse: String,
         optional: true
       },

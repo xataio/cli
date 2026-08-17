@@ -79,7 +79,7 @@ export const BranchDeleteCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID',
+        brief: 'Branch ID or name',
         parse: String,
         optional: true
       },
@@ -100,7 +100,7 @@ export const BranchDeleteCommand = buildCommand({
         {
           brief: 'The branch to delete',
           parse: String,
-          placeholder: 'branch name',
+          placeholder: 'branch',
           optional: true
         }
       ]

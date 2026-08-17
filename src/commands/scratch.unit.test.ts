@@ -107,6 +107,16 @@ describe('scratch command', () => {
     expect(stderr.join('')).toContain('Deleted scratch branch scratch-');
   });
 
+  test('resolves a branch name passed to --parent-branch', async () => {
+    const { context, createBranch, listBranches } = buildContext();
+    listBranches.mockImplementationOnce(async () => ({ branches: [{ id: 'source-branch-id', name: 'main' }] }));
+
+    await implementation.call(context, { execute: 'select 1', json: false, 'parent-branch': 'main' });
+
+    expect(listBranches).toHaveBeenCalledTimes(1);
+    expect(createBranch.mock.calls[0]?.[0]).toMatchObject({ body: { parentID: 'source-branch-id' } });
+  });
+
   test('reads the credentials of the branch it just created', async () => {
     const { context, getBranchCredentials, unsafe } = buildContext();
 

@@ -50,7 +50,7 @@ export const BackupListCommand = buildCommand({
       },
       branch: {
         kind: 'parsed',
-        brief: 'Branch ID to show backup information for',
+        brief: 'Branch ID or name to show backup information for',
         parse: String,
         optional: true
       },

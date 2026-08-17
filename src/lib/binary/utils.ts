@@ -147,6 +147,7 @@ export async function checkBranchIsReachable(
   const organizationId = await context.getOrganization(context, flags, {});
   const projectId = await context.getProject(context, flags, { organizationId });
   const branchId = await context.getBranch(context, flags, { organizationId, projectId });
+  const target = { organizationId, projectId, branchId };
 
   const branch = await context.api.branches.describeBranch({
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
@@ -154,7 +155,7 @@ export async function checkBranchIsReachable(
   if (!branch.publicAccess) {
     const timeout = parseInt(context.env.XATA_PRIVATE_BRANCH_TIMEOUT);
     if (timeout === 0) {
-      return;
+      return target;
     }
     const { hostname, port } = await fetchBranchCredentials(context.api, {
       organizationID: organizationId,
@@ -176,6 +177,8 @@ export async function checkBranchIsReachable(
       context.process.exit(1);
     }
   }
+
+  return target;
 }
 
 /**
