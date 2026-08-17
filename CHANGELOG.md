@@ -1,5 +1,19 @@
 # xata-cli
 
+## 1.7.0
+
+### Minor Changes
+
+- [#2932](https://github.com/xataio/frontend/pull/2932) [`734e337`](https://github.com/xataio/frontend/commit/734e3376deab3fb04e91dfc3747c251aa9fdd066) Thanks [@SferaDev](https://github.com/SferaDev)! - Accept a branch name or a branch ID for the `--branch` flag and for the branch positional argument, on every command that takes them.
+
+- [#2932](https://github.com/xataio/frontend/pull/2932) [`734e337`](https://github.com/xataio/frontend/commit/734e3376deab3fb04e91dfc3747c251aa9fdd066) Thanks [@SferaDev](https://github.com/SferaDev)! - Accept a branch name as well as a branch ID for the `--parent-branch` flag of `xata branch create` and `xata scratch`.
+
+### Patch Changes
+
+- [#2932](https://github.com/xataio/frontend/pull/2932) [`734e337`](https://github.com/xataio/frontend/commit/734e3376deab3fb04e91dfc3747c251aa9fdd066) Thanks [@SferaDev](https://github.com/SferaDev)! - Fix `xata clone start` and `xata clone stream` ignoring `--branch`. The flag chose the branch they checked for reachability and tuned with `--tune-target`, but they always cloned into the branch checked out in `.xata`.
+- Updated dependencies [[`add8922`](https://github.com/xataio/frontend/commit/add89225f6d1e17e644d7b5631abb0decbfa73b2)]:
+  - @xata.io/utils@0.2.1
+
 ## 1.6.0
 
 ### Minor Changes
