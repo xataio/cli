@@ -141,6 +141,16 @@ export async function promptForParentBranchId(context: LocalContext, options: Br
   return await context.getBranch(context, {}, options);
 }
 
+async function resolveParentBranchId(context: LocalContext, flags: Flags, options: BranchLookupOptions) {
+  if (flags['no-parent']) {
+    return '';
+  }
+  if (flags['parent-branch']) {
+    return await getParentBranchId(context, flags['parent-branch'], options);
+  }
+  return await promptForParentBranchId(context, options);
+}
+
 export async function getRegion(context: LocalContext, flags: { region?: string }, options: ProjectOptions) {
   const title = options?.title || 'Please select a region for the branch';
   const regions = await context.api.projects.listRegions({
@@ -311,11 +321,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
-  const parentBranchId = flags['no-parent']
-    ? ''
-    : flags['parent-branch']
-      ? await getParentBranchId(this, flags['parent-branch'], { organizationId, projectId })
-      : await promptForParentBranchId(this, { organizationId, projectId });
+  const parentBranchId = await resolveParentBranchId(this, flags, { organizationId, projectId });
 
   // Determine if this will be a base branch (no parent)
   const isRootBranch = !parentBranchId;
