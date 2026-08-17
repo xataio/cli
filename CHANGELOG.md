@@ -1,5 +1,32 @@
 # xata-cli
 
+## 1.6.0
+
+### Minor Changes
+
+- [#2925](https://github.com/xataio/frontend/pull/2925) [`2ed46bb`](https://github.com/xataio/frontend/commit/2ed46bb34c636d8f376f0edf9d3aa1027dc6fd37) Thanks [@SferaDev](https://github.com/SferaDev)! - Add `xata branch create --no-parent` to create a root branch, and remove the `--parent-branch None` sentinel it replaces.
+
+  `None` was documented as the way to create a branch without a parent but never worked: it is a truthy string, so it took the fork path and sent `parentID: "None"`, which the API rejects with `Branch with ID [None]: not found`. It was also the only way to skip the parent prompt in a project that already has branches, so there was no way to create a root branch non-interactively at all. `--no-parent` is a boolean, so it skips that prompt and matches how the API actually models this — a root branch is `mode: "custom"` with no parent, never a magic parent value.
+
+  This is technically breaking, but `--parent-branch None` could not have been working for anyone. `--parent-branch None` is now treated as an ordinary branch id and fails as one. Passing `--parent-branch` together with `--no-parent` is rejected.
+
+- [#2889](https://github.com/xataio/frontend/pull/2889) [`8a3b15a`](https://github.com/xataio/frontend/commit/8a3b15af1e86b4295c7c2757b36179ad632b93f6) Thanks [@kvch](https://github.com/kvch)! - Add `xata clone start --tune-target`, which temporarily tunes the target branch for a bulk data load and reverts the change when the clone stops. It raises `max_wal_size` on the branch, and hands `maintenance_work_mem` and the parallel maintenance settings to pgstream for the session that rebuilds indexes and constraints.
+
+### Patch Changes
+
+- [#2938](https://github.com/xataio/frontend/pull/2938) [`bfc959c`](https://github.com/xataio/frontend/commit/bfc959cf6fd2054c8d65264b8e0dd41709be2a29) Thanks [@divyenduz](https://github.com/divyenduz)! - Report declined command confirmations as failures with exit code 1 and a diagnostic on stderr, keeping stdout empty for automation, including with `--json`.
+
+- [#2901](https://github.com/xataio/frontend/pull/2901) [`d4d8591`](https://github.com/xataio/frontend/commit/d4d8591dd48b3dee1e3960d08b80199e73d3bb58) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Fact check and complete the command help
+
+- [#2924](https://github.com/xataio/frontend/pull/2924) [`f45444b`](https://github.com/xataio/frontend/commit/f45444b6ce106e3632b5dd91ee1b4647abfef4f1) Thanks [@SferaDev](https://github.com/SferaDev)! - [Webapp]: Fix compute estimate ignoring replicas when comparing branch cost ([#2924](https://github.com/xataio/frontend/issues/2924))
+
+  The monthly cost helpers now take options objects, so replicas and storage can no longer be passed in the wrong slot. `monthlyProductionCloneComputeCost` is replaced by `monthlyComputeCost` with no replicas, and `monthlyStorageCost`/`monthlyTotalCost` derive the storage rate from the instance type instead of taking it as a separate argument.
+
+  The same misordering was priced into `xata branch create`/`xata branch set`, where the instance type picker showed double the monthly rate for the instance being chosen.
+
+- Updated dependencies [[`f45444b`](https://github.com/xataio/frontend/commit/f45444b6ce106e3632b5dd91ee1b4647abfef4f1)]:
+  - @xata.io/utils@0.2.0
+
 ## 1.5.6
 
 ### Patch Changes
