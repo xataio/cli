@@ -49,7 +49,9 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
       this.isInteractive,
       'This is the last CIDR entry and IP filtering is enabled. Removing it will leave filtering enabled with no allowed IPs. Continue?'
     );
-    if (!confirm) return;
+    if (!confirm) {
+      return new Error(`Aborted as there was no confirmation. CIDR ${cidrToRemove} not removed.`);
+    }
   }
 
   ipFiltering.cidr.splice(index, 1);

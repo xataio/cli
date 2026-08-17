@@ -32,12 +32,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   if (!flags.yes) {
     if (!this.isInteractive) {
-      // In an interactive terminal, declining the confirmation is an intentional
-      // user cancellation, so it exits successfully below. In CI or agentic
-      // contexts prompts are disabled, so there is no opportunity to confirm;
-      // returning success would make automation think the branch was deleted.
-      this.process.stderr.write(chalk.red(`Cannot delete branch without confirmation. Pass --yes to confirm.\n`));
-      this.process.exit(1);
+      return new Error('Cannot delete branch without confirmation. Pass --yes to confirm.');
     }
 
     const confirmFromPrompt = await this.enquirer.confirmPrompt(
@@ -45,8 +40,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
       `Are you sure you want to delete the branch ${branchToDelete.name} with id ${branchToDelete.id}?`
     );
     if (!confirmFromPrompt) {
-      this.process.stdout.write(`Aborted as there was no confirmation. Branch ${branchToDelete.id} not deleted`);
-      return;
+      return new Error(`Aborted as there was no confirmation. Branch ${branchToDelete.id} not deleted.`);
     }
   }
 

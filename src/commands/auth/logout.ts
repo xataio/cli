@@ -24,8 +24,7 @@ export async function implementation(this: LocalContext, { profile: profileFlag,
       `Do you want to log out of the profile ${profile}`
     );
     if (!confirmFromPrompt) {
-      this.process.stdout.write(`Aborted as there was no confirmation. Didn't log out.`);
-      return;
+      return new Error(`Aborted as there was no confirmation. Didn't log out.`);
     }
   }
 

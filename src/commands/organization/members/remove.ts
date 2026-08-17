@@ -57,8 +57,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     );
 
     if (!confirmed) {
-      this.process.stdout.write('Operation cancelled\n');
-      return;
+      return new Error('Operation cancelled');
     }
   }
 

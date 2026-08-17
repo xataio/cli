@@ -51,8 +51,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
       `Rotate the password for PostgreSQL user ${username} on branch ${branch.name}? Existing connections will not be affected, but any new connections will need to use the new credentials.`
     );
     if (!confirmed) {
-      this.process.stdout.write('Aborted as there was no confirmation. Password not rotated.');
-      return;
+      return new Error('Aborted as there was no confirmation. Password not rotated.');
     }
   }
 

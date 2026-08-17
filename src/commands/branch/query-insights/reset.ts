@@ -12,13 +12,7 @@ type Flags = BranchQueryInsightsFlags & {
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
   if (!flags.yes) {
     if (!this.isInteractive) {
-      if (flags.json) {
-        this.print(this, true, { reset: false, error: 'Confirmation required. Re-run with --yes to reset.' });
-      } else {
-        this.process.stderr.write(chalk.red('Confirmation required. Re-run with --yes to reset query statistics.\n'));
-      }
-      this.process.exitCode = 1;
-      return;
+      return new Error('Confirmation required. Re-run with --yes to reset query statistics.');
     }
 
     const confirmed = await this.enquirer.confirmPrompt(
@@ -26,8 +20,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
       'Reset all accumulated pg_stat_statements query statistics for this branch?'
     );
     if (!confirmed) {
-      this.process.stdout.write('Aborted as there was no confirmation. Query statistics were not reset.\n');
-      return;
+      return new Error('Aborted as there was no confirmation. Query statistics were not reset.');
     }
   }
 

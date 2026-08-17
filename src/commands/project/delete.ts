@@ -28,8 +28,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       `Are you sure you want to delete the project ${project.name}?`
     );
     if (!confirmFromPrompt) {
-      this.process.stdout.write(`Aborted as there was no confirmation. Project not deleted.`);
-      return;
+      return new Error(`Aborted as there was no confirmation. Project not deleted.`);
     }
   }
 
