@@ -1,5 +1,16 @@
 # xata-cli
 
+## 1.7.1
+
+### Patch Changes
+
+- [#2950](https://github.com/xataio/frontend/pull/2950) [`3960f6d`](https://github.com/xataio/frontend/commit/3960f6d76426318443d119355308a2d9b5f4b383) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Read the parent-branch choice as three cases, not a nested ternary ([#2950](https://github.com/xataio/frontend/issues/2950))
+- Updated dependencies [[`8d1e720`](https://github.com/xataio/frontend/commit/8d1e72045b44d8a8d4c46794468bd4c9761b0f74), [`e82783c`](https://github.com/xataio/frontend/commit/e82783cfdf40783225a36ba2a572ed6d2db409aa)]:
+  - @xata.io/api@0.1.9
+  - @xata.io/sql@0.2.5
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.10
+
 ## 1.7.0
 
 ### Minor Changes
