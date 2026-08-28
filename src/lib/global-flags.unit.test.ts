@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { app } from '~/app';
+import { getDebugFlag } from './global-flags';
 
 type Entry = {
   name: Record<string, string>;
@@ -35,5 +36,30 @@ describe('global flags', () => {
 
     expect(commands.length).toBeGreaterThan(0);
     expect(missing.map(({ route }) => route)).toEqual([]);
+  });
+
+  test('every command accepts --debug', () => {
+    const commands = collectCommands((app as unknown as { root: Entry['target'] }).root, ['xata']);
+    const missing = commands.filter(({ flags }) => {
+      return !flags.includes('debug');
+    });
+
+    expect(commands.length).toBeGreaterThan(0);
+    expect(missing.map(({ route }) => route)).toEqual([]);
+  });
+});
+
+describe('getDebugFlag', () => {
+  test('reads the flag from anywhere in the arguments', () => {
+    expect(getDebugFlag(['branch', 'list', '--debug'])).toBe(true);
+    expect(getDebugFlag(['--debug', 'branch', 'list'])).toBe(true);
+  });
+
+  test('is false when the flag is absent', () => {
+    expect(getDebugFlag(['branch', 'list'])).toBe(false);
+  });
+
+  test('is false for arguments it cannot parse', () => {
+    expect(getDebugFlag(['--'])).toBe(false);
   });
 });

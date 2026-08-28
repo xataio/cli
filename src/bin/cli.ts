@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { buildContext } from '~/context';
 import { getCanonicalCommandId } from '~/lib/canonical-command-id';
+import { getDebugFlag } from '~/lib/global-flags';
 import { getProfileFlag } from '~/lib/profile';
 import { app } from '../app';
 dotenv.config({
@@ -21,7 +22,8 @@ await run(app, process.argv.slice(2), {
   forCommand: async (info) => {
     const canonicalName = getCanonicalCommandId(app, info.prefix);
     const profile = getProfileFlag(process.argv.slice(2));
-    const context = await buildContext(process, { canonicalName, cliInvocationId, profile });
+    const debug = getDebugFlag(process.argv.slice(2)) || Boolean(Bun.env.DEBUG);
+    const context = await buildContext(process, { canonicalName, cliInvocationId, profile, debug });
 
     if (context.usingEnvApiKey && !context.debug) {
       process.on('exit', (code) => {

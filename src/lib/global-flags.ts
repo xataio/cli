@@ -1,4 +1,5 @@
 import type { Command, RouteMap } from '@stricli/core';
+import { parseArgs } from 'node:util';
 import type { LocalContext } from '~/context';
 
 /** A route map holds commands or more route maps, a union stricli does not export. */
@@ -11,6 +12,12 @@ const profileFlag = {
   optional: true
 } as const;
 
+const debugFlag = {
+  kind: 'boolean',
+  brief: 'Print where each resolved value came from',
+  default: false
+} as const;
+
 function isRouteMap(target: RoutingTarget): target is RouteMap<LocalContext> {
   return 'getAllEntries' in target;
 }
@@ -21,6 +28,26 @@ function addFlagsToCommand(command: Command<LocalContext>) {
   const parameters = command.parameters as { flags?: Record<string, unknown> };
   parameters.flags ??= {};
   parameters.flags.profile ??= profileFlag;
+  parameters.flags.debug ??= debugFlag;
+}
+
+/**
+ * Reads `--debug` out of the raw arguments, because the context carries it and is
+ * built before stricli parses the command's flags. Mirrors `getProfileFlag`.
+ */
+export function getDebugFlag(args: readonly string[]) {
+  try {
+    const { values } = parseArgs({
+      args: [...args],
+      options: { debug: { type: 'boolean' } },
+      strict: false,
+      allowPositionals: true
+    });
+
+    return values.debug === true;
+  } catch {
+    return false;
+  }
 }
 
 /**

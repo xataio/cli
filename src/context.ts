@@ -64,9 +64,9 @@ export function getIsInteractive(process: NodeJS.Process, { isCI, isAgent }: { i
 
 export async function buildContext(
   process: NodeJS.Process,
-  options: ApiOptionsFromCommand = {}
+  options: ApiOptionsFromCommand & { debug?: boolean } = {}
 ): Promise<LocalContext> {
-  const debug = Boolean(Bun.env.DEBUG);
+  const debug = options.debug ?? Boolean(Bun.env.DEBUG);
   const usingEnvApiKey = Boolean(env.XATA_API_KEY);
   const xata = await getApi(options);
   const agent = await determineAgent();
