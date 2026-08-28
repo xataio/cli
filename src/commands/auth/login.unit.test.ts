@@ -209,6 +209,52 @@ describe('auth login --api-key', () => {
     expect(configState.profiles.default).toMatchObject({ type: 'apiKey', apiKey: 'xau_new' });
   });
 
+  test('stays on the deployment the profile was created for', async () => {
+    configState.profiles = {
+      default: {
+        type: 'oidc',
+        accessToken: 'expired',
+        refreshToken: 'expired',
+        expiresAt: new Date(0),
+        customConfig: { apiBaseUrl: 'https://api.staging.xata.tech' }
+      }
+    };
+    isSessionValid.mockImplementation(async () => false);
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'xau_new' });
+    } finally {
+      restore();
+    }
+
+    expect(configState.profiles.default).toMatchObject({
+      customConfig: { apiBaseUrl: 'https://api.staging.xata.tech' }
+    });
+  });
+
+  test('lets an explicit --api-url move the profile to another deployment', async () => {
+    configState.profiles = {
+      default: { type: 'apiKey', apiKey: 'existing', customConfig: { apiBaseUrl: 'https://api.staging.xata.tech' } }
+    };
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, {
+        profile: 'default',
+        force: true,
+        'api-key': 'xau_new',
+        'api-url': 'https://api.xata.tech'
+      });
+    } finally {
+      restore();
+    }
+
+    expect(configState.profiles.default).toMatchObject({
+      customConfig: { apiBaseUrl: 'https://api.xata.tech' }
+    });
+  });
+
   test('falls through to the device flow when no --api-key is passed', async () => {
     const { context, restore } = buildContext();
 

@@ -30,11 +30,12 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
     console.log(`The session for profile "${profile}" has expired, logging in again.`);
   }
 
+  const storedConfig = profiles[profile]?.customConfig;
   const { baseUrl, client } = getAuthConfig({
-    clientId: customFlags['client-id'],
-    clientSecret: customFlags['client-secret'],
-    issuer: customFlags.issuer,
-    apiBaseUrl: customFlags['api-url']
+    clientId: customFlags['client-id'] ?? storedConfig?.clientId,
+    clientSecret: customFlags['client-secret'] ?? storedConfig?.clientSecret,
+    issuer: customFlags.issuer ?? storedConfig?.issuer,
+    apiBaseUrl: customFlags['api-url'] ?? storedConfig?.apiBaseUrl
   });
 
   // Passing --api-key is a non-interactive alternative to the device OAuth flow below.
