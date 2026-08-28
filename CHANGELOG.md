@@ -1,5 +1,57 @@
 # xata-cli
 
+## 1.7.2
+
+### Patch Changes
+
+- [#2893](https://github.com/xataio/frontend/pull/2893) [`f67be3b`](https://github.com/xataio/frontend/commit/f67be3bc825848612f39d31a7a70f314d077269d) Thanks [@SferaDev](https://github.com/SferaDev)! - Resolve the organization, project, branch and database of a command from each source on its own, and give `xata roll` the same `--organization`, `--project`, `--branch` and `--database` flags as the rest of the CLI.
+
+  `getOrganization`, `getProject` and `getBranch` only fell back to the project and branch config, which is where the `XATA_*` variables land, when all five of organization, project, branch, branch name and database were set. With only `XATA_ORGANIZATION_ID` and `XATA_PROJECT_ID` exported the config was skipped entirely, the non-interactive prompt returned an empty string, and the request failed with `Missing required path parameter: projectID`. Each value now comes from its own flag, environment variable or config entry, keeping flag over environment over config precedence.
+
+  The branch a command targets is resolved once and reused to build its connection string, so `xata clone start`, `xata clone stream` and `xata roll` connect to the branch they were pointed at rather than to the one checked out in `.xata`. `xata clone stream` no longer refuses to run outside a folder with a project config.
+
+  The configured project is only used inside the configured organization, and the checked out branch only inside the configured project, so `--organization` and `--project` no longer land on a target from another one. The selection prompts are awaited, so the guards against an empty selection can fire.
+
+  A value that cannot be resolved now names the flag, the environment variable and the command that lists the options, instead of surfacing an API path error:
+
+  ```
+  No project selected. Pass --project <id> or set XATA_PROJECT_ID. Run `xata project list --organization <org>` to see them.
+  ```
+
+  These are written to stderr with exit code 1 rather than raised through `invariant`, which drops its message whenever `NODE_ENV` is `production` and so reduced all of them to `Invariant failed` in CI.
+
+  `xata status` tells a folder that has a project but no branch checked out to run `xata checkout <branch>`, rather than sending it to `xata init`, which refuses to run once the project file exists.
+
+  `--debug` now names where each of the organization, project, branch and database was resolved from, down to the flag, the environment variable or the config file path, so a value that is set but not used can be told apart from one that is being used.
+
+- [#2991](https://github.com/xataio/frontend/pull/2991) [`5b2296d`](https://github.com/xataio/frontend/commit/5b2296ddb62e67dc6f478cd82db40a403e6dabff) Thanks [@SferaDev](https://github.com/SferaDev)! - Add a `--debug` flag, so the resolution trace that `DEBUG` turns on can be asked for per command.
+
+  Every command already accepted `--profile`; `--debug` is added the same way, and reports where the organization, project, branch and database were resolved from. `DEBUG` keeps working, but it is also read by `dotenvx`, so it prints its own log lines before the command runs.
+
+- [#2890](https://github.com/xataio/frontend/pull/2890) [`1d279b5`](https://github.com/xataio/frontend/commit/1d279b5b132c2c6dfc1eae14fc90c6792ae46fdc) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Recover from expired sessions
+
+- [#2999](https://github.com/xataio/frontend/pull/2999) [`30a0988`](https://github.com/xataio/frontend/commit/30a098807d90b67e0457211375965fe994b082bc) Thanks [@SferaDev](https://github.com/SferaDev)! - Send the debug output to stderr and mask the passwords in it.
+
+  `--debug` wrote the resolution trace to stdout, so `xata branch list --json --debug` emitted a trace ahead of the JSON and nothing could parse it. The trace, the flag dumps and the rest of the debug output now go to stderr, which is where the "no branches" notice already went so that `--json` stays parseable.
+
+  The flag dumps printed every flag as given, so `--source-url` and `--postgres-url` put the password of a source database on screen. `--debug` is new on every command and its help promises only the resolution trace, so the dumps now mask passwords in connection strings and the values of flags named for a secret.
+
+  `xata branch list` no longer prints a header-only table under the notice when a project has no branches. `--json` still prints `[]`.
+
+- [#2992](https://github.com/xataio/frontend/pull/2992) [`e4f6ca3`](https://github.com/xataio/frontend/commit/e4f6ca34485ea0d2d6972b2521879d2360307e91) Thanks [@SferaDev](https://github.com/SferaDev)! - Log in again against the deployment the profile was created for, instead of production.
+
+  `xata auth login` built its issuer and API URL from its flags alone, so re-authenticating a profile pointed at another deployment silently moved it to production. Recovering an expired session made that reachable without `--force`. The stored issuer, API URL and client are now the fallback, and the flags still override them.
+
+- [#2993](https://github.com/xataio/frontend/pull/2993) [`658b45a`](https://github.com/xataio/frontend/commit/658b45a209a00c1764d1f418cd840200b8d3d553) Thanks [@SferaDev](https://github.com/SferaDev)! - Say that a project has no branches, instead of rendering an empty table, and stop attributing a branch that was never resolved.
+
+  `xata branch list` and `xata branch tree` are the two commands that render an empty project rather than exiting, so they now write the same notice the other commands exit with. The notice goes to stderr, so `--json` still prints `[]` on its own. `--debug` no longer reports `branch = (empty) (from the prompt)` for those commands, which never prompt.
+
+- Updated dependencies [[`2054627`](https://github.com/xataio/frontend/commit/2054627b2a2bcb6df998acb9bcda439b8cf473c0), [`4c5d294`](https://github.com/xataio/frontend/commit/4c5d294e2cb8d05b1e3c60c8cd7e239c271e2477), [`beee242`](https://github.com/xataio/frontend/commit/beee2429bbda110f944cbcb426da362ddce31755), [`1d279b5`](https://github.com/xataio/frontend/commit/1d279b5b132c2c6dfc1eae14fc90c6792ae46fdc), [`68f0d41`](https://github.com/xataio/frontend/commit/68f0d41af0319b3559d5e70cfd23e383531f9da2)]:
+  - @xata.io/api@0.1.10
+  - @xata.io/sql@0.2.6
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.11
+
 ## 1.7.1
 
 ### Patch Changes
