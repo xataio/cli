@@ -44,6 +44,10 @@ export async function getApi({
   }
 }
 
+export function getProfileApi(profile: string): XataApi {
+  return new XataApi(getApiOptions(profile));
+}
+
 // We should inject the environment secrets during the build process
 export function getAuthConfig(customConfig?: CustomConfig) {
   return {

@@ -4,6 +4,7 @@ import { AuthAccessTokenCommand } from './access-token';
 import { AuthListCommand } from './list';
 import { AuthLoginCommand } from './login';
 import { AuthLogoutCommand } from './logout';
+import { AuthRefreshCommand } from './refresh';
 import { AuthRefreshTokenCommand } from './refresh-token';
 import { AuthStatusCommand } from './status';
 import { AuthSwitchCommand } from './switch';
@@ -20,6 +21,7 @@ export const AuthRoute = buildRouteMap({
     status: AuthStatusCommand,
     switch: AuthSwitchCommand,
     list: AuthListCommand,
+    refresh: AuthRefreshCommand,
     'access-token': AuthAccessTokenCommand,
     'refresh-token': AuthRefreshTokenCommand
   },

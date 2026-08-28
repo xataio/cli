@@ -30,7 +30,7 @@ export async function implementation(this: LocalContext, { profile: profileFlag 
 
 export const AuthRefreshTokenCommand = buildCommand({
   docs: {
-    brief: 'Print the current refresh token'
+    brief: 'Print the stored refresh token, without refreshing the session'
   },
   parameters: {
     flags: {

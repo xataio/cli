@@ -29,11 +29,16 @@ mock.module('@xata.io/api', () => ({
   XataApi: FakeXataApi
 }));
 
+const isSessionValid = mock(async () => true);
+
+mock.module('~/lib/session', () => ({ isSessionValid }));
+
 const { implementation } = await import('./login');
 
 function buildContext() {
   const logs: string[] = [];
   const errors: string[] = [];
+  const exit = mock((_code: number) => {});
 
   const originalLog = console.log;
   const originalError = console.error;
@@ -45,9 +50,9 @@ function buildContext() {
     console.error = originalError;
   };
 
-  const context = {} as unknown as LocalContext;
+  const context = { process: { exit } } as unknown as LocalContext;
 
-  return { context, logs, errors, restore };
+  return { context, logs, errors, exit, restore };
 }
 
 describe('auth login --api-key', () => {
@@ -57,6 +62,8 @@ describe('auth login --api-key', () => {
     updateConfig.mockClear();
     getOrganizationsList.mockClear();
     getOrganizationsList.mockImplementation(async () => ({ organizations: [] }));
+    isSessionValid.mockClear();
+    isSessionValid.mockImplementation(async () => true);
   });
 
   test('stores an apiKey profile after validating the key', async () => {
@@ -115,7 +122,7 @@ describe('auth login --api-key', () => {
     getOrganizationsList.mockImplementationOnce(async () => {
       throw new Error('401 Unauthorized');
     });
-    const { context, errors, restore } = buildContext();
+    const { context, errors, exit, restore } = buildContext();
 
     try {
       await implementation.call(context, { profile: 'default', force: false, 'api-key': 'bad-key' });
@@ -126,6 +133,48 @@ describe('auth login --api-key', () => {
     expect(updateConfig).not.toHaveBeenCalled();
     expect(configState.profiles.default).toBeUndefined();
     expect(errors.join('')).toContain('The provided API key is invalid');
+    expect(exit).toHaveBeenCalledWith(1);
+  });
+
+  test('keeps the existing profile when logging in again fails', async () => {
+    const existing = { type: 'oidc', accessToken: 'access', refreshToken: 'refresh', expiresAt: new Date(0) } as const;
+    configState.profiles = { default: existing };
+    isSessionValid.mockImplementation(async () => false);
+    getOrganizationsList.mockImplementationOnce(async () => {
+      throw new Error('401 Unauthorized');
+    });
+    const { context, errors, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'bad-key' });
+    } finally {
+      restore();
+    }
+
+    expect(updateConfig).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toEqual(existing);
+    expect(errors.join('')).toContain('No changes were made');
+    expect(exit).toHaveBeenCalledWith(1);
+  });
+
+  test('keeps the existing profile when a forced login fails', async () => {
+    const existing = { type: 'apiKey', apiKey: 'existing' } as const;
+    configState.profiles = { default: existing };
+    getOrganizationsList.mockImplementationOnce(async () => {
+      throw new Error('401 Unauthorized');
+    });
+    const { context, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'bad-key' });
+    } finally {
+      restore();
+    }
+
+    expect(isSessionValid).not.toHaveBeenCalled();
+    expect(updateConfig).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toEqual(existing);
+    expect(exit).toHaveBeenCalledWith(1);
   });
 
   test('does not overwrite an existing profile without --force', async () => {
@@ -141,6 +190,23 @@ describe('auth login --api-key', () => {
     expect(getOrganizationsList).not.toHaveBeenCalled();
     expect(updateConfig).not.toHaveBeenCalled();
     expect(logs.join('')).toContain('already logged in');
+  });
+
+  test('logs in again when the session of an existing profile has expired', async () => {
+    configState.profiles = {
+      default: { type: 'oidc', accessToken: 'expired', refreshToken: 'expired', expiresAt: new Date(0) }
+    };
+    isSessionValid.mockImplementation(async () => false);
+    const { context, logs, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'xau_new' });
+    } finally {
+      restore();
+    }
+
+    expect(logs.join('')).toContain('has expired, logging in again');
+    expect(configState.profiles.default).toMatchObject({ type: 'apiKey', apiKey: 'xau_new' });
   });
 
   test('falls through to the device flow when no --api-key is passed', async () => {

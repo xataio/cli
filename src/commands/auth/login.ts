@@ -7,6 +7,7 @@ import { getAuthConfig } from '~/lib/api';
 import { config, updateConfig } from '~/lib/config';
 import { PRODUCT_NAME } from '~/lib/constants';
 import { DEFAULT_PROFILE } from '~/lib/profile';
+import { isSessionValid } from '~/lib/session';
 
 type Flags = {
   profile: string;
@@ -21,12 +22,12 @@ type Flags = {
 export async function implementation(this: LocalContext, { profile = DEFAULT_PROFILE, force, ...customFlags }: Flags) {
   const profiles = config?.profiles || {};
   if (profiles[profile] && !force) {
-    console.log(`Profile "${profile}" is already logged in. Use --force to log in again.`);
-    return;
-  } else if (profiles[profile]) {
-    // Remove existing profile to ensure a clean state
-    const { [profile]: _, ...updatedProfiles } = profiles;
-    await updateConfig({ ...config, profiles: updatedProfiles });
+    if (await isSessionValid(profile, profiles[profile])) {
+      console.log(`Profile "${profile}" is already logged in. Use --force to log in again.`);
+      return;
+    }
+
+    console.log(`The session for profile "${profile}" has expired, logging in again.`);
   }
 
   const { baseUrl, client } = getAuthConfig({
@@ -45,7 +46,7 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
 
   try {
     for await (const step of XataApi.deviceLogin(client)) {
-      match(step)
+      await match(step)
         .with({ type: 'prompt' }, (step) => {
           console.log(`Visit ${chalk.bold.underline(step.verifyUrl)} and enter the code: ${chalk.bold(step.userCode)}`);
           console.log(
@@ -77,6 +78,7 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
     }
   } catch (error) {
     console.error('Failed to initiate device flow.', error);
+    this.process.exit(1);
   }
 }
 
@@ -90,6 +92,7 @@ async function loginWithApiKey(
     await xata.api.organizations.getOrganizationsList({});
   } catch {
     console.error('The provided API key is invalid or could not be verified. No changes were made.');
+    this.process.exit(1);
     return;
   }
 
