@@ -4,6 +4,7 @@ import dedent from 'dedent';
 import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { checkBranchIsReachable } from '~/lib/binary/utils';
+import type { ContextFlags } from '~/lib/cli-utils';
 import { CLI_NAME, DEFAULT_MIGRATIONS_DIRECTORY } from '~/lib/constants';
 import { type CommandDetails, runPgRoll } from '~/lib/pgroll/commands';
 import {
@@ -19,12 +20,7 @@ type CommandType = 'update';
 const commandDefinition = getCommandDefinition(COMMAND);
 const commandFlags = getCommandFlags(COMMAND);
 
-type Flags = {
-  organization: string;
-  project: string;
-  branch: string;
-} & GlobalFlags &
-  CommandFlags<CommandType>;
+type Flags = ContextFlags & GlobalFlags & CommandFlags<CommandType>;
 
 export function checkMigrationsDirectory(context: LocalContext, targetDir: string) {
   if (!context.fs.existsSync(targetDir)) {
@@ -53,7 +49,7 @@ export async function implementation(
   const targetDir = args[0];
   invariant(targetDir, 'Target directory is required');
   checkMigrationsDirectory(this, targetDir);
-  await checkBranchIsReachable(this, flags);
+  const target = await checkBranchIsReachable(this, flags);
 
   const runtimeFlags = convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
 
@@ -61,10 +57,7 @@ export async function implementation(
     console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
   }
 
-  const { success, exitCode } = await runPgRoll<CommandType>(this, COMMAND, {
-    flags: runtimeFlags,
-    args: args
-  });
+  const { success, exitCode } = await runPgRoll<CommandType>(this, COMMAND, { flags: runtimeFlags, args }, target);
   if (!success) {
     throw new Error(`Error: pgroll binary execution failed with exit code ${exitCode}`);
   }

@@ -74,6 +74,9 @@ function fakeContext(
     },
     getBranch: async () => {
       return 'branch';
+    },
+    getDatabase: async () => {
+      return 'xata';
     }
   } as unknown as LocalContext;
 
@@ -157,7 +160,8 @@ describe('checkBranchIsReachable', () => {
     expect(await checkBranchIsReachable(context, {})).toEqual({
       organizationId: 'org',
       projectId: 'project',
-      branchId: 'branch'
+      branchId: 'branch',
+      database: 'xata'
     });
   });
 
@@ -167,7 +171,8 @@ describe('checkBranchIsReachable', () => {
     expect(await checkBranchIsReachable(context, {})).toEqual({
       organizationId: 'org',
       projectId: 'project',
-      branchId: 'branch'
+      branchId: 'branch',
+      database: 'xata'
     });
   });
 

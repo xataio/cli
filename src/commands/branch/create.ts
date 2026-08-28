@@ -3,7 +3,7 @@ import { instanceTypeUnavailableMessage, monthlyComputeCost } from '@xata.io/uti
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
-import { branchConfig } from '~/lib/branch-config';
+import { hasProjectContext } from '~/lib/project-config';
 import { getBranchLimits, replicaChoicesFor } from '~/lib/branch-limits';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
@@ -11,8 +11,7 @@ import type { Types } from '@xata.io/api';
 import { pickLatestPostgresImage, sortPostgresImagesDesc } from '@xata.io/utils';
 import invariant from 'tiny-invariant';
 import type { BranchLookupOptions, ProjectOptions } from '~/lib/cli-utils';
-import { exitWithUnknownBranch, groupAndSortRegions, resolveBranchIdOrName } from '~/lib/cli-utils';
-import { isCLIConfigInitialized } from '~/lib/cli-config';
+import { exitWithError, exitWithUnknownBranch, groupAndSortRegions, resolveBranchIdOrName } from '~/lib/cli-utils';
 import { config } from '~/lib/config';
 import { implementation as checkout } from './checkout';
 import { implementation as waitReady } from './wait-ready';
@@ -175,7 +174,9 @@ export async function getRegion(context: LocalContext, flags: { region?: string 
       title,
       regionChoices
     )) as Flags['region'];
-    invariant(region, `Region should exist`);
+    if (!region) {
+      return exitWithError(context, 'No region selected. Pass --region <id> to create a branch without prompts.');
+    }
     return region;
   }
 
@@ -200,7 +201,12 @@ export async function getReplicas(context: LocalContext, flags: { replicas?: str
 
   if (!flags.replicas) {
     const replicas = (await context.enquirer.selectPrompt(context.isInteractive, title, choices)) as Flags['replicas'];
-    invariant(replicas, `Replicas should exist`);
+    if (!replicas) {
+      return exitWithError(
+        context,
+        `No replica count selected. Pass --replicas <${choices.map((choice) => choice.name).join('|')}> to create a branch without prompts.`
+      );
+    }
     return replicas;
   }
 
@@ -223,7 +229,12 @@ export async function getInstanceType(
   const instanceType =
     flags['instance-type'] ??
     ((await context.enquirer.selectPrompt(context.isInteractive, title, instanceChoices)) as Flags['instance-type']);
-  invariant(instanceType, `Instance type should exist`);
+  if (!instanceType) {
+    return exitWithError(
+      context,
+      'No instance type selected. Pass --instance-type <name> to create a branch without prompts.'
+    );
+  }
 
   const instance = instances.find((option) => option.name === instanceType);
   if (!instance) {
@@ -285,7 +296,12 @@ export async function getImage(
     const image = (await context.enquirer.selectPrompt(context.isInteractive, title, imageChoices, {
       initial
     })) as string;
-    invariant(image, `Postgres version should exist`);
+    if (!image) {
+      return exitWithError(
+        context,
+        'No PostgreSQL version selected. Pass --postgres-version <name> to create a branch without prompts.'
+      );
+    }
     return image;
   } catch {
     context.process.stderr.write(
@@ -406,16 +422,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
     [[branch.id, branch.createdAt, branch.name, branch.parentID ?? '']]
   );
 
-  if (isCLIConfigInitialized(this)) {
-    await checkout.call(
-      this,
-      {
-        ...flags,
-        branch: '',
-        database: branchConfig.databaseName
-      },
-      branch.name
-    );
+  if (hasProjectContext()) {
+    await checkout.call(this, { ...flags, branch: '' }, branch.name);
 
     this.process.stderr.write(
       `Please run ${chalk.bold(`${CLI_NAME} branch wait-ready`)} to wait for this branch to be ready.\n`
@@ -427,7 +435,7 @@ export const BranchCreateCommand = buildCommand({
   docs: {
     brief: 'Create a new branch',
     fullDescription:
-      'A branch is a running Postgres database that starts as a copy of its parent. It takes a moment to come up, so `xata branch wait-ready` is what to run before connecting to it. It is checked out afterwards when this folder already has an organization, project and branch to work from.',
+      'A branch is a running Postgres database that starts as a copy of its parent. It takes a moment to come up, so `xata branch wait-ready` is what to run before connecting to it. It is checked out afterwards when this folder already has an organization and a project to work from.',
     customUsage: [
       { input: '--name my-branch', brief: 'Branch the current branch' },
       { input: '--name my-branch --parent-branch main', brief: 'Branch another branch, by ID or by name' },

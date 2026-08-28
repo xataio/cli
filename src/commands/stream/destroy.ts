@@ -1,6 +1,6 @@
 import { buildCommand } from '@stricli/core';
-import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
+import { exitWithError } from '~/lib/cli-utils';
 import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream } from '~/lib/pgstream/commands';
 import {
   type CommandFlags,
@@ -22,10 +22,12 @@ type Flags = {
 
 export function getSourceUrl(context: LocalContext, flags: Pick<Flags, 'source-url'>) {
   const sourceUrl = flags['source-url'] || context.env.XATA_CLI_SOURCE_POSTGRES_URL;
-  invariant(
-    sourceUrl,
-    'Source PostgreSQL URL is required, please use --source-url flag or XATA_CLI_SOURCE_POSTGRES_URL environment variable'
-  );
+  if (!sourceUrl) {
+    return exitWithError(
+      context,
+      'No source database given. Pass --source-url <url> or set XATA_CLI_SOURCE_POSTGRES_URL.'
+    );
+  }
   return sourceUrl;
 }
 

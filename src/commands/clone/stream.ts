@@ -2,11 +2,10 @@ import { buildCommand } from '@stricli/core';
 import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import dedent from 'dedent';
-import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { checkBranchIsReachable } from '~/lib/binary/utils';
 
-import { isCLIConfigInitialized } from '~/lib/cli-config';
+import { branchPathParams, type ContextFlags, contextFlags, exitWithError } from '~/lib/cli-utils';
 import { CLI_NAME, DEFAULT_CLONE_RULES_FILE } from '~/lib/constants';
 import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream } from '~/lib/pgstream/commands';
 import {
@@ -23,11 +22,7 @@ const COMMAND = 'run';
 type CommandType = 'run';
 const commandFlags = getCommandFlags(COMMAND);
 
-type Flags = {
-  organization?: string;
-  project?: string;
-  branch?: string;
-  database?: string;
+type Flags = ContextFlags & {
   'filter-tables': string;
   'validation-mode': ValidationMode | 'prompt';
   role?: string;
@@ -49,10 +44,12 @@ export function doesCloneYamlFileExist(context: LocalContext) {
 
 export function getSourceUrl(context: LocalContext, flags: Pick<Flags, 'source-url'>) {
   const sourceUrl = flags['source-url'] || context.env.XATA_CLI_SOURCE_POSTGRES_URL;
-  invariant(
-    sourceUrl,
-    'Source PostgreSQL URL is required, please use --source-url flag or XATA_CLI_SOURCE_POSTGRES_URL environment variable'
-  );
+  if (!sourceUrl) {
+    return exitWithError(
+      context,
+      'No source database given. Pass --source-url <url> or set XATA_CLI_SOURCE_POSTGRES_URL.'
+    );
+  }
   return sourceUrl;
 }
 
@@ -110,118 +107,102 @@ export async function implementation(
     console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
   }
 
-  if (isCLIConfigInitialized(this)) {
-    const databaseName = await this.getDatabase(this, flags);
-    const connectionString = await fetchBranchConnectionString(
-      this.api,
-      {
-        organizationID: target.organizationId,
-        projectID: target.projectId,
-        branchID: target.branchId
-      },
-      { database: databaseName }
-    );
-    const connectionStringWithPgrollInternalGUC = buildConnectionString(connectionString, { pgrollInternalGUC: true });
-    const safeConnectionString = buildConnectionString(connectionString, { mask: true });
+  const connectionString = await fetchBranchConnectionString(this.api, branchPathParams(target), {
+    database: target.database
+  });
+  const connectionStringWithPgrollInternalGUC = buildConnectionString(connectionString, { pgrollInternalGUC: true });
+  const safeConnectionString = buildConnectionString(connectionString, { mask: true });
 
-    const skipDdlTracking = flags['skip-ddl-tracking'];
-    const replicationSlot = flags['replication-slot'];
+  const skipDdlTracking = flags['skip-ddl-tracking'];
+  const replicationSlot = flags['replication-slot'];
 
-    if (skipDdlTracking && !replicationSlot) {
-      throw new Error(
-        dedent`
-        ${chalk.bold('--replication-slot')} is required when using ${chalk.bold('--skip-ddl-tracking')}.
-        When DDL tracking is skipped, pgstream will not create a replication slot automatically.
-        You must create a replication slot on the source database in advance and provide its name.
-        `
-      );
-    }
-
-    const env = getPgStreamStreamEnv(
-      this,
-      sourceUrl,
-      connectionStringWithPgrollInternalGUC,
-      flags['filter-tables'],
-      flags.role,
-      flags['copy-roles'],
-      skipDdlTracking
-    );
-
-    if (this.debug) {
-      this.process.stdout.write(`DEBUG: Using ${safeConnectionString}\n`);
-    }
-
-    if (!skipDdlTracking) {
-      // Clean up any leftover v0.9.x pgstream state before initializing. The flag is
-      // idempotent and safe for repeated use, and implies --init. Guarded by the same
-      // condition as --init since --skip-ddl-tracking opts out of initialization.
-      runtimeFlags.push('--upgrade');
-      runtimeFlags.push('--init');
-    }
-
-    if (replicationSlot) {
-      runtimeFlags.push(`--replication-slot=${replicationSlot}`);
-    }
-    let closingMessageFlushed = false;
-    const showClosingMessage = () => {
-      if (!closingMessageFlushed) {
-        closingMessageFlushed = true;
-        if (skipDdlTracking) {
-          this.process.stdout.write(
-            dedent(
-              `\n
-              ==============================
-              ${chalk.bold(`${CLI_NAME} clone stream`)} command stopped (DDL tracking was disabled).
-              ==============================
-              \n`
-            )
-          );
-        } else {
-          this.process.stdout.write(
-            dedent(
-              `\n
-              ==============================
-              ${chalk.bold(`${CLI_NAME} clone stream`)} command stopped. Note that this command may have created a replication slot and other objects in ${chalk.bold(`pgstream`)} schema.
-
-              If you do not plan to continue streaming, you may want to drop the replication slot and ${chalk.bold(`pgstream`)} objects by using ${chalk.bold(`${CLI_NAME} stream destroy --source-url <source-postgres-url>`)} command.
-              ==============================
-              \n`
-            )
-          );
-        }
-      }
-    };
-
-    try {
-      this.process.on('SIGINT', () => {
-        showClosingMessage();
-      });
-      this.process.on('exit', () => {
-        showClosingMessage();
-      });
-      const { success, exitCode } = await runPgStream<CommandType>(
-        this,
-        COMMAND,
-        env,
-        {
-          flags: runtimeFlags,
-          args: args
-        },
-        flags['log-level']
-      );
-      if (!success) {
-        throw new Error(`Error: pgstream binary execution failed with exit code ${exitCode}`);
-      }
-    } finally {
-      showClosingMessage();
-    }
-  } else {
+  if (skipDdlTracking && !replicationSlot) {
     throw new Error(
       dedent`
-      ${CLI_NAME} clone stream command only works when using a config file based project.
-      Please use ${chalk.bold(`${CLI_NAME} init`)} command to initialize a new project.
+      ${chalk.bold('--replication-slot')} is required when using ${chalk.bold('--skip-ddl-tracking')}.
+      When DDL tracking is skipped, pgstream will not create a replication slot automatically.
+      You must create a replication slot on the source database in advance and provide its name.
       `
     );
+  }
+
+  const env = getPgStreamStreamEnv(
+    this,
+    sourceUrl,
+    connectionStringWithPgrollInternalGUC,
+    flags['filter-tables'],
+    flags.role,
+    flags['copy-roles'],
+    skipDdlTracking
+  );
+
+  if (this.debug) {
+    this.process.stdout.write(`DEBUG: Using ${safeConnectionString}\n`);
+  }
+
+  if (!skipDdlTracking) {
+    // Clean up any leftover v0.9.x pgstream state before initializing. The flag is
+    // idempotent and safe for repeated use, and implies --init. Guarded by the same
+    // condition as --init since --skip-ddl-tracking opts out of initialization.
+    runtimeFlags.push('--upgrade');
+    runtimeFlags.push('--init');
+  }
+
+  if (replicationSlot) {
+    runtimeFlags.push(`--replication-slot=${replicationSlot}`);
+  }
+  let closingMessageFlushed = false;
+  const showClosingMessage = () => {
+    if (!closingMessageFlushed) {
+      closingMessageFlushed = true;
+      if (skipDdlTracking) {
+        this.process.stdout.write(
+          dedent(
+            `\n
+            ==============================
+            ${chalk.bold(`${CLI_NAME} clone stream`)} command stopped (DDL tracking was disabled).
+            ==============================
+            \n`
+          )
+        );
+      } else {
+        this.process.stdout.write(
+          dedent(
+            `\n
+            ==============================
+            ${chalk.bold(`${CLI_NAME} clone stream`)} command stopped. Note that this command may have created a replication slot and other objects in ${chalk.bold(`pgstream`)} schema.
+
+            If you do not plan to continue streaming, you may want to drop the replication slot and ${chalk.bold(`pgstream`)} objects by using ${chalk.bold(`${CLI_NAME} stream destroy --source-url <source-postgres-url>`)} command.
+            ==============================
+            \n`
+          )
+        );
+      }
+    }
+  };
+
+  try {
+    this.process.on('SIGINT', () => {
+      showClosingMessage();
+    });
+    this.process.on('exit', () => {
+      showClosingMessage();
+    });
+    const { success, exitCode } = await runPgStream<CommandType>(
+      this,
+      COMMAND,
+      env,
+      {
+        flags: runtimeFlags,
+        args: args
+      },
+      flags['log-level']
+    );
+    if (!success) {
+      throw new Error(`Error: pgstream binary execution failed with exit code ${exitCode}`);
+    }
+  } finally {
+    showClosingMessage();
   }
 }
 
@@ -241,30 +222,7 @@ export const CloneStreamCommand = buildCommand({
         brief: 'The source URL of the database to stream from',
         optional: false
       },
-      organization: {
-        kind: 'parsed',
-        brief: 'Organization ID',
-        parse: String,
-        optional: true
-      },
-      project: {
-        kind: 'parsed',
-        brief: 'Project ID',
-        parse: String,
-        optional: true
-      },
-      branch: {
-        kind: 'parsed',
-        brief: 'Branch ID or name',
-        parse: String,
-        optional: true
-      },
-      database: {
-        kind: 'parsed',
-        brief: 'Target database name on the checked-out Xata branch',
-        parse: String,
-        optional: true
-      },
+      ...contextFlags,
       'filter-tables': {
         kind: 'parsed',
         brief: 'Tables to filter',

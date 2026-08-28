@@ -3,9 +3,9 @@ import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
 import { print } from '~/lib/cli-utils';
 
-mock.module('~/lib/cli-config', () => {
+mock.module('~/lib/project-config', () => {
   return {
-    isCLIConfigInitialized: () => {
+    hasProjectContext: () => {
       return false;
     }
   };

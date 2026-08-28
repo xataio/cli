@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfigSync } from 'zod-config';
@@ -15,7 +16,11 @@ export const projectConfig = loadConfigSync({
   ]
 });
 
-export function isProjectInitialized() {
+export function hasProjectConfigFile() {
+  return existsSync(getProjectConfigPath());
+}
+
+export function hasProjectContext() {
   return Boolean(projectConfig.organizationId && projectConfig.projectId);
 }
 

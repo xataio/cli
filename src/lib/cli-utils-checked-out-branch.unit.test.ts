@@ -5,10 +5,6 @@ const CHECKED_OUT_BRANCH_ID = 'o5u2hfguf907tc3hkiuqfpk27k';
 const OTHER_BRANCH_ID = 'oansf546nh1bf3blhj75d674gs';
 const CONFIGURED_PROJECT_ID = 'prj_6a2okcu01576p925jlka0rgm2s';
 
-mock.module('~/lib/cli-config', () => {
-  return { isCLIConfigInitialized: () => true };
-});
-
 mock.module('~/lib/branch-config', () => {
   return { branchConfig: { branchId: CHECKED_OUT_BRANCH_ID } };
 });

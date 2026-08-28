@@ -2,12 +2,11 @@ import { buildCommand } from '@stricli/core';
 import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { getErrorMessage } from '~/lib/cli-utils';
+import { type ContextFlags, contextFlags, getErrorMessage, resolveContext } from '~/lib/cli-utils';
 import { updateBranchConfig } from '~/lib/branch-config';
-import { isCLIConfigInitialized } from '~/lib/cli-config';
 import { CLI_NAME } from '~/lib/constants';
 import { getLocalConfigDir } from '~/lib/config-dir';
-import { getProjectConfigPath, updateProjectConfig } from '~/lib/project-config';
+import { getProjectConfigPath, hasProjectConfigFile, updateProjectConfig } from '~/lib/project-config';
 
 async function checkDatabaseExists(
   context: LocalContext,
@@ -62,16 +61,12 @@ export async function ensureDatabase(context: LocalContext, connectionString: st
   }
 }
 
-type Flags = {
-  organization?: string;
-  project?: string;
-  branch?: string;
-  database?: string;
+type Flags = ContextFlags & {
   json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
-  if (isCLIConfigInitialized(this)) {
+  if (hasProjectConfigFile()) {
     this.process.stdout.write(chalk.green(`Project is already initialized in ${getProjectConfigPath()}.\n`));
     this.process.stdout.write(
       chalk.bold(`To re-initialize, please delete the local project file at ${getProjectConfigPath()}`)
@@ -79,15 +74,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(0);
   }
 
-  const organizationId = await this.getOrganization(this, flags, {});
-  const projectId = await this.getProject(this, flags, { organizationId });
-  const branchId = await this.getBranch(this, flags, { organizationId, projectId });
-
-  const databaseName = await this.getDatabase(this, flags);
-  if (!databaseName) {
-    this.process.stderr.write(chalk.red(`Expected input for flag --database`));
-    this.process.exit(1);
-  }
+  const { organizationId, projectId, branchId, database } = await resolveContext(this, flags);
+  const databaseName =
+    (await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the database name', {
+      flag: flags.database,
+      placeholder: database
+    })) || database;
 
   const branch = await this.api.branches.describeBranch({
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
@@ -149,30 +141,7 @@ export const ProjectInitCommand = buildCommand({
   },
   parameters: {
     flags: {
-      organization: {
-        kind: 'parsed',
-        brief: 'Organization ID',
-        parse: String,
-        optional: true
-      },
-      project: {
-        kind: 'parsed',
-        brief: 'Project ID',
-        parse: String,
-        optional: true
-      },
-      branch: {
-        kind: 'parsed',
-        brief: 'Branch ID or name',
-        parse: String,
-        optional: true
-      },
-      database: {
-        kind: 'parsed',
-        brief: 'Database name',
-        parse: String,
-        optional: true
-      },
+      ...contextFlags,
       json: {
         kind: 'boolean',
         brief: 'Output in JSON format',

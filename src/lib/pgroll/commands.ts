@@ -4,9 +4,7 @@ import chalk from 'chalk';
 import dedent from 'dedent';
 import type { LocalContext } from '~/context';
 import { getCurrentVersion } from '../binary/utils';
-import { branchConfig } from '../branch-config';
-import { isCLIConfigInitialized } from '../cli-config';
-import { projectConfig } from '../project-config';
+import { branchPathParams, type ResolvedContext } from '../cli-utils';
 import { getPgRoll } from './binary';
 
 export type PgRollCommands = (typeof Definition.commands)[number]['name'];
@@ -39,7 +37,8 @@ export type PgRollOptions<Command extends PgRollCommands> = {
 export async function runPgRoll<Command extends PgRollCommands>(
   context: LocalContext,
   command: Command,
-  options: PgRollOptions<Command>
+  options: PgRollOptions<Command>,
+  target: ResolvedContext
 ): Promise<{
   success: boolean;
   exitCode: number;
@@ -48,21 +47,14 @@ export async function runPgRoll<Command extends PgRollCommands>(
 
   const binary = await getPgRoll(context);
 
-  if (isCLIConfigInitialized(context)) {
-    const databaseName = branchConfig.databaseName;
-    const connectionString = await fetchBranchConnectionString(
-      context.api,
-      {
-        organizationID: projectConfig.organizationId,
-        projectID: projectConfig.projectId,
-        branchID: branchConfig.branchId
-      },
-      { database: databaseName }
-    );
-    const safeConnectionString = buildConnectionString(connectionString, { mask: true });
+  // An explicit Postgres URL wins over the branch we resolved, pgroll reads both.
+  if (!Bun.env.PGROLL_PG_URL && !flags.some((flag) => flag.startsWith('--postgres-url'))) {
+    const connectionString = await fetchBranchConnectionString(context.api, branchPathParams(target), {
+      database: target.database
+    });
     Bun.env.PGROLL_PG_URL = connectionString;
     if (context.debug) {
-      context.process.stdout.write(`DEBUG: Using ${safeConnectionString}\n`);
+      context.process.stdout.write(`DEBUG: Using ${buildConnectionString(connectionString, { mask: true })}\n`);
     }
   }
 
@@ -75,8 +67,9 @@ export async function runPgRoll<Command extends PgRollCommands>(
 
   const exitCode = await proc.exited;
 
-  if (exitCode !== 0 && Bun.env.PGROLL_PG_URL) {
-    await checkVersionMismatch(context, options.flags);
+  const postgresUrl = Bun.env.PGROLL_PG_URL;
+  if (exitCode !== 0 && postgresUrl) {
+    await checkVersionMismatch(context, postgresUrl, options.flags);
   }
 
   return {
@@ -85,14 +78,18 @@ export async function runPgRoll<Command extends PgRollCommands>(
   };
 }
 
-async function checkVersionMismatch(context: LocalContext, flags?: readonly string[]): Promise<void> {
+async function checkVersionMismatch(
+  context: LocalContext,
+  postgresUrl: string,
+  flags?: readonly string[]
+): Promise<void> {
   try {
     const binaryVersion = await getCurrentVersion('pgroll');
     if (!binaryVersion) return;
 
     const pgrollSchema = flags?.find((f) => f.startsWith('--pgroll-schema='))?.split('=')[1] ?? 'pgroll';
 
-    const sql = context.postgres(Bun.env.PGROLL_PG_URL!);
+    const sql = context.postgres(postgresUrl);
     try {
       const result =
         await sql`SELECT version FROM ${sql(pgrollSchema)}.pgroll_version ORDER BY initialized_at DESC LIMIT 1`;

@@ -16,14 +16,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   const projectId = await this.getProject(this, flags, {
     organizationId
   });
-  let currentBranchId = null;
-  try {
-    currentBranchId = await this.getCheckedOutBranch(this);
-  } catch (e) {
-    if (e instanceof Error) {
-      this.process.stderr.write(`${e.message}\n`);
-    }
-  }
+  const currentBranchId = await this.getCheckedOutBranch();
 
   const targetBranchId = await this.getBranch(this, flags, {
     organizationId,
@@ -42,7 +35,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: targetBranchId }
   });
 
-  const database = await this.getDatabase(this, flags);
+  const database = await this.getDatabase(flags);
   await updateProjectConfig({ organizationId, projectId });
   await updateBranchConfig({ branchId: targetBranch.id, branchName: targetBranch.name, databaseName: database });
 

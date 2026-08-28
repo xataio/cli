@@ -1,5 +1,6 @@
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import { branchPathParams, type ResolvedContext } from '~/lib/cli-utils';
 
 export type TargetTuningInput = {
   ramGiB: number;
@@ -92,11 +93,8 @@ function printTuningHelp(context: LocalContext, branchTuning: Record<string, str
   context.process.stderr.write(lines.join('\n'));
 }
 
-export async function applyTargetDatabaseTuning(
-  context: LocalContext,
-  target: { organizationId: string; projectId: string; branchId: string }
-) {
-  const pathParams = { organizationID: target.organizationId, projectID: target.projectId, branchID: target.branchId };
+export async function applyTargetDatabaseTuning(context: LocalContext, target: ResolvedContext) {
+  const pathParams = branchPathParams(target);
 
   const branch = await context.api.branches.describeBranch({ pathParams });
 

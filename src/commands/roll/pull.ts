@@ -2,6 +2,7 @@ import { buildCommand } from '@stricli/core';
 import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { checkBranchIsReachable } from '~/lib/binary/utils';
+import type { ContextFlags } from '~/lib/cli-utils';
 import { DEFAULT_MIGRATIONS_DIRECTORY } from '~/lib/constants';
 import { type CommandDetails, runPgRoll } from '~/lib/pgroll/commands';
 import {
@@ -17,12 +18,7 @@ type CommandType = 'pull';
 const commandDefinition = getCommandDefinition(COMMAND);
 const commandFlags = getCommandFlags(COMMAND);
 
-type Flags = {
-  organization: string;
-  project: string;
-  branch: string;
-} & GlobalFlags &
-  CommandFlags<CommandType>;
+type Flags = ContextFlags & GlobalFlags & CommandFlags<CommandType>;
 
 export async function implementation(
   this: LocalContext,
@@ -35,7 +31,7 @@ export async function implementation(
 
   const targetDir = args[0];
   invariant(targetDir, 'Target directory is required');
-  await checkBranchIsReachable(this, flags);
+  const target = await checkBranchIsReachable(this, flags);
 
   const runtimeFlags = convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
 
@@ -46,10 +42,7 @@ export async function implementation(
     console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
   }
 
-  const { success, exitCode } = await runPgRoll<CommandType>(this, COMMAND, {
-    flags: runtimeFlags,
-    args: args
-  });
+  const { success, exitCode } = await runPgRoll<CommandType>(this, COMMAND, { flags: runtimeFlags, args }, target);
   if (!success) {
     throw new Error(`Error: pgroll binary execution failed with exit code ${exitCode}`);
   }

@@ -6,6 +6,7 @@ import os from 'node:os';
 import { join } from 'node:path';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
+import { branchPathParams, type ContextFlags, resolveContext, type ResolvedContext } from '../cli-utils';
 import { getConfigDir } from '../config';
 import { downloadToFile } from '../download';
 import { fetchBranchCredentials } from '@xata.io/sql';
@@ -136,32 +137,20 @@ export async function getBinary(
   return binaryPath;
 }
 
-export async function checkBranchIsReachable(
-  context: LocalContext,
-  flags: {
-    organization?: string;
-    project?: string;
-    branch?: string;
-  }
-) {
-  const organizationId = await context.getOrganization(context, flags, {});
-  const projectId = await context.getProject(context, flags, { organizationId });
-  const branchId = await context.getBranch(context, flags, { organizationId, projectId });
-  const target = { organizationId, projectId, branchId };
+/**
+ * Resolves the branch a command targets and checks it can be reached from this
+ * machine. Returns the resolved context so callers don't resolve it a second time.
+ */
+export async function checkBranchIsReachable(context: LocalContext, flags: ContextFlags): Promise<ResolvedContext> {
+  const target = await resolveContext(context, flags);
 
-  const branch = await context.api.branches.describeBranch({
-    pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
-  });
+  const branch = await context.api.branches.describeBranch({ pathParams: branchPathParams(target) });
   if (!branch.publicAccess) {
     const timeout = parseInt(context.env.XATA_PRIVATE_BRANCH_TIMEOUT);
     if (timeout === 0) {
       return target;
     }
-    const { hostname, port } = await fetchBranchCredentials(context.api, {
-      organizationID: organizationId,
-      projectID: projectId,
-      branchID: branchId
-    });
+    const { hostname, port } = await fetchBranchCredentials(context.api, branchPathParams(target));
     const reachable = await isPortReachable(hostname, port, timeout);
     if (!reachable) {
       context.process.stderr.write(

@@ -1,7 +1,7 @@
 import { buildCommand } from '@stricli/core';
 import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
-import { getErrorMessage } from '~/lib/cli-utils';
+import { exitWithError, getErrorMessage } from '~/lib/cli-utils';
 
 import { BUILD_SCHEMA_QUERY, type Schema } from '@xata.io/sql';
 import { formatSchemaForAI, generateCloneConfig } from '@xata.io/ai';
@@ -65,7 +65,7 @@ type Flags = {
 
 export async function implementation(this: LocalContext, flags: Flags) {
   if (!this.isInteractive && flags.mode !== 'auto') {
-    invariant(false, 'Only --mode `auto` is available in CI');
+    return exitWithError(this, 'Only --mode auto runs without a terminal, the other modes need one to prompt.');
   }
   await checkBranchIsReachable(this, flags);
   const sourceUrl = getSourceUrl(this, flags);
@@ -114,11 +114,13 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
 
   if (flags.mode === 'web') {
-    invariant(false, 'Web mode is not available yet');
+    return exitWithError(this, 'Web mode is not available yet. Use --mode auto, prompt or ai.');
   }
 
   if (flags.mode === 'ai') {
-    invariant(env.ANTHROPIC_API_KEY, 'ANTHROPIC_API_KEY environment variable is required for --mode=ai');
+    if (!env.ANTHROPIC_API_KEY) {
+      return exitWithError(this, 'Set ANTHROPIC_API_KEY in the environment to use --mode ai.');
+    }
     this.process.stdout.write(chalk.blue('Using AI to generate clone config...\n'));
 
     const formattedSchema = formatSchemaForAI(fullSchemaJson);

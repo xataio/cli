@@ -1,6 +1,5 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
-import invariant from 'tiny-invariant';
 
 import {
   BUILD_SCHEMA_QUERY,
@@ -9,6 +8,7 @@ import {
   type Schema
 } from '@xata.io/sql';
 import type { LocalContext } from '~/context';
+import { exitWithError } from '~/lib/cli-utils';
 import { CLI_NAME } from '~/lib/constants';
 import { env } from '~/lib/env';
 import postgres from 'postgres';
@@ -52,7 +52,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     const projectId = await this.getProject(this, flags, { organizationId });
     const branchId = await this.getBranch(this, flags, { organizationId, projectId });
 
-    const databaseName = await this.getDatabase(this, flags);
+    const databaseName = await this.getDatabase(flags);
     if (!databaseName) {
       this.process.stderr.write(chalk.red('Expected input for flag --database\n'));
       this.process.exit(1);
@@ -88,7 +88,9 @@ export async function implementation(this: LocalContext, flags: Flags) {
     };
 
     const handleGenerateSQL = async (query: string, currentSQL: string): Promise<string> => {
-      invariant(env.ANTHROPIC_API_KEY, 'ANTHROPIC_API_KEY is required for AI features');
+      if (!env.ANTHROPIC_API_KEY) {
+        return exitWithError(this, 'Set ANTHROPIC_API_KEY in the environment to generate SQL.');
+      }
       return await generateSQL(env.ANTHROPIC_API_KEY, query, formattedSchema, currentSQL, { model: flags.model });
     };
 

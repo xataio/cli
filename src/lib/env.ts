@@ -53,6 +53,19 @@ const preferredEnvNames: Readonly<Record<string, string>> = {
   databaseName: 'XATA_DATABASE_NAME'
 };
 
+/** Names the variable a config key was actually read from, so `--debug` can attribute the value. */
+export function envNameFor(
+  key: string,
+  source: Readonly<Record<string, string | undefined>> = process.env
+): string | undefined {
+  const preferredName = preferredEnvNames[key];
+  if (preferredName && source[preferredName]) {
+    return preferredName;
+  }
+  const legacyName = `XATA_${key.toUpperCase()}`;
+  return source[legacyName] ? legacyName : undefined;
+}
+
 export function loadEnvConfig(
   keys: string[],
   source: Readonly<Record<string, string | undefined>> = process.env

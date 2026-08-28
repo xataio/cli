@@ -13,7 +13,7 @@ type Flags = {
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
   const organizationId = await this.getOrganization(this, flags, {});
   const projectId = await this.getProject(this, flags, { organizationId });
-  const currentBranchId = await this.getCheckedOutBranch(this);
+  const currentBranchId = await this.getCheckedOutBranch();
   const branchToDeleteId = await this.getBranch(this, flags, { organizationId, projectId, branchName });
 
   if (branchToDeleteId === currentBranchId) {

@@ -1,5 +1,6 @@
 import { toBrief } from '~/lib/binary/utils';
 import { Definition } from '@xata.io/pgroll';
+import { contextFlags } from '~/lib/cli-utils';
 import type { PgRollCommands, PgRollOptions, PgRollSubCommands } from '~/lib/pgroll/commands';
 
 export type CommandFlags<CommandName extends PgRollCommands> = {
@@ -39,7 +40,8 @@ export function getCommandFlags<CommandType extends PgRollCommands>(command: PgR
   const commandDefinition = getCommandDefinition(command);
 
   const commandFlags = {
-    ...globalFlags
+    ...globalFlags,
+    ...contextFlags
   } as Record<
     keyof GlobalFlags | keyof CommandFlags<CommandType>,
     {

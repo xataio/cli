@@ -243,7 +243,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
     this.process.exit(1);
   }
 
-  const database = await this.getDatabase(this, flags);
+  const database = await this.getDatabase(flags);
   if (!database) {
     this.process.stderr.write(chalk.red('Expected input for flag --database\n'));
     this.process.exit(1);

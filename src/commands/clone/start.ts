@@ -2,11 +2,10 @@ import { buildCommand } from '@stricli/core';
 import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import dedent from 'dedent';
-import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
 import { checkBranchIsReachable } from '~/lib/binary/utils';
 
-import { isCLIConfigInitialized } from '~/lib/cli-config';
+import { branchPathParams, type ContextFlags, contextFlags, exitWithError } from '~/lib/cli-utils';
 import { CLI_NAME, DEFAULT_CLONE_RULES_FILE } from '~/lib/constants';
 import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream } from '~/lib/pgstream/commands';
 import {
@@ -24,11 +23,7 @@ const COMMAND = 'snapshot';
 type CommandType = 'snapshot';
 const commandFlags = getCommandFlags(COMMAND);
 
-type Flags = {
-  organization?: string;
-  project?: string;
-  branch?: string;
-  database?: string;
+type Flags = ContextFlags & {
   'filter-tables': string;
   'validation-mode': ValidationMode | 'prompt';
   role?: string;
@@ -63,10 +58,12 @@ function listenForInterrupts(context: LocalContext, handle: (signal: keyof typeo
 
 export function getSourceUrl(context: LocalContext, flags: Pick<Flags, 'source-url'>) {
   const sourceUrl = flags['source-url'] || context.env.XATA_CLI_SOURCE_POSTGRES_URL;
-  invariant(
-    sourceUrl,
-    'Source PostgreSQL URL is required, please use --source-url flag or XATA_CLI_SOURCE_POSTGRES_URL environment variable'
-  );
+  if (!sourceUrl) {
+    return exitWithError(
+      context,
+      'No source database given. Pass --source-url <url> or set XATA_CLI_SOURCE_POSTGRES_URL.'
+    );
+  }
   return sourceUrl;
 }
 
@@ -124,84 +121,68 @@ export async function implementation(
     console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
   }
 
-  if (isCLIConfigInitialized(this)) {
-    const interruption = new AbortController();
-    let interruptedBy: keyof typeof SIGNAL_EXIT_CODES | undefined;
+  const interruption = new AbortController();
+  let interruptedBy: keyof typeof SIGNAL_EXIT_CODES | undefined;
 
-    const stopListening = flags['tune-target']
-      ? listenForInterrupts(this, (signal) => {
-          interruptedBy = signal;
-          this.process.stderr.write(
-            chalk.yellow(`\nStopping the clone (${signal}) and reverting the tuning. Interrupt again to skip it.\n`)
-          );
-          interruption.abort();
-        })
-      : undefined;
+  const stopListening = flags['tune-target']
+    ? listenForInterrupts(this, (signal) => {
+        interruptedBy = signal;
+        this.process.stderr.write(
+          chalk.yellow(`\nStopping the clone (${signal}) and reverting the tuning. Interrupt again to skip it.\n`)
+        );
+        interruption.abort();
+      })
+    : undefined;
 
-    let tuning: TargetTuning | undefined;
-    try {
-      tuning = flags['tune-target'] ? await applyTargetDatabaseTuning(this, target) : undefined;
+  let tuning: TargetTuning | undefined;
+  try {
+    tuning = flags['tune-target'] ? await applyTargetDatabaseTuning(this, target) : undefined;
 
-      const databaseName = await this.getDatabase(this, flags);
-      const connectionString = await fetchBranchConnectionString(
-        this.api,
-        {
-          organizationID: target.organizationId,
-          projectID: target.projectId,
-          branchID: target.branchId
-        },
-        { database: databaseName }
-      );
-      const connectionStringWithPgrollInternalGUC = buildConnectionString(connectionString, {
-        pgrollInternalGUC: true
-      });
-      const safeConnectionString = buildConnectionString(connectionString, { mask: true });
+    const connectionString = await fetchBranchConnectionString(this.api, branchPathParams(target), {
+      database: target.database
+    });
+    const connectionStringWithPgrollInternalGUC = buildConnectionString(connectionString, {
+      pgrollInternalGUC: true
+    });
+    const safeConnectionString = buildConnectionString(connectionString, { mask: true });
 
-      const env = getPgStreamStartEnv(
-        this,
-        sourceUrl,
-        connectionStringWithPgrollInternalGUC,
-        flags['filter-tables'],
-        flags.role,
-        flags['copy-roles'],
-        tuning
-      );
-
-      if (this.debug) {
-        this.process.stdout.write(`DEBUG: Using ${safeConnectionString}\n`);
-      }
-
-      const { success, exitCode } = await runPgStream<CommandType>(
-        this,
-        COMMAND,
-        env,
-        {
-          flags: runtimeFlags,
-          args: args,
-          signal: interruption.signal
-        },
-        flags['log-level']
-      );
-      if (!success && !interruptedBy) {
-        throw new Error(`Error: pgstream binary execution failed with exit code ${exitCode}`);
-      }
-    } finally {
-      stopListening?.();
-      if (tuning) {
-        await revertTargetDatabaseTuning(this, tuning);
-      }
-    }
-
-    if (interruptedBy) {
-      this.process.exitCode = SIGNAL_EXIT_CODES[interruptedBy];
-    }
-  } else {
-    throw new Error(
-      dedent`
-      ${CLI_NAME} clone start command only works when using a config file based project.
-      Please use ${chalk.bold(`${CLI_NAME} init`)} command to initialize a new project.
-      `
+    const env = getPgStreamStartEnv(
+      this,
+      sourceUrl,
+      connectionStringWithPgrollInternalGUC,
+      flags['filter-tables'],
+      flags.role,
+      flags['copy-roles'],
+      tuning
     );
+
+    if (this.debug) {
+      this.process.stdout.write(`DEBUG: Using ${safeConnectionString}\n`);
+    }
+
+    const { success, exitCode } = await runPgStream<CommandType>(
+      this,
+      COMMAND,
+      env,
+      {
+        flags: runtimeFlags,
+        args: args,
+        signal: interruption.signal
+      },
+      flags['log-level']
+    );
+    if (!success && !interruptedBy) {
+      throw new Error(`Error: pgstream binary execution failed with exit code ${exitCode}`);
+    }
+  } finally {
+    stopListening?.();
+    if (tuning) {
+      await revertTargetDatabaseTuning(this, tuning);
+    }
+  }
+
+  if (interruptedBy) {
+    this.process.exitCode = SIGNAL_EXIT_CODES[interruptedBy];
   }
 }
 
@@ -221,30 +202,7 @@ export const CloneStartCommand = buildCommand({
         brief: 'The source URL of the database to clone',
         optional: false
       },
-      organization: {
-        kind: 'parsed',
-        brief: 'Organization ID',
-        parse: String,
-        optional: true
-      },
-      project: {
-        kind: 'parsed',
-        brief: 'Project ID',
-        parse: String,
-        optional: true
-      },
-      branch: {
-        kind: 'parsed',
-        brief: 'Branch ID or name',
-        parse: String,
-        optional: true
-      },
-      database: {
-        kind: 'parsed',
-        brief: 'Target database name on the checked-out Xata branch',
-        parse: String,
-        optional: true
-      },
+      ...contextFlags,
       'filter-tables': {
         kind: 'parsed',
         brief: 'Tables to filter',

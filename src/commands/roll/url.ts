@@ -56,7 +56,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     console.error(e);
   }
 
-  const database = await this.getDatabase(this, flags);
+  const database = await this.getDatabase(flags);
 
   const endpointType = mapTypeToConnectionSuffix(flags.type);
   const connectionString = buildCredentialsConnectionString(credentials, {
