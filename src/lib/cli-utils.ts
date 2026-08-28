@@ -186,6 +186,13 @@ export const getProject = async (context: LocalContext, flags: { project?: strin
   }
 };
 
+const NO_BRANCHES_IN_PROJECT = `No branches found in this project. Create one with \`${CLI_NAME} branch create\`.`;
+
+/** The commands that render an empty project say so, rather than printing nothing at all. */
+export const writeNoBranchesInProject = (context: LocalContext) => {
+  context.process.stderr.write(`${NO_BRANCHES_IN_PROJECT}\n`);
+};
+
 type BranchOptions = BaseOptions & {
   organizationId: string;
   projectId: string;
@@ -226,10 +233,7 @@ export const getBranch = async (
   if (branches.length === 0) {
     // `branch list` and `branch tree` render an empty project, everything else has nothing to target.
     if (!skipPrompt) {
-      return exitWithError(
-        context,
-        `No branches found in this project. Create one with \`${CLI_NAME} branch create\`.`
-      );
+      return exitWithError(context, NO_BRANCHES_IN_PROJECT);
     }
     return '';
   }
@@ -250,7 +254,14 @@ export const getBranch = async (
       `No branch selected. Pass --branch <id> or set XATA_BRANCH_ID. Run \`${CLI_NAME} branch list --organization ${options.organizationId} --project ${options.projectId}\` to see them.`
     );
   }
-  debugResolved(context, 'branch', branchId, branches.length === 1 ? 'the only branch in this project' : 'the prompt');
+  if (branchId) {
+    debugResolved(
+      context,
+      'branch',
+      branchId,
+      branches.length === 1 ? 'the only branch in this project' : 'the prompt'
+    );
+  }
   return branchId;
 };
 

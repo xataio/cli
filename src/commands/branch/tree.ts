@@ -3,6 +3,7 @@ import type { Types } from '@xata.io/api';
 import chalk from 'chalk';
 import treeify from 'treeify';
 import type { LocalContext } from '~/context';
+import { writeNoBranchesInProject } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
@@ -82,6 +83,11 @@ export async function implementation(this: LocalContext, flags: Flags) {
   const { branches } = await this.api.branches.listBranches({
     pathParams: { organizationID: organizationId, projectID: projectId }
   });
+
+  if (branches.length === 0) {
+    writeNoBranchesInProject(this);
+    return;
+  }
 
   const currentBranch = branches.find((branch) => branch.id === branchId);
 

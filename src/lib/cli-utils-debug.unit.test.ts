@@ -166,6 +166,14 @@ describe('debug source naming', () => {
     }
   });
 
+  test('says nothing about a branch it did not resolve', async () => {
+    const context = buildContext();
+
+    await getBranch(context, {}, { organizationId: 'org', projectId: 'project', skipPrompt: true });
+
+    expect(lines()).not.toContain('DEBUG: branch');
+  });
+
   test('writes nothing when debug is off', async () => {
     const context = { ...buildContext('only-branch'), debug: false } as LocalContext;
 
