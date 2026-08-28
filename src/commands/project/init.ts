@@ -20,7 +20,7 @@ async function checkDatabaseExists(
     return true;
   } catch (error) {
     if (context.debug) {
-      console.log(`DEBUG: Database "${databaseName}" does not exist or is not accessible: ${getErrorMessage(error)}`);
+      console.error(`DEBUG: Database "${databaseName}" does not exist or is not accessible: ${getErrorMessage(error)}`);
     }
     return false;
   } finally {

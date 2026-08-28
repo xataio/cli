@@ -18,6 +18,7 @@ import { readConfigFile } from './clone-config-utils';
 import type { ValidationMode } from './config';
 import { getPgStreamStartEnv } from './env';
 import { applyTargetDatabaseTuning, revertTargetDatabaseTuning, type TargetTuning } from './target-tuning';
+import { debugDump } from '~/lib/debug';
 
 const COMMAND = 'snapshot';
 type CommandType = 'snapshot';
@@ -75,7 +76,7 @@ export async function implementation(
   const sourceUrl = getSourceUrl(this, flags);
 
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { args, flags });
+    debugDump(`${COMMAND}`, { args, flags });
   }
   const target = await checkBranchIsReachable(this, flags);
 
@@ -118,7 +119,7 @@ export async function implementation(
   const runtimeFlags: NonNullable<PgStreamOptions<CommandType>['flags']> =
     convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
+    debugDump(`${COMMAND}`, { runtimeFlags });
   }
 
   const interruption = new AbortController();

@@ -22,6 +22,9 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   if (branches.length === 0) {
     writeNoBranchesInProject(this);
+    if (!flags.json) {
+      return;
+    }
   }
 
   const currentBranch = branches.find((branch) => branch.id === branchId);

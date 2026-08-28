@@ -10,6 +10,7 @@ import {
   type GlobalFlags,
   type SubcommandFlags
 } from '~/lib/pgroll/roll-utils';
+import { debugDump } from '~/lib/debug';
 
 const COMMAND = 'latest';
 const SUBCOMMAND = 'schema';
@@ -25,7 +26,7 @@ export async function implementation(
   ...args: string[] & { length: CommandDetails<CommandType>['args']['length'] }
 ) {
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND} ${SUBCOMMAND}`, { args, flags });
+    debugDump(`${COMMAND} ${SUBCOMMAND}`, { args, flags });
   }
   const target = await checkBranchIsReachable(this, flags);
 
@@ -36,7 +37,7 @@ export async function implementation(
   }
 
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND} ${SUBCOMMAND}`, { runtimeFlags });
+    debugDump(`${COMMAND} ${SUBCOMMAND}`, { runtimeFlags });
   }
   const { success, exitCode } = await runPgRoll<CommandType>(
     this,

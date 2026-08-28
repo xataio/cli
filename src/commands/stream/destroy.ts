@@ -8,6 +8,7 @@ import {
   getCommandFlags,
   type GlobalFlags
 } from '~/lib/pgstream/stream-utils';
+import { debugDump } from '~/lib/debug';
 
 const COMMAND = 'destroy';
 type CommandType = 'destroy';
@@ -39,13 +40,13 @@ export async function implementation(
   const sourceUrl = getSourceUrl(this, flags);
 
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { args, flags });
+    debugDump(`${COMMAND}`, { args, flags });
   }
 
   const runtimeFlags: NonNullable<PgStreamOptions<CommandType>['flags']> =
     convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
+    debugDump(`${COMMAND}`, { runtimeFlags });
   }
 
   runtimeFlags.push(`--postgres-url=${sourceUrl}`);

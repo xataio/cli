@@ -23,6 +23,7 @@ import { getSourceUrl } from './start';
 import { getTransformsConfig } from './transforms';
 import { validateCloneRulesWithPgstream, formatValidationErrorsForPrompt } from '~/lib/pgstream/validate-rules';
 import { buildConnectionString } from '@xata.io/sql';
+import { debugDump } from '~/lib/debug';
 
 function writeSortedCloneConfig(context: LocalContext, config: Parameters<typeof sortCloneConfigForOutput>[0]) {
   const sorted = sortCloneConfigForOutput(config);
@@ -36,7 +37,7 @@ function writeSortedCloneConfig(context: LocalContext, config: Parameters<typeof
  */
 async function fetchDatabaseSchema(context: LocalContext, sourceUrl: string): Promise<Schema[]> {
   if (context.debug) {
-    console.log(`DEBUG: Executing postgres query on ${buildConnectionString(sourceUrl, { mask: true })}`);
+    console.error(`DEBUG: Executing postgres query on ${buildConnectionString(sourceUrl, { mask: true })}`);
   }
 
   const sql = await context.postgres(sourceUrl);
@@ -72,7 +73,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   if (this.debug) {
     invariant(sourceUrl, 'sourceUrl must be defined for debug logging');
     const maskedFlags = { ...flags, 'source-url': buildConnectionString(sourceUrl, { mask: true }) };
-    console.log(`DEBUG: xata clone config`, { flags: maskedFlags });
+    debugDump(`xata clone config`, { flags: maskedFlags });
   }
 
   let validationMode: ValidationMode = 'strict';

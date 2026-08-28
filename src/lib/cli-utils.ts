@@ -41,7 +41,7 @@ const debugResolved = (context: LocalContext, name: string, value: string, sourc
   if (!context.debug) {
     return;
   }
-  context.process.stdout.write(`DEBUG: ${name} = ${value || '(empty)'} (from ${source})\n`);
+  context.process.stderr.write(`DEBUG: ${name} = ${value || '(empty)'} (from ${source})\n`);
 };
 
 type BaseOptions = {

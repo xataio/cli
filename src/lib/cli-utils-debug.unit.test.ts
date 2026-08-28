@@ -26,7 +26,7 @@ const CONTEXT_ENV_VARS = [
   'XATA_DATABASENAME'
 ];
 
-const stdout: string[] = [];
+const stderr: string[] = [];
 
 function buildContext(...branches: string[]) {
   return {
@@ -47,12 +47,12 @@ function buildContext(...branches: string[]) {
     },
     debug: true,
     process: {
-      stdout: {
+      stdout: { write: () => true },
+      stderr: {
         write: (value: string) => {
-          return stdout.push(value);
+          return stderr.push(value);
         }
       },
-      stderr: { write: () => true },
       exit: (code?: number) => {
         throw new Error(`exit:${code}`);
       }
@@ -71,7 +71,7 @@ function buildContext(...branches: string[]) {
 }
 
 function lines() {
-  return stdout.join('');
+  return stderr.join('');
 }
 
 describe('debug source naming', () => {
@@ -81,7 +81,7 @@ describe('debug source naming', () => {
     branchConfig.branchId = '';
     branchConfig.branchName = '';
     branchConfig.databaseName = '';
-    stdout.length = 0;
+    stderr.length = 0;
     for (const name of CONTEXT_ENV_VARS) {
       delete process.env[name];
     }
@@ -179,6 +179,6 @@ describe('debug source naming', () => {
 
     await resolveContext(context, { organization: 'org-flag', project: 'project-flag' });
 
-    expect(stdout).toHaveLength(0);
+    expect(stderr).toHaveLength(0);
   });
 });

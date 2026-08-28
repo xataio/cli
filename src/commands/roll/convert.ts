@@ -10,6 +10,7 @@ import {
   getCommandFlags,
   type GlobalFlags
 } from '~/lib/pgroll/roll-utils';
+import { debugDump } from '~/lib/debug';
 
 const COMMAND = 'convert';
 type CommandType = 'convert';
@@ -24,14 +25,14 @@ export async function implementation(
   ...args: string[] & { length: CommandDetails<CommandType>['args']['length'] }
 ) {
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { args, flags });
+    debugDump(`${COMMAND}`, { args, flags });
   }
   const target = await checkBranchIsReachable(this, flags);
 
   const runtimeFlags = convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
 
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
+    debugDump(`${COMMAND}`, { runtimeFlags });
   }
 
   const { success, exitCode } = await runPgRoll<CommandType>(this, COMMAND, { flags: runtimeFlags, args }, target);

@@ -17,6 +17,7 @@ import {
 import { readConfigFile } from './clone-config-utils';
 import type { ValidationMode } from './config';
 import { getPgStreamStreamEnv } from './env';
+import { debugDump } from '~/lib/debug';
 
 const COMMAND = 'run';
 type CommandType = 'run';
@@ -61,7 +62,7 @@ export async function implementation(
   const sourceUrl = getSourceUrl(this, flags);
 
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { args, flags });
+    debugDump(`${COMMAND}`, { args, flags });
   }
   const target = await checkBranchIsReachable(this, flags);
 
@@ -104,7 +105,7 @@ export async function implementation(
   const runtimeFlags: NonNullable<PgStreamOptions<CommandType>['flags']> =
     convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
+    debugDump(`${COMMAND}`, { runtimeFlags });
   }
 
   const connectionString = await fetchBranchConnectionString(this.api, branchPathParams(target), {

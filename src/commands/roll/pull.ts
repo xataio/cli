@@ -12,6 +12,7 @@ import {
   getCommandFlags,
   type GlobalFlags
 } from '~/lib/pgroll/roll-utils';
+import { debugDump } from '~/lib/debug';
 
 const COMMAND = 'pull';
 type CommandType = 'pull';
@@ -26,7 +27,7 @@ export async function implementation(
   ...args: string[] & { length: CommandDetails<CommandType>['args']['length'] }
 ) {
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { args, flags });
+    debugDump(`${COMMAND}`, { args, flags });
   }
 
   const targetDir = args[0];
@@ -39,7 +40,7 @@ export async function implementation(
     runtimeFlags.push('--json');
   }
   if (this.debug) {
-    console.log(`DEBUG: ${COMMAND}`, { runtimeFlags });
+    debugDump(`${COMMAND}`, { runtimeFlags });
   }
 
   const { success, exitCode } = await runPgRoll<CommandType>(this, COMMAND, { flags: runtimeFlags, args }, target);
