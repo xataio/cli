@@ -1,5 +1,18 @@
 # xata-cli
 
+## 1.7.3
+
+### Patch Changes
+
+- [#3012](https://github.com/xataio/frontend/pull/3012) [`5b63893`](https://github.com/xataio/frontend/commit/5b638934a813155c899defbb251cebc9ebcff185) Thanks [@xata-bot](https://github.com/xata-bot)! - Remove invite link
+
+- [#3013](https://github.com/xataio/frontend/pull/3013) [`396487f`](https://github.com/xataio/frontend/commit/396487f43437b5c315e6be451857bd92b106604e) Thanks [@divyenduz](https://github.com/divyenduz)! - bump pgstream to v1.4.1
+- Updated dependencies [[`f2640fc`](https://github.com/xataio/frontend/commit/f2640fc9f0f0f684ce0612c276c872be6420762f), [`4da30cc`](https://github.com/xataio/frontend/commit/4da30cc7a40305104e796ae1b1cea850d69ceca7), [`5b63893`](https://github.com/xataio/frontend/commit/5b638934a813155c899defbb251cebc9ebcff185)]:
+  - @xata.io/api@0.1.11
+  - @xata.io/sql@0.2.7
+  - @xata.io/ai@0.1.1
+  - @xata.io/config@0.0.12
+
 ## 1.7.2
 
 ### Patch Changes

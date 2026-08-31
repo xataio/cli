@@ -42,9 +42,9 @@
     "@xata.io/lang": "0.0.4",
     "@xata.io/pgroll": "0.9.1",
     "@xata.io/pgstream": "0.2.3",
+    "@xata.io/utils": "0.2.1",
     "@xata.io/sql": "0.2.7",
-    "@xata.io/tsconfig": "0.0.2",
-    "@xata.io/utils": "0.2.1"
+    "@xata.io/tsconfig": "0.0.2"
   },
   "scripts": {
     "dev": "bun src/bin/cli.ts",
