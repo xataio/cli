@@ -67,10 +67,6 @@ export async function implementation(this: LocalContext, flags: Flags) {
         `${chalk.gray('Expires:')}       ${new Date(invitation.expires_at).toLocaleString()}\n`
       );
 
-      if (invitation.invite_link) {
-        this.process.stdout.write(`${chalk.gray('Invite Link:')}  ${invitation.invite_link}\n`);
-      }
-
       this.process.stdout.write('\n');
     }
   } catch (error) {
