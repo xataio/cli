@@ -430,7 +430,7 @@ export const ScratchCommand = buildCommand({
       kind: 'array',
       minimum: 0,
       parameter: {
-        brief: 'Command and arguments to run with scratch database environment variables; place child options after --',
+        brief: 'Binary command to run with scratch database environment variables; pass arguments to the binary after --',
         parse: String,
         placeholder: 'command'
       }
