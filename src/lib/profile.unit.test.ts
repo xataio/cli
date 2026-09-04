@@ -20,6 +20,10 @@ describe('getProfileFlag', () => {
     expect(getProfileFlag(['branch', 'list', '--json'])).toBeUndefined();
   });
 
+  test('does not read a child command flag after --', () => {
+    expect(getProfileFlag(['scratch', '--', 'psql', '--profile', 'child'])).toBeUndefined();
+  });
+
   test('returns undefined when the flag has no value', () => {
     expect(getProfileFlag(['branch', 'list', '--profile'])).toBeUndefined();
   });
