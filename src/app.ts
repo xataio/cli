@@ -60,6 +60,9 @@ const routes = buildRouteMap({
 
 export const app = buildApplication(addGlobalFlags(routes), {
   name: CLI_NAME,
+  scanner: {
+    allowArgumentEscapeSequence: true
+  },
   versionInfo: {
     currentVersion: getCLIVersion(),
     getLatestVersion,
