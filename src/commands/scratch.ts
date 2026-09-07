@@ -1,12 +1,19 @@
 import { buildCommand } from '@stricli/core';
 import { buildCredentialsConnectionString, fetchBranchCredentials } from '@xata.io/sql';
 import chalk from 'chalk';
-import { randomUUID } from 'node:crypto';
-import { parse } from 'pg-connection-string';
 import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
+import { createChildBranch } from '~/lib/branch-actions';
+import {
+  buildPostgresEnvironment,
+  deleteScratchBranch,
+  newScratchBranchName,
+  resolveExecutable,
+  SCRATCH_SCALE_TO_ZERO,
+  type ScratchBranch
+} from '~/lib/scratch-session';
 import { renderTable } from '~/lib/table';
-import { createChildBranch, getParentBranchId } from './branch/create';
+import { getParentBranchId } from './branch/create';
 
 type Flags = {
   organization?: string;
@@ -18,15 +25,6 @@ type Flags = {
 };
 
 const SIGNAL_CLEANUP_TIMEOUT_MS = 10 * 1000;
-const SCRATCH_SCALE_TO_ZERO = {
-  enabled: true,
-  inactivityPeriodMinutes: 10
-} as const;
-
-type ScratchBranch = {
-  id: string;
-  name: string;
-};
 
 type Signal = 'SIGINT' | 'SIGTERM' | 'SIGHUP';
 
@@ -96,48 +94,6 @@ function printSQLResult(context: LocalContext, json: boolean, result: unknown[])
   context.process.stdout.write(`${renderTable(headers, tableRows)}\n`);
 }
 
-function resolveExecutable(context: LocalContext, binary: string) {
-  const hasPathSeparator = binary.includes('/') || binary.includes('\\');
-  const candidates = hasPathSeparator
-    ? [binary]
-    : (context.process.env?.PATH ?? '')
-        .split(context.path.delimiter)
-        .filter(Boolean)
-        .flatMap((directory) => {
-          const candidate = context.path.join(directory, binary);
-          if (context.process.platform !== 'win32') return [candidate];
-
-          const extensions = (context.process.env?.PATHEXT ?? '.EXE;.CMD;.BAT;.COM').split(';');
-          return [candidate, ...extensions.map((extension) => `${candidate}${extension}`)];
-        });
-
-  for (const candidate of candidates) {
-    try {
-      context.fs.accessSync(candidate, context.fs.constants.X_OK);
-      return candidate;
-    } catch {
-      // Keep looking.
-    }
-  }
-
-  return null;
-}
-
-function buildPostgresEnvironment(connectionString: string, database: string) {
-  const parsed = parse(connectionString);
-
-  return {
-    DATABASE_URL: connectionString,
-    XATA_DATABASE_URL: connectionString,
-    PGHOST: parsed.host ?? undefined,
-    PGPORT: parsed.port ?? '5432',
-    PGUSER: parsed.user,
-    PGPASSWORD: parsed.password,
-    PGDATABASE: database,
-    PGSSLMODE: 'require'
-  };
-}
-
 async function executeSQL(context: LocalContext, query: string, connectionString: string) {
   const db = context.postgres(connectionString);
 
@@ -161,27 +117,6 @@ function spawnBinary(binary: string, args: string[], connectionString: string, d
   });
 
   return subprocess;
-}
-
-async function deleteScratchBranch(
-  context: LocalContext,
-  organizationId: string,
-  projectId: string,
-  branch: ScratchBranch
-) {
-  try {
-    await context.api.branches.deleteBranch({
-      pathParams: { organizationID: organizationId, projectID: projectId, branchID: branch.id }
-    });
-    context.process.stderr.write(chalk.green(`Deleted scratch branch ${branch.name}\n`));
-  } catch (error) {
-    context.process.stderr.write(
-      chalk.yellow(
-        `Warning: failed to delete scratch branch ${branch.name} (${branch.id}): ${getErrorMessage(error)}\n` +
-          `Delete it manually with: xata branch delete --branch ${branch.id} --yes\n`
-      )
-    );
-  }
 }
 
 async function deleteScratchBranchByName(
@@ -247,8 +182,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
     this.process.exit(1);
   }
 
-  const runId = randomUUID();
-  const branchName = `scratch-${runId}`;
+  const branchName = newScratchBranchName();
   let scratchBranch: ScratchBranch | undefined;
   let createBranchPromise: Promise<ScratchBranch> | undefined;
   let binaryExitCode: number | undefined;

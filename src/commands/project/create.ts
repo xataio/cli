@@ -1,7 +1,8 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { createRootBranch, getInstanceType, getImage, getRegion, getReplicas } from '../branch/create';
+import { createRootBranch } from '~/lib/branch-actions';
+import { getInstanceType, getImage, getRegion, getReplicas } from '../branch/create';
 
 type Flags = {
   organization?: string;

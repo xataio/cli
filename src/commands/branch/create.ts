@@ -7,9 +7,9 @@ import { hasProjectContext } from '~/lib/project-config';
 import { getBranchLimits, replicaChoicesFor } from '~/lib/branch-limits';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
-import type { Types } from '@xata.io/api';
 import { pickLatestPostgresImage, sortPostgresImagesDesc } from '@xata.io/utils';
 import invariant from 'tiny-invariant';
+import { createChildBranch, createRootBranch } from '~/lib/branch-actions';
 import type { BranchLookupOptions, ProjectOptions } from '~/lib/cli-utils';
 import { exitWithError, exitWithUnknownBranch, groupAndSortRegions, resolveBranchIdOrName } from '~/lib/cli-utils';
 import { config } from '~/lib/config';
@@ -63,63 +63,6 @@ export function buildInstanceTypeChoices(
       message: parts.join(' / ')
     };
   });
-}
-
-export async function createRootBranch(
-  context: LocalContext,
-  organizationId: string,
-  projectId: string,
-  branchName: string,
-  replicas: number,
-  region: string,
-  instanceType: string,
-  scaleToZero: boolean,
-  inactivityPeriodMinutes: number,
-  image: string
-) {
-  const configuration: Types.ClusterConfiguration = {
-    replicas,
-    image,
-    region,
-    instanceType
-  };
-  const branch = await context.api.branches.createBranch({
-    pathParams: { organizationID: organizationId, projectID: projectId },
-    body: {
-      name: branchName,
-      mode: 'custom',
-      configuration,
-      scaleToZero: {
-        enabled: scaleToZero,
-        inactivityPeriodMinutes
-      }
-    }
-  });
-  return branch;
-}
-
-export async function createChildBranch(
-  context: LocalContext,
-  organizationId: string,
-  projectId: string,
-  parentBranch: string,
-  branchName: string,
-  scaleToZero: boolean,
-  inactivityPeriodMinutes: number
-) {
-  const branch = await context.api.branches.createBranch({
-    pathParams: { organizationID: organizationId, projectID: projectId },
-    body: {
-      name: branchName,
-      mode: 'inherit',
-      parentID: parentBranch,
-      scaleToZero: {
-        enabled: scaleToZero,
-        inactivityPeriodMinutes
-      }
-    }
-  });
-  return branch;
 }
 
 export async function getParentBranchId(context: LocalContext, parentBranch: string, options: BranchLookupOptions) {

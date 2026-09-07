@@ -1,6 +1,7 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import { deleteBranchById, getBranchDeletionBlocker } from '~/lib/branch-actions';
 
 type Flags = {
   organization?: string;
@@ -16,8 +17,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   const currentBranchId = await this.getCheckedOutBranch();
   const branchToDeleteId = await this.getBranch(this, flags, { organizationId, projectId, branchName });
 
-  if (branchToDeleteId === currentBranchId) {
-    this.process.stderr.write(chalk.red(`Cannot delete the current checked out branch\n`));
+  const blocker = getBranchDeletionBlocker(branchToDeleteId, currentBranchId);
+  if (blocker) {
+    this.process.stderr.write(chalk.red(`${blocker}\n`));
     this.process.exit(1);
   }
 
@@ -44,9 +46,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     }
   }
 
-  await this.api.branches.deleteBranch({
-    pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchToDelete.id }
-  });
+  await deleteBranchById(this, organizationId, projectId, branchToDelete.id);
 
   this.print(this, flags.json, branchToDelete, ['branch'], [[branchToDelete.name]]);
 }

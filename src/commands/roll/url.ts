@@ -1,10 +1,10 @@
 import { buildCommand } from '@stricli/core';
+import { buildCredentialsConnectionString, fetchBranchCredentials } from '@xata.io/sql';
 import type { LocalContext } from '~/context';
+import { mapTypeToConnectionSuffix, validateBranchStatusForUrl } from '~/lib/branch-connection';
 import { DEFAULT_MIGRATIONS_DIRECTORY } from '~/lib/constants';
 import { getPgRoll } from '~/lib/pgroll/binary';
 import { checkMigrationsDirectory } from './migrate';
-import { buildCredentialsConnectionString, fetchBranchCredentials } from '@xata.io/sql';
-import { mapTypeToConnectionSuffix, validateBranchStatusForUrl } from '../branch/url';
 
 type Flags = {
   organization?: string;
