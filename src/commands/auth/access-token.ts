@@ -1,16 +1,17 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
-import { getProfile } from '~/lib/profile';
+import { resolveProfile } from '~/lib/profile';
 
 type Flags = {
   profile: string;
 };
 
 export async function implementation(this: LocalContext, { profile: profileFlag }: Flags) {
-  const profile = getProfile({ profileFlag });
+  const { profile, profileData } = resolveProfile({ profileFlag });
 
-  if (!profile) {
-    this.process.stderr.write('You must be logged in to print a token.');
+  if (!profileData) {
+    this.process.stderr.write(`Profile "${profile}" does not exist.\n`);
+    this.process.exit(1);
     return;
   }
 

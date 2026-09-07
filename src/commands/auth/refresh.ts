@@ -1,9 +1,8 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 import { getProfileApi } from '~/lib/api';
-import { config } from '~/lib/config';
 import { CLI_NAME } from '~/lib/constants';
-import { getProfile } from '~/lib/profile';
+import { resolveProfile } from '~/lib/profile';
 
 type Flags = {
   profile?: string;
@@ -11,8 +10,7 @@ type Flags = {
 };
 
 export async function implementation(this: LocalContext, { profile: profileFlag, json }: Flags) {
-  const profile = getProfile({ profileFlag });
-  const profileData = config.profiles[profile];
+  const { profile, profileData } = resolveProfile({ profileFlag });
 
   if (!profileData) {
     this.process.stderr.write(

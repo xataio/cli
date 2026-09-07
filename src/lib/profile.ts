@@ -18,6 +18,18 @@ export function getProfile({ profileFlag = '' }: { profileFlag?: string }) {
 }
 
 /**
+ * Resolves the profile a command acts on, together with its stored credentials.
+ * An explicit `--profile` is taken literally, so a name that was never created
+ * resolves to no credentials rather than quietly falling back to the active
+ * profile and acting on a different account's session.
+ */
+export function resolveProfile({ profileFlag = '' }: { profileFlag?: string }) {
+  const profile = profileFlag || getProfile({});
+
+  return { profile, profileData: config?.profiles?.[profile] };
+}
+
+/**
  * Reads `--profile` out of the raw arguments, because the context, and with it
  * the API client, is built before stricli parses the command's flags. Anything
  * malformed is left for stricli to report.

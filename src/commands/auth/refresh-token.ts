@@ -1,21 +1,21 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
-import { config } from '~/lib/config';
-import { getProfile } from '~/lib/profile';
+import { resolveProfile } from '~/lib/profile';
 
 type Flags = {
   profile: string;
 };
 
 export async function implementation(this: LocalContext, { profile: profileFlag }: Flags) {
-  const profile = getProfile({ profileFlag });
+  const { profile, profileData } = resolveProfile({ profileFlag });
 
-  if (!profile) {
-    this.process.stderr.write('You must be logged in to print a token.');
+  if (!profileData) {
+    this.process.stderr.write(`Profile "${profile}" does not exist.\n`);
+    this.process.exit(1);
     return;
   }
 
-  if (config.profiles[profile]?.type !== 'oidc') {
+  if (profileData.type !== 'oidc') {
     this.process.stderr.write(
       `Profile "${profile}" is using API key authentication and does not have a refresh token.\n` +
         'Please use a profile with session-based authentication to retrieve a refresh token.\n' +
@@ -24,8 +24,7 @@ export async function implementation(this: LocalContext, { profile: profileFlag 
     return;
   }
 
-  const refreshToken = config.profiles[profile]?.refreshToken ?? '';
-  this.process.stdout.write(refreshToken);
+  this.process.stdout.write(profileData.refreshToken);
 }
 
 export const AuthRefreshTokenCommand = buildCommand({

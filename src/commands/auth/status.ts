@@ -1,9 +1,8 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 import { getUserInfo } from '~/lib/cli-utils';
-import { getProfile } from '~/lib/profile';
+import { resolveProfile } from '~/lib/profile';
 import { getSessionExpiry } from '~/lib/session';
-import { config } from '../../lib/config';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
 type Flags = {
@@ -11,8 +10,7 @@ type Flags = {
 };
 
 export function implementation(this: LocalContext, { profile: profileFlag }: Flags) {
-  const profile = getProfile({ profileFlag });
-  const profileData = config.profiles[profile];
+  const { profile, profileData } = resolveProfile({ profileFlag });
   if (!profileData) {
     console.log(`You are not logged in with profile "${profile}"`);
     return;
@@ -27,7 +25,7 @@ export function implementation(this: LocalContext, { profile: profileFlag }: Fla
     return;
   }
 
-  const { name = 'unknown', email } = getUserInfo(profileFlag);
+  const { name = 'unknown', email } = getUserInfo(profile);
   const displayName = `${name}${email ? ` <${email}>` : ''}`;
   const apiBaseUrl = profileData.customConfig?.apiBaseUrl ?? DEFAULT_API_BASE_URL;
   const environment = apiBaseUrl === DEFAULT_API_BASE_URL ? 'production' : apiBaseUrl;
