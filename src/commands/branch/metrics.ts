@@ -1,23 +1,18 @@
 import { buildCommand } from '@stricli/core';
-import type { Types } from '@xata.io/api';
 import {
-  buildBranchMetricsReport,
-  computeBranchInstanceName,
   formatBranchMetricValue,
-  getBranchMetricConfig,
-  isBranchMetricKey,
   resolveBranchMetricAggregations,
   resolveBranchMetricKeys,
-  resolveBranchMetricTimeRange,
   type BranchMetricAggregation,
-  type BranchMetricInstance,
-  type BranchMetricKey,
-  type BranchMetricRequiredConfig,
-  type BranchMetricResult,
   type BranchMetricsReport
 } from '@xata.io/utils';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import {
+  fetchBranchMetricsReport,
+  type BranchMetricsFetchOptions,
+  type BranchMetricsTarget
+} from '~/lib/branch-metrics';
 import { getErrorMessage } from '~/lib/cli-utils';
 import { renderTable } from '~/lib/table';
 
@@ -40,23 +35,8 @@ type Flags = {
   json: boolean;
 };
 
-type MetricsTarget = {
-  organizationId: string;
-  projectId: string;
-  branchId: string;
-  branchName: string;
-  instances: BranchMetricInstance[];
-};
-
-type SnapshotOptions = {
-  target: MetricsTarget;
-  metricKeys: BranchMetricKey[];
-  aggregations: BranchMetricAggregation[];
+type SnapshotOptions = BranchMetricsFetchOptions & {
   selectedAggregation: BranchMetricAggregation;
-  instanceSelector: string;
-  since?: string;
-  start?: string;
-  end?: string;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
@@ -75,7 +55,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
   });
 
-  const target: MetricsTarget = {
+  const target: BranchMetricsTarget = {
     organizationId,
     projectId,
     branchId,
@@ -95,88 +75,12 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   };
 
   if (!flags.watch) {
-    const report = await fetchMetricsReport.call(this, snapshotOptions);
+    const report = await fetchBranchMetricsReport(this, snapshotOptions);
     writeReport(this, report, format, flags.aggregation);
     return;
   }
 
   await watchMetrics.call(this, snapshotOptions, { format, refreshMs });
-}
-
-async function fetchMetricsReport(this: LocalContext, options: SnapshotOptions): Promise<BranchMetricsReport> {
-  const { target, metricKeys, aggregations, instanceSelector, since, start, end } = options;
-  const timeRange = resolveBranchMetricTimeRange({ since, start, end });
-  const selectedInstances = resolveInstances(target.instances, instanceSelector);
-  const disabledConfigs = await getDisabledMetricConfigs(this, target);
-  const metricResults: Partial<Record<BranchMetricKey, BranchMetricResult>> = {};
-
-  if (selectedInstances.length > 0) {
-    const enabledMetricKeys = metricKeys.filter((metric) => {
-      const config = getBranchMetricConfig(metric);
-      return !config.requiresConfig || !disabledConfigs.has(config.requiresConfig);
-    });
-
-    if (enabledMetricKeys.length > 0) {
-      const response = await this.api.branches.branchMetrics({
-        pathParams: {
-          organizationID: target.organizationId,
-          projectID: target.projectId,
-          branchID: target.branchId
-        },
-        body: {
-          start: timeRange.start,
-          end: timeRange.end,
-          metrics: enabledMetricKeys,
-          instances: selectedInstances.map((instance) => instance.id),
-          aggregations
-        }
-      });
-
-      for (const result of response.results) {
-        if (isBranchMetricKey(result.metric)) metricResults[result.metric] = result;
-      }
-    }
-  }
-
-  return buildBranchMetricsReport({
-    organizationId: target.organizationId,
-    projectId: target.projectId,
-    branchId: target.branchId,
-    branchName: target.branchName,
-    start: timeRange.start,
-    end: timeRange.end,
-    instances: selectedInstances.map((instance) => ({
-      ...instance,
-      name: computeBranchInstanceName(instance, target.instances)
-    })),
-    metricKeys,
-    metricResults,
-    disabledConfigs
-  });
-}
-
-async function getDisabledMetricConfigs(
-  context: LocalContext,
-  target: MetricsTarget
-): Promise<ReadonlySet<BranchMetricRequiredConfig>> {
-  try {
-    const postgresConfig = await context.api.branches.getBranchPostgresConfig({
-      pathParams: {
-        organizationID: target.organizationId,
-        projectID: target.projectId,
-        branchID: target.branchId
-      }
-    });
-
-    const disabled = new Set<BranchMetricRequiredConfig>();
-    for (const configName of ['track_io_timing', 'track_wal_io_timing'] as const) {
-      const parameter = postgresConfig.parameters.find((p: Types.PostgresConfigParameter) => p.name === configName);
-      if (parameter?.currentValue !== 'on') disabled.add(configName);
-    }
-    return disabled;
-  } catch {
-    return new Set();
-  }
 }
 
 function writeReport(
@@ -210,7 +114,7 @@ async function watchMetrics(
 ) {
   while (true) {
     try {
-      const report = await fetchMetricsReport.call(this, options);
+      const report = await fetchBranchMetricsReport(this, options);
 
       if (format === 'ndjson') {
         this.process.stdout.write(`${JSON.stringify(report)}\n`);
@@ -313,23 +217,6 @@ function renderBar(value: number | null, max: number, unit: string | null): stri
   const normalizedMax = unit === 'percentage' ? Math.max(max, 1) : max;
   const filled = Math.min(width, Math.max(0, Math.round((value / normalizedMax) * width)));
   return `[${chalk.green('█'.repeat(filled))}${''.padEnd(width - filled, ' ')}]`;
-}
-
-function resolveInstances(instances: BranchMetricInstance[], selector: string): BranchMetricInstance[] {
-  if (selector === 'all') return instances;
-  if (selector === 'primary') return instances.filter((instance) => instance.primary);
-  if (selector === 'replicas') return instances.filter((instance) => !instance.primary);
-
-  const ids = selector
-    .split(',')
-    .map((id) => id.trim())
-    .filter(Boolean);
-  const selected = instances.filter((instance) => ids.includes(instance.id));
-  const missing = ids.filter((id) => !instances.some((instance) => instance.id === id));
-  if (missing.length > 0) {
-    throw new Error(`Invalid instance${missing.length === 1 ? '' : 's'}: ${missing.join(', ')}`);
-  }
-  return selected;
 }
 
 function ensureAggregationIncluded(
