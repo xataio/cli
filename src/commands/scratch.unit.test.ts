@@ -246,11 +246,13 @@ describe('scratch command', () => {
     const binary = path.join(tempDir, 'check-env');
     fs.writeFileSync(
       binary,
-      `#!/usr/bin/env bun\nif (!process.env.DATABASE_URL || !process.env.XATA_DATABASE_URL || !process.env.PGHOST || process.env.PGDATABASE !== 'app') process.exit(6);\nprocess.exit(7);\n`
+      `#!/usr/bin/env bun\nif (!process.env.DATABASE_URL || !process.env.XATA_DATABASE_URL || !process.env.PGHOST || process.env.PGDATABASE !== 'app') process.exit(6);\nif (JSON.stringify(Bun.argv.slice(2)) !== JSON.stringify(['-c', 'SELECT version();', '--profile', 'child', '--debug'])) process.exit(8);\nprocess.exit(7);\n`
     );
     fs.chmodSync(binary, 0o755);
 
-    await expect(implementation.call(context, { json: false }, binary)).rejects.toThrow('exit:7');
+    await expect(
+      implementation.call(context, { json: false }, binary, '-c', 'SELECT version();', '--profile', 'child', '--debug')
+    ).rejects.toThrow('exit:7');
 
     expect(deleteBranch).toHaveBeenCalledTimes(1);
   });
