@@ -1,5 +1,16 @@
 # xata-cli
 
+## 1.7.5
+
+### Patch Changes
+
+- [#3059](https://github.com/xataio/frontend/pull/3059) [`805e202`](https://github.com/xataio/frontend/commit/805e202d8839d6c3e7432cee06211558e946ad4d) Thanks [@xata-bot](https://github.com/xata-bot)! - Support the standard `--` option delimiter across the CLI, including
+  forwarding command arguments with `xata scratch -- <command> [arguments...]`.
+
+- [#3050](https://github.com/xataio/frontend/pull/3050) [`2d8ae9a`](https://github.com/xataio/frontend/commit/2d8ae9a4310fad7ec8570fb46254e9c2f8c126aa) Thanks [@xata-bot](https://github.com/xata-bot)! - bump pgroll to v0.16.2
+
+- [#3050](https://github.com/xataio/frontend/pull/3050) [`2d8ae9a`](https://github.com/xataio/frontend/commit/2d8ae9a4310fad7ec8570fb46254e9c2f8c126aa) Thanks [@xata-bot](https://github.com/xata-bot)! - bump pgstream to v1.4.2
+
 ## 1.7.4
 
 ### Patch Changes
