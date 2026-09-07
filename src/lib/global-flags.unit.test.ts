@@ -59,6 +59,10 @@ describe('getDebugFlag', () => {
     expect(getDebugFlag(['branch', 'list'])).toBe(false);
   });
 
+  test('does not read a child command flag after --', () => {
+    expect(getDebugFlag(['scratch', '--', 'tool', '--debug'])).toBe(false);
+  });
+
   test('is false for arguments it cannot parse', () => {
     expect(getDebugFlag(['--'])).toBe(false);
   });

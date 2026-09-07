@@ -206,14 +206,14 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
   const hasBinary = command.length > 0;
 
   if (hasQuery && hasBinary) {
-    this.process.stderr.write(chalk.red('Use either --execute/-x or a binary command, not both.\n'));
+    this.process.stderr.write(
+      chalk.red('Use either --execute/-x <sql> or -- <command> [arguments...], not both.\n')
+    );
     this.process.exit(1);
   }
 
   if (!hasQuery && !hasBinary) {
-    this.process.stderr.write(
-      chalk.red("Expected --execute/-x <sql> or a binary command, for example 'xata scratch psql'.\n")
-    );
+    this.process.stderr.write(chalk.red('Expected --execute/-x <sql> or -- <command> [arguments...].\n'));
     this.process.exit(1);
   }
 
@@ -379,8 +379,10 @@ export const ScratchCommand = buildCommand({
     fullDescription:
       'Creates a branch from the parent given, runs what it is asked to, and deletes the branch afterwards, so a query or a migration can be tried against real data without touching an existing branch.',
     customUsage: [
-      { input: '--execute "select count(*) from users"', brief: 'Run a query against a throwaway copy' },
-      { input: 'psql', brief: 'Open a Postgres client on the scratch branch' }
+      { input: '--execute "select count(*) from users"', brief: 'Run SQL with the built-in client' },
+      { input: '-x "select count(*) from users"', brief: 'Run SQL using the short execute flag' },
+      { input: '-- psql -c "select count(*) from users"', brief: 'Run psql with arguments' },
+      { input: '-- npm run migrate', brief: 'Run a database tool against the scratch branch' }
     ]
   },
   parameters: {
@@ -428,7 +430,7 @@ export const ScratchCommand = buildCommand({
       kind: 'array',
       minimum: 0,
       parameter: {
-        brief: 'Binary command to run with scratch database environment variables',
+        brief: 'Binary command to run with scratch database environment variables; pass arguments to the binary after --',
         parse: String,
         placeholder: 'command'
       }
