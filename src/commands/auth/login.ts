@@ -5,9 +5,9 @@ import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { getAuthConfig } from '~/lib/api';
 import { config, updateConfig } from '~/lib/config';
-import { PRODUCT_NAME } from '~/lib/constants';
+import { CLI_NAME, PRODUCT_NAME } from '~/lib/constants';
 import { DEFAULT_PROFILE } from '~/lib/profile';
-import { isSessionValid } from '~/lib/session';
+import { isSessionValid, revokeSession } from '~/lib/session';
 
 type Flags = {
   profile: string;
@@ -21,8 +21,9 @@ type Flags = {
 
 export async function implementation(this: LocalContext, { profile = DEFAULT_PROFILE, force, ...customFlags }: Flags) {
   const profiles = config?.profiles || {};
-  if (profiles[profile] && !force) {
-    if (await isSessionValid(profile, profiles[profile])) {
+  const existing = profiles[profile];
+  if (existing && !force) {
+    if (await isSessionValid(profile, existing)) {
       console.log(`Profile "${profile}" is already logged in. Use --force to log in again.`);
       return;
     }
@@ -30,7 +31,11 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
     console.log(`The session for profile "${profile}" has expired, logging in again.`);
   }
 
-  const storedConfig = profiles[profile]?.customConfig;
+  // Only a forced login replaces a session that may still be live; the expired
+  // branch above has already seen the provider reject the stored token.
+  const revokesPrevious = force && existing?.type === 'oidc';
+
+  const storedConfig = existing?.customConfig;
   const { baseUrl, client } = getAuthConfig({
     clientId: customFlags['client-id'] ?? storedConfig?.clientId,
     clientSecret: customFlags['client-secret'] ?? storedConfig?.clientSecret,
@@ -41,13 +46,22 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
   // Passing --api-key is a non-interactive alternative to the device OAuth flow below.
   const apiKey = customFlags['api-key'];
   if (apiKey) {
-    await loginWithApiKey.call(this, { profile, apiKey, baseUrl });
+    await loginWithApiKey.call(this, { profile, apiKey, baseUrl, revokesPrevious });
     return;
   }
 
+  // Revoke before the device flow: a new login approved from the same browser
+  // joins the same identity-provider session, so revoking the old token afterwards
+  // would also kill the new one. The stored token becomes unusable if the device
+  // flow is abandoned, which a later login recovers from.
+  if (revokesPrevious && !(await revokePreviousSession.call(this, profile))) {
+    return;
+  }
+
+  let token: { accessToken: string; refreshToken: string; expiresAt: Date } | undefined;
   try {
     for await (const step of XataApi.deviceLogin(client)) {
-      await match(step)
+      match(step)
         .with({ type: 'prompt' }, (step) => {
           console.log(`Visit ${chalk.bold.underline(step.verifyUrl)} and enter the code: ${chalk.bold(step.userCode)}`);
           console.log(
@@ -56,36 +70,75 @@ export async function implementation(this: LocalContext, { profile = DEFAULT_PRO
             )
           );
         })
-        .with({ type: 'token' }, async (step) => {
-          await updateConfig({
-            ...config,
-            activeProfile: profile,
-            profiles: {
-              ...profiles,
-              [profile]: {
-                type: 'oidc',
-                accessToken: step.accessToken,
-                refreshToken: step.refreshToken,
-                expiresAt: step.expiresAt,
-                customConfig: {
-                  ...client,
-                  apiBaseUrl: baseUrl
-                }
-              }
-            }
-          });
+        .with({ type: 'token' }, (step) => {
+          token = step;
         })
         .exhaustive();
     }
   } catch (error) {
     console.error('Failed to initiate device flow.', error);
     this.process.exit(1);
+    return;
+  }
+
+  // The device flow only finishes by yielding a token or throwing.
+  if (!token) {
+    return;
+  }
+
+  try {
+    await updateConfig({
+      ...config,
+      activeProfile: profile,
+      profiles: {
+        ...profiles,
+        [profile]: {
+          type: 'oidc',
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+          expiresAt: token.expiresAt,
+          customConfig: {
+            ...client,
+            apiBaseUrl: baseUrl
+          }
+        }
+      }
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    this.process.stderr.write(
+      `Logged in, but could not store the new credentials of profile "${profile}": ${message}\n` +
+        (revokesPrevious
+          ? `The previous session has already been revoked. Fix the problem and run \`${CLI_NAME} auth login --force --profile ${profile}\` to log in again.\n`
+          : `Fix the problem and run \`${CLI_NAME} auth login --profile ${profile}\` to log in again.\n`)
+    );
+    this.process.exit(1);
+  }
+}
+
+async function revokePreviousSession(this: LocalContext, profile: string) {
+  try {
+    await revokeSession(profile);
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    this.process.stderr.write(
+      `Could not revoke the previous session of profile "${profile}": ${message}\n` +
+        `No changes were made. Retry, or run \`${CLI_NAME} auth logout --local --profile ${profile}\` first to discard the stored credentials without revoking the session.\n`
+    );
+    this.process.exit(1);
+    return false;
   }
 }
 
 async function loginWithApiKey(
   this: LocalContext,
-  { profile, apiKey, baseUrl }: { profile: string; apiKey: string; baseUrl: string }
+  {
+    profile,
+    apiKey,
+    baseUrl,
+    revokesPrevious
+  }: { profile: string; apiKey: string; baseUrl: string; revokesPrevious: boolean }
 ) {
   // Validate the API key before persisting it so we don't store an invalid one.
   try {
@@ -94,6 +147,11 @@ async function loginWithApiKey(
   } catch {
     console.error('The provided API key is invalid or could not be verified. No changes were made.');
     this.process.exit(1);
+    return;
+  }
+
+  // The key is known to be valid, so the previous session can go before it is replaced.
+  if (revokesPrevious && !(await revokePreviousSession.call(this, profile))) {
     return;
   }
 
@@ -134,7 +192,7 @@ export const AuthLoginCommand = buildCommand({
       },
       force: {
         kind: 'boolean',
-        brief: 'Force login even if already logged in',
+        brief: 'Force login even if already logged in, revoking the previous session',
         default: false
       },
       'api-key': {

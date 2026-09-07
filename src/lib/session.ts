@@ -22,6 +22,13 @@ export function getSessionExpiry(profileData?: AuthProfile): Date | undefined {
   }
 }
 
+// Revokes the offline session of an OIDC profile with the identity provider.
+// Throws when the provider could not be reached or rejected the request, in
+// which case the stored refresh token may still be usable.
+export async function revokeSession(profile: string) {
+  await getProfileApi(profile).revokeToken();
+}
+
 export async function isSessionValid(profile: string, profileData?: AuthProfile) {
   if (profileData?.type !== 'oidc') {
     return true;

@@ -18,11 +18,16 @@ mock.module('~/lib/config', () => ({
 
 const getOrganizationsList = mock(async () => ({ organizations: [] }));
 
+// Steps yielded by the fake device flow; empty by default so the device flow
+// completes without persisting anything.
+let deviceLoginSteps: Array<Record<string, unknown>> = [];
+const deviceLogin = mock(async function* () {
+  yield* deviceLoginSteps;
+});
+
 class FakeXataApi {
   api = { organizations: { getOrganizationsList } };
-  static async *deviceLogin() {
-    // Not exercised by the API key flow.
-  }
+  static deviceLogin = deviceLogin;
 }
 
 mock.module('@xata.io/api', () => ({
@@ -30,14 +35,16 @@ mock.module('@xata.io/api', () => ({
 }));
 
 const isSessionValid = mock(async () => true);
+const revokeSession = mock(async () => {});
 
-mock.module('~/lib/session', () => ({ isSessionValid }));
+mock.module('~/lib/session', () => ({ isSessionValid, revokeSession }));
 
 const { implementation } = await import('./login');
 
 function buildContext() {
   const logs: string[] = [];
   const errors: string[] = [];
+  const stderr: string[] = [];
   const exit = mock((_code: number) => {});
 
   const originalLog = console.log;
@@ -50,21 +57,29 @@ function buildContext() {
     console.error = originalError;
   };
 
-  const context = { process: { exit } } as unknown as LocalContext;
+  const context = {
+    process: { exit, stderr: { write: (chunk: string) => stderr.push(chunk) } }
+  } as unknown as LocalContext;
 
-  return { context, logs, errors, exit, restore };
+  return { context, logs, errors, stderr, exit, restore };
+}
+
+function resetMocks() {
+  configState.activeProfile = 'default';
+  configState.profiles = {};
+  deviceLoginSteps = [];
+  updateConfig.mockClear();
+  deviceLogin.mockClear();
+  getOrganizationsList.mockClear();
+  getOrganizationsList.mockImplementation(async () => ({ organizations: [] }));
+  isSessionValid.mockClear();
+  isSessionValid.mockImplementation(async () => true);
+  revokeSession.mockClear();
+  revokeSession.mockImplementation(async () => {});
 }
 
 describe('auth login --api-key', () => {
-  beforeEach(() => {
-    configState.activeProfile = 'default';
-    configState.profiles = {};
-    updateConfig.mockClear();
-    getOrganizationsList.mockClear();
-    getOrganizationsList.mockImplementation(async () => ({ organizations: [] }));
-    isSessionValid.mockClear();
-    isSessionValid.mockImplementation(async () => true);
-  });
+  beforeEach(resetMocks);
 
   test('stores an apiKey profile after validating the key', async () => {
     const { context, logs, restore } = buildContext();
@@ -266,5 +281,190 @@ describe('auth login --api-key', () => {
 
     expect(getOrganizationsList).not.toHaveBeenCalled();
     expect(updateConfig).not.toHaveBeenCalled();
+  });
+});
+
+describe('auth login --force revokes the previous session', () => {
+  const existing = {
+    type: 'oidc',
+    accessToken: 'old-access',
+    refreshToken: 'old-refresh',
+    expiresAt: new Date(0),
+    customConfig: { apiBaseUrl: 'https://api.staging.xata.tech' }
+  } as const;
+  const newToken = { type: 'token', accessToken: 'new-access', refreshToken: 'new-refresh', expiresAt: new Date(1) };
+
+  beforeEach(() => {
+    resetMocks();
+    configState.profiles = { default: existing };
+    deviceLoginSteps = [newToken];
+  });
+
+  test('revokes the old session before starting the device flow and stores the new token', async () => {
+    const order: string[] = [];
+    revokeSession.mockImplementation(async () => {
+      order.push('revoke');
+    });
+    deviceLogin.mockImplementation(async function* () {
+      order.push('device');
+      yield* deviceLoginSteps;
+    });
+    const { context, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true });
+    } finally {
+      restore();
+    }
+
+    expect(revokeSession).toHaveBeenCalledWith('default');
+    expect(order).toEqual(['revoke', 'device']);
+    expect(exit).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toMatchObject({
+      type: 'oidc',
+      accessToken: 'new-access',
+      refreshToken: 'new-refresh',
+      customConfig: { apiBaseUrl: 'https://api.staging.xata.tech' }
+    });
+  });
+
+  test('aborts before the device flow when revocation fails and keeps the old profile', async () => {
+    revokeSession.mockImplementation(async () => {
+      throw new Error('fetch failed');
+    });
+    const { context, stderr, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true });
+    } finally {
+      restore();
+    }
+
+    expect(deviceLogin).not.toHaveBeenCalled();
+    expect(updateConfig).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toEqual(existing);
+    expect(exit).toHaveBeenCalledWith(1);
+    expect(stderr.join('')).toContain('Could not revoke the previous session of profile "default": fetch failed');
+    expect(stderr.join('')).toContain('auth logout --local --profile default');
+  });
+
+  test('reports that the previous session is gone when the new credentials cannot be stored', async () => {
+    updateConfig.mockImplementationOnce(async () => {
+      throw new Error('Failed to update config file: EACCES');
+    });
+    const { context, errors, stderr, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true });
+    } finally {
+      restore();
+    }
+
+    expect(revokeSession).toHaveBeenCalledTimes(1);
+    expect(deviceLogin).toHaveBeenCalledTimes(1);
+    expect(exit).toHaveBeenCalledWith(1);
+    expect(errors).toEqual([]);
+    expect(stderr.join('')).toContain(
+      'Logged in, but could not store the new credentials of profile "default": Failed to update config file: EACCES'
+    );
+    expect(stderr.join('')).toContain('The previous session has already been revoked');
+    expect(stderr.join('')).toContain('auth login --force --profile default');
+  });
+
+  test('revokes the old session after validating a replacement API key', async () => {
+    const order: string[] = [];
+    getOrganizationsList.mockImplementation(async () => {
+      order.push('validate');
+      return { organizations: [] };
+    });
+    revokeSession.mockImplementation(async () => {
+      order.push('revoke');
+    });
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'xau_new' });
+    } finally {
+      restore();
+    }
+
+    expect(order).toEqual(['validate', 'revoke']);
+    expect(configState.profiles.default).toMatchObject({ type: 'apiKey', apiKey: 'xau_new' });
+  });
+
+  test('does not revoke the old session when the replacement API key is invalid', async () => {
+    getOrganizationsList.mockImplementationOnce(async () => {
+      throw new Error('401 Unauthorized');
+    });
+    const { context, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'bad-key' });
+    } finally {
+      restore();
+    }
+
+    expect(revokeSession).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toEqual(existing);
+    expect(exit).toHaveBeenCalledWith(1);
+  });
+
+  test('keeps the old profile when revocation fails during an API key login', async () => {
+    revokeSession.mockImplementation(async () => {
+      throw new Error('fetch failed');
+    });
+    const { context, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'xau_new' });
+    } finally {
+      restore();
+    }
+
+    expect(updateConfig).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toEqual(existing);
+    expect(exit).toHaveBeenCalledWith(1);
+  });
+
+  test('does not revoke when replacing an API key profile', async () => {
+    configState.profiles = { default: { type: 'apiKey', apiKey: 'existing' } };
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true });
+    } finally {
+      restore();
+    }
+
+    expect(revokeSession).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toMatchObject({ type: 'oidc', accessToken: 'new-access' });
+  });
+
+  test('does not revoke a session the provider has already rejected', async () => {
+    isSessionValid.mockImplementation(async () => false);
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: false });
+    } finally {
+      restore();
+    }
+
+    expect(revokeSession).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toMatchObject({ type: 'oidc', accessToken: 'new-access' });
+  });
+
+  test('does not revoke when there is no existing profile', async () => {
+    configState.profiles = {};
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { profile: 'default', force: true });
+    } finally {
+      restore();
+    }
+
+    expect(revokeSession).not.toHaveBeenCalled();
+    expect(configState.profiles.default).toMatchObject({ type: 'oidc', accessToken: 'new-access' });
   });
 });
