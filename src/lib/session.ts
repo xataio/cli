@@ -35,7 +35,10 @@ export async function isSessionValid(profile: string, profileData?: AuthProfile)
   }
 
   try {
-    await getProfileApi(profile).refreshToken();
+    // Forced, because an unforced refresh returns the stored access token while it
+    // is still fresh, which would report a session the provider has already
+    // revoked as valid until that token expires.
+    await getProfileApi(profile).refreshToken({ force: true });
     return true;
   } catch (error) {
     // Only a rejected refresh grant proves the session is gone, network failures don't.

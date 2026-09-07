@@ -45,6 +45,13 @@ describe('isSessionValid', () => {
     expect(refreshToken).toHaveBeenCalledTimes(1);
   });
 
+  test('forces the refresh so a still-fresh access token is not taken as proof', async () => {
+    const stillFresh: AuthProfile = { ...oidcProfile, expiresAt: new Date(Date.now() + 60 * 60 * 1000) };
+
+    expect(await isSessionValid('default', stillFresh)).toBe(true);
+    expect(refreshToken).toHaveBeenCalledWith({ force: true });
+  });
+
   test('returns false when the refresh grant is rejected', async () => {
     refreshToken.mockImplementation(async () => {
       throw new SessionExpiredError();
