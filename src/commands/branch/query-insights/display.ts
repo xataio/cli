@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
+import { getQueryInsightSignals, type QueryInsightSignal } from '~/lib/query-insights';
 import { renderTable } from '~/lib/table';
 import {
   formatCacheHitRate,
@@ -12,11 +13,8 @@ import {
 } from './format';
 import type { QueryInsightRow } from './types';
 
-export type QueryInsightSignal = {
-  level: 'warning' | 'critical';
-  label: string;
-  reason: string;
-};
+export { getQueryInsightSignals };
+export type { QueryInsightSignal };
 
 type RenderQueryInsightsTableOptions = {
   wide: boolean;
@@ -123,73 +121,6 @@ export function renderQueryInsightDetails(row: QueryInsightRow) {
 
 export function printQueryInsightDetails(context: LocalContext, row: QueryInsightRow) {
   context.process.stdout.write(renderQueryInsightDetails(row));
-}
-
-export function getQueryInsightSignals(row: QueryInsightRow): QueryInsightSignal[] {
-  const signals: QueryInsightSignal[] = [];
-  if (row.mean_exec_time >= 1000) {
-    signals.push({
-      level: 'critical',
-      label: 'slow mean',
-      reason: `mean execution time ${formatMilliseconds(row.mean_exec_time)}`
-    });
-  } else if (row.mean_exec_time >= 100) {
-    signals.push({
-      level: 'warning',
-      label: 'slow mean',
-      reason: `mean execution time ${formatMilliseconds(row.mean_exec_time)}`
-    });
-  }
-
-  if (row.mean_exec_time > 0 && row.max_exec_time >= 1000 && row.max_exec_time >= row.mean_exec_time * 5) {
-    signals.push({
-      level: 'warning',
-      label: 'latency spikes',
-      reason: `max ${formatMilliseconds(row.max_exec_time)} is much higher than mean`
-    });
-  }
-
-  const sharedBlocks = row.shared_blks_hit + row.shared_blks_read;
-  if (sharedBlocks >= 100 && row.cache_hit_rate !== null && row.cache_hit_rate !== undefined) {
-    if (row.cache_hit_rate < 70) {
-      signals.push({
-        level: 'critical',
-        label: 'low cache hit',
-        reason: `cache hit rate ${formatCacheHitRate(row.cache_hit_rate)}`
-      });
-    } else if (row.cache_hit_rate < 90) {
-      signals.push({
-        level: 'warning',
-        label: 'low cache hit',
-        reason: `cache hit rate ${formatCacheHitRate(row.cache_hit_rate)}`
-      });
-    }
-  }
-
-  const tempBlocks = row.temp_blks_read + row.temp_blks_written;
-  if (tempBlocks >= 10_000) {
-    signals.push({
-      level: 'critical',
-      label: 'temp I/O',
-      reason: `${formatInteger(tempBlocks)} temporary blocks read/written`
-    });
-  } else if (tempBlocks > 0) {
-    signals.push({
-      level: 'warning',
-      label: 'temp I/O',
-      reason: `${formatInteger(tempBlocks)} temporary blocks read/written`
-    });
-  }
-
-  if (row.calls > 0 && row.rows / row.calls >= 10_000) {
-    signals.push({
-      level: 'warning',
-      label: 'many rows',
-      reason: `${formatInteger(Math.round(row.rows / row.calls))} rows per call`
-    });
-  }
-
-  return signals;
 }
 
 function getQueryInsightsHeaders(

@@ -1,19 +1,16 @@
 import type { Types } from '@xata.io/api';
-import {
-  checkPgStatStatementsUsable,
-  compileSql,
-  fetchBranchConnectionString,
-  getPgStatStatementsStatus,
-  PG_STAT_STATEMENTS_EXTENSION,
-  type RawBuilder
-} from '@xata.io/sql';
+import { fetchBranchConnectionString, PG_STAT_STATEMENTS_EXTENSION } from '@xata.io/sql';
 import chalk from 'chalk';
 import type postgres from 'postgres';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
-import { getErrorMessage } from '~/lib/cli-utils';
+import {
+  fetchPgStatStatementsReadiness,
+  formatQueryInsightsError,
+  QUERY_INSIGHTS_ADMIN_DATABASE
+} from '~/lib/query-insights';
 
-export const ADMIN_DATABASE = 'postgres';
+export { executeQuery, formatQueryInsightsError } from '~/lib/query-insights';
 
 export type BranchQueryInsightsFlags = {
   organization?: string;
@@ -70,7 +67,7 @@ export async function withBranchAdminSql<T>(
   const connectionString = await fetchBranchConnectionString(
     context.api,
     { organizationID: organizationId, projectID: projectId, branchID: branchId },
-    { database: ADMIN_DATABASE, endpointType: 'rw' }
+    { database: QUERY_INSIGHTS_ADMIN_DATABASE, endpointType: 'rw' }
   );
 
   const sql = context.postgres(connectionString);
@@ -112,29 +109,16 @@ export function buildQueryInsightsEnableCommand(branchName?: string) {
   return `${CLI_NAME} branch query-insights enable${branchName ? ` ${branchName}` : ''}`;
 }
 
-export async function executeQuery<T>(sql: postgres.Sql, query: RawBuilder<unknown>) {
-  const compiled = compileSql(query);
-  return sql.unsafe<T[]>(compiled.sql, compiled.parameters as any[]);
-}
-
 async function ensurePgStatStatementsUsable(context: LocalContext, sql: postgres.Sql, branchName: string) {
-  const statusRows = await executeQuery<{
-    available: boolean;
-    installed: boolean;
-    preloaded: boolean;
-    sharedPreloadLibraries: string;
-  }>(sql, getPgStatStatementsStatus.fn());
-  const status = statusRows[0];
+  const readiness = await fetchPgStatStatementsReadiness(sql);
 
-  if (!status?.available) {
+  if (readiness.state === 'ready') return true;
+
+  if (readiness.state === 'unavailable') {
     context.process.stderr.write(
       chalk.red(`${PG_STAT_STATEMENTS_EXTENSION} is not available for this branch image/region.\n`)
     );
-    context.process.exitCode = 1;
-    return false;
-  }
-
-  if (!status.preloaded || !status.installed) {
+  } else if (readiness.state === 'disabled') {
     const enableCommand = buildQueryInsightsEnableCommand(branchName);
     context.process.stderr.write(
       chalk.yellow(
@@ -145,34 +129,10 @@ async function ensurePgStatStatementsUsable(context: LocalContext, sql: postgres
         ].join('\n')}\n`
       )
     );
-    context.process.exitCode = 1;
-    return false;
+  } else {
+    context.process.stderr.write(chalk.red(`${readiness.message}\n`));
   }
 
-  try {
-    await executeQuery(sql, checkPgStatStatementsUsable());
-  } catch (error) {
-    context.process.stderr.write(chalk.red(`${formatQueryInsightsError(error)}\n`));
-    context.process.exitCode = 1;
-    return false;
-  }
-
-  return true;
-}
-
-export function formatQueryInsightsError(error: unknown) {
-  const message = getErrorMessage(error);
-  const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : undefined;
-
-  if (code === '42501' || /permission denied/i.test(message) || /must be superuser/i.test(message)) {
-    if (/pg_stat_statements_reset/i.test(message)) {
-      return `Permission denied: resetting query insights requires permission to execute pg_stat_statements_reset(). Original error: ${message}`;
-    }
-    return `Permission denied while accessing query insights. Original error: ${message}`;
-  }
-
-  if (message.includes('pg_stat_statements')) {
-    return `Query insights require ${PG_STAT_STATEMENTS_EXTENSION} to be enabled on the branch. Original error: ${message}`;
-  }
-  return message;
+  context.process.exitCode = 1;
+  return false;
 }
