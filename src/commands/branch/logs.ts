@@ -5,16 +5,20 @@ import {
   BRANCH_LOG_MAX_BODY_FILTER_LENGTH,
   BRANCH_LOG_MAX_FILTER_VALUES,
   BRANCH_LOG_MAX_LIMIT,
-  branchLogFingerprint,
-  buildBranchLogFilters,
-  sortBranchLogsChronologically
+  buildBranchLogFilters
 } from '@xata.io/utils';
 import type { BranchLogLevel } from '@xata.io/utils';
 import type { LocalContext } from '~/context';
+import {
+  BRANCH_LOG_FOLLOW_INTERVAL_MS,
+  createBranchLogFollowState,
+  fetchBranchLogs,
+  ingestBranchLogs,
+  nextBranchLogPollRange,
+  normalizeBranchLogsError
+} from '~/lib/branch-logs';
 
 const DEFAULT_LIMIT = 100;
-const FOLLOW_POLL_INTERVAL_MS = 2_000;
-const FOLLOW_OVERLAP_MS = 5_000;
 const DATE_FLAG_FORMAT = 'YYYY-MM-DDTHH:mm:ss.sssZ';
 const DATE_FLAG_EXAMPLE = '2026-05-23T10:00:00.000Z';
 const DATE_FLAG_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
@@ -179,62 +183,8 @@ function writeLogs(
   context.process.stdout.write(`${formatRawLogs(logs)}\n`);
 }
 
-export function pruneSeenLogs(seen: Map<string, number>, minTimestamp: number) {
-  for (const [fingerprint, timestamp] of seen) {
-    if (timestamp < minTimestamp) {
-      seen.delete(fingerprint);
-    }
-  }
-}
-
 async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-async function fetchLogs(
-  context: LocalContext,
-  options: {
-    organizationId: string;
-    projectId: string;
-    branchId: string;
-    timeRange: TimeRange;
-    filters: Types.LogFilter[];
-    limit: number;
-  }
-) {
-  const logs: Types.LogEntry[] = [];
-  let cursor: string | null | undefined;
-
-  do {
-    const remaining = options.limit - logs.length;
-    const response = await context.api.branches.branchLogs({
-      pathParams: {
-        organizationID: options.organizationId,
-        projectID: options.projectId,
-        branchID: options.branchId
-      },
-      body: {
-        start: options.timeRange.start,
-        end: options.timeRange.end,
-        limit: Math.min(remaining, BRANCH_LOG_MAX_LIMIT),
-        ...(options.filters.length > 0 && { filters: options.filters }),
-        ...(cursor && { cursor })
-      }
-    });
-
-    logs.push(...response.logs.slice(0, remaining));
-    cursor = response.nextCursor;
-  } while (cursor && logs.length < options.limit);
-
-  return sortBranchLogsChronologically(logs);
-}
-
-function normalizeLogsError(error: unknown): never {
-  const message = error instanceof Error ? error.message : String(error);
-  if (/404|not found|not available|disabled/i.test(message)) {
-    throw new Error('Branch logs are not available for this branch.');
-  }
-  throw error;
 }
 
 async function runSnapshot(
@@ -250,10 +200,10 @@ async function runSnapshot(
   }
 ) {
   try {
-    const logs = await fetchLogs(context, options);
+    const logs = await fetchBranchLogs(context, options);
     writeLogs(context, logs, options.output);
   } catch (error) {
-    normalizeLogsError(error);
+    normalizeBranchLogsError(error);
   }
 }
 
@@ -269,38 +219,24 @@ async function runFollow(
     output: Exclude<OutputFormat, 'json'>;
   }
 ) {
-  const seen = new Map<string, number>();
-  let nextStart = options.timeRange.start;
-  let firstPoll = true;
+  const followState = createBranchLogFollowState(options.timeRange);
   let includeCsvHeader = options.output === 'csv';
 
   while (true) {
-    const pollRange = { start: nextStart, end: firstPoll ? options.timeRange.end : new Date().toISOString() };
+    const pollRange = nextBranchLogPollRange(followState);
     let logs: Types.LogEntry[];
 
     try {
-      logs = await fetchLogs(context, { ...options, timeRange: pollRange });
+      logs = await fetchBranchLogs(context, { ...options, timeRange: pollRange });
     } catch (error) {
-      normalizeLogsError(error);
+      normalizeBranchLogsError(error);
     }
 
-    let newestTimestamp = new Date(nextStart).getTime();
-    const unseen = logs.filter((log) => {
-      const logTimestamp = new Date(log.timestamp).getTime();
-      newestTimestamp = Math.max(newestTimestamp, logTimestamp);
-      const fingerprint = branchLogFingerprint(log);
-      if (seen.has(fingerprint)) return false;
-      seen.set(fingerprint, logTimestamp);
-      return true;
-    });
+    const unseen = ingestBranchLogs(followState, logs);
 
     writeLogs(context, unseen, options.output, { includeCsvHeader });
     includeCsvHeader = false;
-    const nextStartTimestamp = Math.max(0, newestTimestamp - FOLLOW_OVERLAP_MS);
-    pruneSeenLogs(seen, nextStartTimestamp);
-    nextStart = new Date(nextStartTimestamp).toISOString();
-    firstPoll = false;
-    await sleep(FOLLOW_POLL_INTERVAL_MS);
+    await sleep(BRANCH_LOG_FOLLOW_INTERVAL_MS);
   }
 }
 

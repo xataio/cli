@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 import { sortBranchLogsChronologically } from '@xata.io/utils';
-import { buildFilters, buildTimeRange, formatCsvLogs, formatRawLog, parseLogTime, pruneSeenLogs } from './logs';
+import { pruneSeenLogs } from '~/lib/branch-logs';
+import { buildFilters, buildTimeRange, formatCsvLogs, formatRawLog, parseLogTime } from './logs';
 
 describe('branch logs helpers', () => {
   test('parses relative log times from now', () => {
