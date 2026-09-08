@@ -5,6 +5,7 @@ import { BranchRoute } from './commands/branch';
 import { BranchCheckoutCommand } from './commands/branch/checkout';
 import { CloneRoute } from './commands/clone';
 import { CompletionsRoute } from './commands/completions';
+import { ConsoleCommand } from './commands/console';
 import { KeysRoute } from './commands/keys';
 import { OrganizationRoute } from './commands/organization';
 import { ProjectRoute } from './commands/project';
@@ -40,6 +41,7 @@ const routes = buildRouteMap({
     version: VersionCommand,
     checkout: BranchCheckoutCommand,
     scratch: ScratchCommand,
+    console: ConsoleCommand,
 
     upgrade: UpgradeCommand,
 
@@ -53,6 +55,7 @@ const routes = buildRouteMap({
     hideRoute: {
       onboard: true,
       ai: true,
+      console: true,
       stream: true
     }
   }

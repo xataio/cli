@@ -58,6 +58,14 @@ export async function createChildBranch(
   return branch;
 }
 
+export async function getChildBranchDefaults(context: LocalContext, organizationId: string, projectId: string) {
+  const project = await context.api.projects.getProject({
+    pathParams: { organizationID: organizationId, projectID: projectId }
+  });
+  const { enabled, inactivityPeriodMinutes } = project.configuration.scaleToZero.childBranches;
+  return { scaleToZero: enabled, inactivityPeriodMinutes };
+}
+
 export async function deleteBranchById(
   context: LocalContext,
   organizationId: string,

@@ -1,4 +1,5 @@
 import type { Types } from '@xata.io/api';
+import { buildCredentialsConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
@@ -48,4 +49,16 @@ export function getReplicaConnectionWarning(type: BranchConnectionType, branch: 
   }
 
   return null;
+}
+
+export function buildBranchConnectionString(
+  credentials: Pick<Types.BranchCredentials, 'connectionString'>,
+  options: { database: string; type: BranchConnectionType; mask?: boolean; searchPath?: string }
+) {
+  return buildCredentialsConnectionString(credentials, {
+    database: options.database,
+    endpointType: mapTypeToConnectionSuffix(options.type),
+    mask: options.mask,
+    searchPath: options.searchPath
+  });
 }
