@@ -1,5 +1,15 @@
 # xata-cli
 
+## 1.8.0
+
+### Minor Changes
+
+- [#3077](https://github.com/xataio/frontend/pull/3077) [`7c07af0`](https://github.com/xataio/frontend/commit/7c07af0e477b26434a6221bddc0b6eb8f0816729) Thanks [@divyenduz](https://github.com/divyenduz)! - Add an interactive terminal console for browsing projects and branches, viewing logs, metrics and query insights, and managing branches.
+
+### Patch Changes
+
+- [#3086](https://github.com/xataio/frontend/pull/3086) [`f27f0a4`](https://github.com/xataio/frontend/commit/f27f0a4871bd527d48da2538dd0eaa51d407c66b) Thanks [@divyenduz](https://github.com/divyenduz)! - wait for branch to be ready in xata init
+
 ## 1.7.6
 
 ### Patch Changes
