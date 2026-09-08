@@ -1,5 +1,30 @@
 # xata-cli
 
+## 1.7.6
+
+### Patch Changes
+
+- [#3073](https://github.com/xataio/frontend/pull/3073) [`a4202a6`](https://github.com/xataio/frontend/commit/a4202a66080a81f1c02e85a345a858ffe0463d33) Thanks [@divyenduz](https://github.com/divyenduz)! - refactor metrics, extract lib
+
+- [#3072](https://github.com/xataio/frontend/pull/3072) [`36a78a3`](https://github.com/xataio/frontend/commit/36a78a3c3abc13992d5dd8853ef8626aaf38de36) Thanks [@divyenduz](https://github.com/divyenduz)! - refactor logs, extract lib functions
+
+- [#3066](https://github.com/xataio/frontend/pull/3066) [`7a90601`](https://github.com/xataio/frontend/commit/7a906012484e08ad03e7437f05e938755e729d64) Thanks [@divyenduz](https://github.com/divyenduz)! - `xata auth logout` now revokes the OIDC session with the identity provider before removing the stored credentials, and keeps them when revocation fails; `--local` removes them without revoking. `xata auth login --force` revokes the previous OIDC session before replacing it. `XataApi` gains `revokeToken()`.
+
+- [#3067](https://github.com/xataio/frontend/pull/3067) [`a2d4429`](https://github.com/xataio/frontend/commit/a2d4429f34e9708e0150b73c7d466a9277f48d2f) Thanks [@SferaDev](https://github.com/SferaDev)! - An unknown `--profile` is now an error instead of silently falling back to the active profile. `xata auth logout --profile typo` previously logged out of the active profile, and `xata auth access-token --profile typo` printed the active profile's token.
+
+- [#3068](https://github.com/xataio/frontend/pull/3068) [`f342dc3`](https://github.com/xataio/frontend/commit/f342dc37729cef08957ea082c9fd7381df8bf676) Thanks [@SferaDev](https://github.com/SferaDev)! - `xata auth login` now checks the session against the identity provider instead of trusting a still-valid access token, so a session that was revoked elsewhere is no longer reported as "already logged in".
+
+- [#3071](https://github.com/xataio/frontend/pull/3071) [`ba36aef`](https://github.com/xataio/frontend/commit/ba36aef515028b321db26107b3e8a72a39fd05ea) Thanks [@divyenduz](https://github.com/divyenduz)! - refactor branch creation and deletion
+
+- [#3074](https://github.com/xataio/frontend/pull/3074) [`b998ed4`](https://github.com/xataio/frontend/commit/b998ed452adf67a7a7e4fa0e4c1b29a27ece8306) Thanks [@divyenduz](https://github.com/divyenduz)! - refactor query insights, extract lib functions
+- Updated dependencies [[`7a90601`](https://github.com/xataio/frontend/commit/7a906012484e08ad03e7437f05e938755e729d64), [`e6b5999`](https://github.com/xataio/frontend/commit/e6b5999544850d743fa7167ea9d32719505d8e3e)]:
+  - @xata.io/api@0.1.13
+  - @xata.io/config@0.0.14
+  - @xata.io/utils@0.2.2
+  - @xata.io/lang@0.0.5
+  - @xata.io/ai@0.1.2
+  - @xata.io/sql@0.2.9
+
 ## 1.7.5
 
 ### Patch Changes
