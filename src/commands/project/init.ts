@@ -4,7 +4,6 @@ import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { type ContextFlags, contextFlags, getErrorMessage, resolveContext } from '~/lib/cli-utils';
 import { updateBranchConfig } from '~/lib/branch-config';
-import { CLI_NAME } from '~/lib/constants';
 import { getLocalConfigDir } from '~/lib/config-dir';
 import { getProjectConfigPath, hasProjectConfigFile, updateProjectConfig } from '~/lib/project-config';
 
@@ -81,15 +80,27 @@ export async function implementation(this: LocalContext, flags: Flags) {
       placeholder: database
     })) || database;
 
-  const branch = await this.api.branches.describeBranch({
+  let branch = await this.api.branches.describeBranch({
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
   });
 
   if (branch.status.statusType !== 'STATUS_TYPE_HEALTHY') {
-    this.process.stderr.write(
-      `The branch is not healthy (statusType=${branch.status.statusType}). Please use ${chalk.bold(`${CLI_NAME} branch wait-ready`)} command to wait for this branch to be healthy.\n`
-    );
-    return;
+    this.process.stderr.write(chalk.yellow(`Waiting for branch ${branch.name} to be ready...\n`));
+  }
+  while (branch.status.statusType !== 'STATUS_TYPE_HEALTHY') {
+    if (branch.status.statusType === 'STATUS_TYPE_HIBERNATED') {
+      this.process.stderr.write(chalk.yellow(`Branch ${branch.name} is hibernated. Waking up...\n`));
+      await this.api.branches.updateBranch({
+        pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId },
+        body: { hibernate: false }
+      });
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    branch = await this.api.branches.describeBranch({
+      pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
+    });
   }
   const connectionString = await fetchBranchConnectionString(this.api, {
     organizationID: organizationId,
