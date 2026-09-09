@@ -1,5 +1,22 @@
 # xata-cli
 
+## 1.9.0
+
+### Minor Changes
+
+- [#3103](https://github.com/xataio/frontend/pull/3103) [`cf21c2b`](https://github.com/xataio/frontend/commit/cf21c2b0f0d91612309952c2b9a681fca40c975e) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Support branch descriptions
+
+  `xata branch create --description`, `xata project create --description` and `xata branch set description` now set the branch description the API has always accepted, and `xata branch describe` and `xata branch list` show it. Passing an empty string to `xata branch set description` clears it.
+
+### Patch Changes
+
+- Updated dependencies [[`b084716`](https://github.com/xataio/frontend/commit/b08471629af9244e4286df49cc1cc266d0b89075), [`f5faeaa`](https://github.com/xataio/frontend/commit/f5faeaabc739f65b145e535e27c95e8200a791e8), [`cf21c2b`](https://github.com/xataio/frontend/commit/cf21c2b0f0d91612309952c2b9a681fca40c975e)]:
+  - @xata.io/api@0.1.14
+  - @xata.io/utils@0.3.0
+  - @xata.io/sql@0.2.10
+  - @xata.io/ai@0.1.2
+  - @xata.io/config@0.0.15
+
 ## 1.8.1
 
 ### Patch Changes
