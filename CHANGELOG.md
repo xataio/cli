@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.8.1
+
+### Patch Changes
+
+- [#3092](https://github.com/xataio/frontend/pull/3092) [`98da893`](https://github.com/xataio/frontend/commit/98da893dd2654acc531ccb0c702dce319cd02f28) Thanks [@xata-bot](https://github.com/xata-bot)! - bump pgroll to v0.16.3
+
 ## 1.8.0
 
 ### Minor Changes
