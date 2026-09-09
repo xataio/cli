@@ -1,5 +1,5 @@
 import { buildCommand } from '@stricli/core';
-import { instanceTypeUnavailableMessage, monthlyComputeCost } from '@xata.io/utils';
+import { branchDescriptionError, instanceTypeUnavailableMessage, monthlyComputeCost } from '@xata.io/utils';
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
@@ -20,6 +20,7 @@ type Flags = {
   organization?: string;
   project?: string;
   name?: string;
+  description?: string;
   'parent-branch'?: string;
   'no-parent': boolean;
   replicas?: string;
@@ -63,6 +64,17 @@ export function buildInstanceTypeChoices(
       message: parts.join(' / ')
     };
   });
+}
+
+export function getDescription(context: LocalContext, flags: { description?: string }) {
+  if (flags.description === undefined) {
+    return undefined;
+  }
+  const error = branchDescriptionError(flags.description);
+  if (error) {
+    return exitWithError(context, error);
+  }
+  return flags.description;
 }
 
 export async function getParentBranchId(context: LocalContext, parentBranch: string, options: BranchLookupOptions) {
@@ -280,6 +292,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
+  const description = getDescription(this, flags);
+
   const parentBranchId = await resolveParentBranchId(this, flags, { organizationId, projectId });
 
   // Determine if this will be a base branch (no parent)
@@ -302,29 +316,29 @@ export async function implementation(this: LocalContext, flags: Flags) {
       const instanceType = await getInstanceType(this, flags, { organizationId, region });
       const image = await getImage(this, flags, { organizationId, region });
 
-      return await createRootBranch(
-        this,
+      return await createRootBranch(this, {
         organizationId,
         projectId,
-        branchName,
-        parseInt(replicas),
+        name: branchName,
+        description,
+        replicas: parseInt(replicas),
         region,
         instanceType,
         scaleToZero,
         inactivityPeriodMinutes,
         image
-      );
+      });
     })
     .otherwise(async () => {
-      const branch = await createChildBranch(
-        this,
+      const branch = await createChildBranch(this, {
         organizationId,
         projectId,
-        parentBranchId,
-        branchName,
+        parentBranch: parentBranchId,
+        name: branchName,
+        description,
         scaleToZero,
         inactivityPeriodMinutes
-      );
+      });
 
       if (flags['instance-type']) {
         await waitReady.call(this, { json: true }, branchName);
@@ -361,8 +375,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     branch,
-    ['branch_id', 'created_at', 'name', 'parent_id'],
-    [[branch.id, branch.createdAt, branch.name, branch.parentID ?? '']]
+    ['branch_id', 'created_at', 'name', 'description', 'parent_id'],
+    [[branch.id, branch.createdAt, branch.name, branch.description ?? '', branch.parentID ?? '']]
   );
 
   if (hasProjectContext()) {
@@ -383,6 +397,7 @@ export const BranchCreateCommand = buildCommand({
       { input: '--name my-branch', brief: 'Branch the current branch' },
       { input: '--name my-branch --parent-branch main', brief: 'Branch another branch, by ID or by name' },
       { input: '--name my-branch --no-parent', brief: 'Create a root branch with no parent' },
+      { input: '--name my-branch --description "Nightly import"', brief: 'Describe what the branch is for' },
       {
         input: '--name my-branch --instance-type <type> --replicas 1 --scale-to-zero true',
         brief: 'Size the branch and let it scale to zero'
@@ -417,6 +432,12 @@ export const BranchCreateCommand = buildCommand({
       name: {
         kind: 'parsed',
         brief: 'Branch name',
+        parse: String,
+        optional: true
+      },
+      description: {
+        kind: 'parsed',
+        brief: 'Short description of what the branch is for',
         parse: String,
         optional: true
       },

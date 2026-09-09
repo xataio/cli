@@ -104,15 +104,14 @@ export async function runScratchHandoff(context: LocalContext, handoff: ScratchH
   };
   context.process.on('SIGINT', cancel);
 
-  const creation = createChildBranch(
-    context,
-    handoff.organizationId,
-    handoff.projectId,
-    handoff.parentBranchId,
-    branchName,
-    SCRATCH_SCALE_TO_ZERO.enabled,
-    SCRATCH_SCALE_TO_ZERO.inactivityPeriodMinutes
-  );
+  const creation = createChildBranch(context, {
+    organizationId: handoff.organizationId,
+    projectId: handoff.projectId,
+    parentBranch: handoff.parentBranchId,
+    name: branchName,
+    scaleToZero: SCRATCH_SCALE_TO_ZERO.enabled,
+    inactivityPeriodMinutes: SCRATCH_SCALE_TO_ZERO.inactivityPeriodMinutes
+  });
 
   try {
     context.process.stderr.write(chalk.gray(`Creating scratch branch from ${handoff.parentBranchName}…\n`));

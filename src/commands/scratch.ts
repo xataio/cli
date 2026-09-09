@@ -252,15 +252,14 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
   }
 
   try {
-    createBranchPromise = createChildBranch(
-      this,
+    createBranchPromise = createChildBranch(this, {
       organizationId,
       projectId,
-      parentBranchId,
-      branchName,
-      SCRATCH_SCALE_TO_ZERO.enabled,
-      SCRATCH_SCALE_TO_ZERO.inactivityPeriodMinutes
-    );
+      parentBranch: parentBranchId,
+      name: branchName,
+      scaleToZero: SCRATCH_SCALE_TO_ZERO.enabled,
+      inactivityPeriodMinutes: SCRATCH_SCALE_TO_ZERO.inactivityPeriodMinutes
+    });
     const createdScratchBranch = await createBranchPromise;
     scratchBranch = createdScratchBranch;
 

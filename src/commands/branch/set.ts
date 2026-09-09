@@ -1,5 +1,6 @@
 import { buildCommand } from '@stricli/core';
 import {
+  branchDescriptionError,
   filterUpgradeablePostgresImages,
   instanceTypeUnavailableMessage,
   sortPostgresImagesDesc
@@ -41,6 +42,7 @@ type Flags = {
 
 type Field =
   | 'name'
+  | 'description'
   | 'replicas'
   | 'instance-type'
   | 'storage'
@@ -58,6 +60,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
 
   const validFields: Field[] = [
     'name',
+    'description',
     'replicas',
     'instance-type',
     'storage',
@@ -142,10 +145,14 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     }));
   }
 
-  if (!value) {
+  if (value === undefined) {
     value = await match(field)
       .with('name', async () => {
         return await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the new branch name');
+      })
+      .with('description', async () => {
+        const suffix = branch.description ? ` (current: ${branch.description}, empty to clear)` : '';
+        return await this.enquirer.inputPrompt(this.isInteractive, `Please enter the new branch description${suffix}`);
       })
       .with('replicas', async () => {
         return await this.enquirer.selectPrompt(
@@ -196,7 +203,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
       .exhaustive();
   }
 
-  if (!value) {
+  if (value === undefined || (value === '' && field !== 'description')) {
     this.process.stderr.write(chalk.red(`Expected value for field ${field}`));
     this.process.exit(1);
   }
@@ -208,6 +215,13 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     .with('name', () => {
       if (!value.trim()) {
         this.process.stderr.write(chalk.red('Branch name cannot be empty'));
+        this.process.exit(1);
+      }
+    })
+    .with('description', () => {
+      const error = branchDescriptionError(value);
+      if (error) {
+        this.process.stderr.write(chalk.red(error));
         this.process.exit(1);
       }
     })
@@ -295,6 +309,11 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
         name: value
       };
     })
+    .with('description', () => {
+      return {
+        description: value
+      };
+    })
     .with('replicas', () => {
       return {
         replicas: parseInt(value)
@@ -357,6 +376,8 @@ export const BranchSetCommand = buildCommand({
       'The `postgres-version` field upgrades PostgreSQL, and only accepts compatible upgrades within the same major version and offering type, see https://xata.io/docs/platform/branch#upgrading-postgresql-versions.',
     customUsage: [
       { input: 'replicas 2 my-branch', brief: 'Set a field non-interactively' },
+      { input: 'description "Nightly import"', brief: 'Describe what the branch is for' },
+      { input: 'description ""', brief: 'Clear the description' },
       { input: 'postgres-version', brief: 'Select the target version interactively' },
       { input: 'postgres-version postgres:17.7', brief: 'Upgrade to a specific PostgreSQL version' }
     ]
@@ -392,7 +413,7 @@ export const BranchSetCommand = buildCommand({
       parameters: [
         {
           brief:
-            'The field to set: name, replicas, instance-type, storage, hibernate, scale-to-zero, inactivity-period or postgres-version',
+            'The field to set: name, description, replicas, instance-type, storage, hibernate, scale-to-zero, inactivity-period or postgres-version',
           parse: String,
           placeholder: 'field',
           default: '.catalog'

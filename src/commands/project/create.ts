@@ -1,13 +1,14 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { createRootBranch } from '~/lib/branch-actions';
-import { getInstanceType, getImage, getRegion, getReplicas } from '../branch/create';
+import { createRootBranch, type RootBranchOptions } from '~/lib/branch-actions';
+import { getDescription, getInstanceType, getImage, getRegion, getReplicas } from '../branch/create';
 
 type Flags = {
   organization?: string;
   name: string;
   'branch-name'?: string;
+  description?: string;
   replicas?: string;
   'instance-type'?: string;
   region?: string;
@@ -31,6 +32,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
+  const description = getDescription(this, flags);
   const region = await getRegion(this, flags, { organizationId });
   const replicas = await getReplicas(this, flags, { organizationId });
   const instanceType = await getInstanceType(this, flags, { organizationId, region });
@@ -60,53 +62,31 @@ export async function implementation(this: LocalContext, flags: Flags) {
     }
   });
 
-  await ensureBranch(
-    this,
+  await ensureBranch(this, {
     organizationId,
-    project.id,
-    branchName,
-    parseInt(replicas),
+    projectId: project.id,
+    name: branchName,
+    description,
+    replicas: parseInt(replicas),
     region,
     instanceType,
-    project.configuration.scaleToZero.baseBranches.enabled,
-    project.configuration.scaleToZero.baseBranches.inactivityPeriodMinutes,
+    scaleToZero: project.configuration.scaleToZero.baseBranches.enabled,
+    inactivityPeriodMinutes: project.configuration.scaleToZero.baseBranches.inactivityPeriodMinutes,
     image
-  );
+  });
   this.print(this, flags.json, project, ['project_id', 'name'], [[project.id, project.name]]);
 }
 
-export async function ensureBranch(
-  context: LocalContext,
-  organizationId: string,
-  projectId: string,
-  branchName: string,
-  replicas: number,
-  region: string,
-  instanceType: string,
-  scaleToZero: boolean,
-  inactivityPeriodMinutes: number,
-  image: string
-) {
+export async function ensureBranch(context: LocalContext, options: RootBranchOptions) {
   const { branches } = await context.api.branches.listBranches({
     pathParams: {
-      organizationID: organizationId,
-      projectID: projectId
+      organizationID: options.organizationId,
+      projectID: options.projectId
     }
   });
 
   if (branches.length === 0) {
-    await createRootBranch(
-      context,
-      organizationId,
-      projectId,
-      branchName,
-      replicas,
-      region,
-      instanceType,
-      scaleToZero,
-      inactivityPeriodMinutes,
-      image
-    );
+    await createRootBranch(context, options);
   } else {
     context.process.stderr.write(
       chalk.red(`A branch already exists in this project. That should not be possible as this is a new project.`)
@@ -135,6 +115,12 @@ export const ProjectCreateCommand = buildCommand({
       'branch-name': {
         kind: 'parsed',
         brief: 'Branch Name',
+        parse: String,
+        optional: true
+      },
+      description: {
+        kind: 'parsed',
+        brief: 'Short description of what the first branch is for',
         parse: String,
         optional: true
       },

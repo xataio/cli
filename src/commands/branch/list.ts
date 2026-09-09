@@ -33,10 +33,10 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     flags.json,
     branches,
-    ['branch_id', 'created_at', 'name', 'parent_id', 'current'],
+    ['branch_id', 'created_at', 'name', 'description', 'parent_id', 'current'],
     branches.map((branch) => {
       const current = currentBranch?.id === branch.id ? 'true' : 'false';
-      return [branch.id, branch.createdAt, branch.name, branch.parentID || '-', current];
+      return [branch.id, branch.createdAt, branch.name, branch.description ?? '-', branch.parentID || '-', current];
     })
   );
 }

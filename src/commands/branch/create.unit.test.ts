@@ -1,6 +1,7 @@
 import { ApiError, NetworkError, type Types } from '@xata.io/api';
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
+import { branchDescriptionMaxLength } from '@xata.io/utils';
 import { print } from '~/lib/cli-utils';
 
 mock.module('~/lib/project-config', () => {
@@ -316,5 +317,74 @@ describe('promptForParentBranchId', () => {
     });
 
     expect(await promptForParentBranchId(context, options)).toBe('prompted-branch-id');
+  });
+});
+
+describe('branch create descriptions', () => {
+  test('sends the description when creating a root branch', async () => {
+    const { context, createBranch } = buildContext();
+
+    await implementation.call(context, {
+      ...BASE_FLAGS,
+      'no-parent': true,
+      ...SIZING_FLAGS,
+      description: 'Nightly import'
+    });
+
+    expect(createBranch.mock.calls[0]?.[0].body).toMatchObject({ description: 'Nightly import' });
+  });
+
+  test('sends the description when forking a branch', async () => {
+    const { context, createBranch } = buildContext();
+
+    await implementation.call(context, { ...BASE_FLAGS, 'parent-branch': PARENT_ID, description: 'Nightly import' });
+
+    expect(createBranch.mock.calls[0]?.[0].body).toMatchObject({ description: 'Nightly import' });
+  });
+
+  test('omits the description when the flag is not passed', async () => {
+    const { context, createBranch } = buildContext();
+
+    await implementation.call(context, { ...BASE_FLAGS, 'parent-branch': PARENT_ID });
+
+    expect(createBranch.mock.calls[0]?.[0].body.description).toBeUndefined();
+  });
+
+  test('rejects a description longer than the schema allows without calling the API', async () => {
+    const { context, stderr, createBranch } = buildContext();
+
+    await expect(
+      implementation.call(context, {
+        ...BASE_FLAGS,
+        'parent-branch': PARENT_ID,
+        description: 'a'.repeat(branchDescriptionMaxLength + 1)
+      })
+    ).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain(`cannot exceed ${branchDescriptionMaxLength} characters`);
+    expect(createBranch).not.toHaveBeenCalled();
+  });
+
+  test('rejects a description the API charset would refuse', async () => {
+    const { context, stderr, createBranch } = buildContext();
+
+    await expect(
+      implementation.call(context, { ...BASE_FLAGS, 'parent-branch': PARENT_ID, description: 'no*stars' })
+    ).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('separators');
+    expect(createBranch).not.toHaveBeenCalled();
+  });
+
+  test('sends a label path, which the API charset allows', async () => {
+    const { context, createBranch } = buildContext();
+
+    await implementation.call(context, {
+      ...BASE_FLAGS,
+      'parent-branch': PARENT_ID,
+      description: 'company/infra/managed-by-x'
+    });
+
+    expect(createBranch.mock.calls[0]?.[0].body).toMatchObject({ description: 'company/infra/managed-by-x' });
   });
 });

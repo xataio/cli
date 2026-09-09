@@ -331,15 +331,14 @@ export function ConsoleApp({ context, flags, initialView, onHandoff }: ConsoleAp
     dispatch({ type: 'load:start', notice: `Creating branch ${name}…` });
     try {
       const defaults = await getChildBranchDefaults(context, scope.organizationId, scope.projectId);
-      const branch = await createChildBranch(
-        context,
-        scope.organizationId,
-        scope.projectId,
-        parentBranchId,
+      const branch = await createChildBranch(context, {
+        organizationId: scope.organizationId,
+        projectId: scope.projectId,
+        parentBranch: parentBranchId,
         name,
-        defaults.scaleToZero,
-        defaults.inactivityPeriodMinutes
-      );
+        scaleToZero: defaults.scaleToZero,
+        inactivityPeriodMinutes: defaults.inactivityPeriodMinutes
+      });
       const [branches, branchData] = await Promise.all([
         listBranches(context, scope.organizationId, scope.projectId),
         describeBranchWithCredentials(context, scope.organizationId, scope.projectId, branch.id)
