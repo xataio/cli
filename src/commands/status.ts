@@ -16,17 +16,21 @@ export async function implementation(this: LocalContext, { json }: Flags) {
   const branchId = branchConfig.branchId;
 
   if (!organizationId || !projectId) {
-    this.process.stdout.write(`Couldn't find a project config in ${chalk.bold(getProjectConfigPath())}.\n`);
-    this.process.stdout.write(`Please connect a project to a folder using ${chalk.bold(`${CLI_NAME} init`)}\n\n`);
+    printStatusProblem(this, json, { configured: false, reason: 'no-project-config' }, () => {
+      this.process.stdout.write(`Couldn't find a project config in ${chalk.bold(getProjectConfigPath())}.\n`);
+      this.process.stdout.write(`Please connect a project to a folder using ${chalk.bold(`${CLI_NAME} init`)}\n\n`);
+    });
     return;
   }
 
   // `init` refuses to run again once the project file exists, so pointing there would dead-end.
   if (!branchId) {
-    this.process.stdout.write(`No branch is checked out, the project is ${chalk.bold(projectId)}.\n`);
-    this.process.stdout.write(
-      `Please check one out using ${chalk.bold(`${CLI_NAME} checkout <branch>`)} or set XATA_BRANCH_ID\n\n`
-    );
+    printStatusProblem(this, json, { configured: false, reason: 'no-branch-checked-out', project: projectId }, () => {
+      this.process.stdout.write(`No branch is checked out, the project is ${chalk.bold(projectId)}.\n`);
+      this.process.stdout.write(
+        `Please check one out using ${chalk.bold(`${CLI_NAME} checkout <branch>`)} or set XATA_BRANCH_ID\n\n`
+      );
+    });
     return;
   }
 
@@ -58,6 +62,15 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     ['project', status.project],
     ['branch', status.branch]
   ]);
+}
+
+function printStatusProblem(context: LocalContext, json: boolean, data: Record<string, unknown>, render: () => void) {
+  if (json) {
+    context.process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+    return;
+  }
+
+  render();
 }
 
 export const StatusCommand = buildCommand({

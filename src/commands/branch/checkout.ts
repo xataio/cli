@@ -27,7 +27,12 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   });
 
   if (targetBranchId === currentBranchId) {
-    this.process.stdout.write(`Already on branch ${branchName}\n`);
+    const alreadyOn = branchName ?? targetBranchId;
+    if (flags.json) {
+      this.printDetails(this, flags.json, { id: targetBranchId, name: branchName ?? null }, []);
+    } else {
+      this.process.stdout.write(`Already on branch ${alreadyOn}\n`);
+    }
     this.process.exit(0);
   }
 

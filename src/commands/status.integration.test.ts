@@ -24,6 +24,6 @@ describe('status command tests', async () => {
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    expect(output).toContain("Couldn't find a project config");
+    expect(JSON.parse(output)).toEqual({ configured: false, reason: 'no-project-config' });
   });
 });
