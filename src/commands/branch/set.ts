@@ -8,30 +8,11 @@ import {
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
+import { exitWithError } from '~/lib/cli-utils';
 import { CLI_NAME } from '~/lib/constants';
-import { getBranchLimits, replicaChoicesFor } from '~/lib/branch-limits';
+import { getBranchLimits, replicaChoicesFor, storageValidationError } from '~/lib/branch-limits';
 import { buildInstanceTypeChoices, instanceTypes, shouldShowInstanceTypePricing } from './create';
 import { validScaleToZeroValues, validInactivityPeriodValues, scaleToZeroChoices, timeChoices } from '~/lib/config';
-
-function storageLimitMessage(maxStorage: number, hasPaymentMethod: boolean): string {
-  const action = hasPaymentMethod
-    ? 'contact support'
-    : 'add a payment method in your billing settings or contact support';
-  return `Storage cannot exceed ${maxStorage} GB on your current plan; please ${action} to increase the limit.`;
-}
-
-// A valid payment method on file moves the org to usage tier t2, so the tier doubles as a
-// "has payment method" signal. Defaults to false (offer the billing hint) if the lookup fails.
-async function hasPaymentMethod(context: LocalContext, organizationId: string): Promise<boolean> {
-  try {
-    const organization = await context.api.organizations.getOrganization({
-      pathParams: { organizationID: organizationId }
-    });
-    return organization.status.usage_tier === 't2';
-  } catch {
-    return false;
-  }
-}
 
 type Flags = {
   organization?: string;
@@ -204,104 +185,69 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
   }
 
   if (value === undefined || (value === '' && field !== 'description')) {
-    this.process.stderr.write(chalk.red(`Expected value for field ${field}`));
-    this.process.exit(1);
+    return exitWithError(this, `Expected value for field ${field}`);
   }
 
-  const storageOverLimit = field === 'storage' && maxStorage !== undefined && Number(value) > maxStorage;
-  const paymentMethodOnFile = storageOverLimit ? await hasPaymentMethod(this, organizationId) : false;
+  const storageError =
+    field === 'storage'
+      ? await storageValidationError(this, organizationId, value, {
+          maxStorage,
+          currentStorage: branch.configuration.storage
+        })
+      : null;
 
-  match(field)
+  const invalidValue = (label: string, valid: readonly string[]) => {
+    return `Invalid ${label}: ${value}. Valid values are: ${valid.join(', ')}`;
+  };
+
+  const validationError = match(field)
     .with('name', () => {
-      if (!value.trim()) {
-        this.process.stderr.write(chalk.red('Branch name cannot be empty'));
-        this.process.exit(1);
-      }
+      return value.trim() ? null : 'Branch name cannot be empty';
     })
     .with('description', () => {
-      const error = branchDescriptionError(value);
-      if (error) {
-        this.process.stderr.write(chalk.red(error));
-        this.process.exit(1);
-      }
+      return branchDescriptionError(value);
     })
     .with('replicas', () => {
       const validReplicas = replicaChoices.map((choice) => choice.name);
-      if (!validReplicas.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(`Invalid replicas value: ${value}. Valid values are: ${validReplicas.join(', ')}`)
-        );
-        this.process.exit(1);
-      }
+      return validReplicas.includes(value) ? null : invalidValue('replicas value', validReplicas);
     })
     .with('instance-type', () => {
       const instance = instances.find((t) => t.name === value);
       if (!instance) {
-        const validInstanceTypes = instances.map((t) => t.name);
-        this.process.stderr.write(
-          chalk.red(`Invalid instance type: ${value}. Valid values are: ${validInstanceTypes.join(', ')}`)
+        return invalidValue(
+          'instance type',
+          instances.map((t) => t.name)
         );
-        this.process.exit(1);
       }
-      if (maxAllowedVCPUs && instance.vcpus > maxAllowedVCPUs) {
-        this.process.stderr.write(chalk.red(`${instanceTypeUnavailableMessage(value)}\n`));
-        this.process.exit(1);
-      }
+      return maxAllowedVCPUs && instance.vcpus > maxAllowedVCPUs ? instanceTypeUnavailableMessage(value) : null;
     })
     .with('storage', () => {
-      const storageGB = Number(value);
-      if (!Number.isInteger(storageGB) || storageGB < 1) {
-        this.process.stderr.write(chalk.red(`Invalid storage value: ${value}. Storage must be a whole number of GB.`));
-        this.process.exit(1);
-      }
-      const currentStorage = branch.configuration.storage;
-      if (currentStorage !== undefined && storageGB < currentStorage) {
-        this.process.stderr.write(chalk.red(`Storage cannot be decreased (current: ${currentStorage} GB).\n`));
-        this.process.exit(1);
-      }
-      if (maxStorage !== undefined && storageGB > maxStorage) {
-        this.process.stderr.write(chalk.red(`${storageLimitMessage(maxStorage, paymentMethodOnFile)}\n`));
-        this.process.exit(1);
-      }
+      return storageError;
     })
     .with('hibernate', () => {
       const validHibernateValues = ['true', 'false'];
-      if (!validHibernateValues.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(`Invalid hibernate value: ${value}. Valid values are: ${validHibernateValues.join(', ')}`)
-        );
-        this.process.exit(1);
-      }
+      return validHibernateValues.includes(value) ? null : invalidValue('hibernate value', validHibernateValues);
     })
     .with('scale-to-zero', () => {
-      if (!validScaleToZeroValues.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(`Invalid scale to zero value: ${value}. Valid values are: ${validScaleToZeroValues.join(', ')}`)
-        );
-        this.process.exit(1);
-      }
+      return validScaleToZeroValues.includes(value)
+        ? null
+        : invalidValue('scale to zero value', validScaleToZeroValues);
     })
     .with('inactivity-period', () => {
-      if (!validInactivityPeriodValues.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(
-            `Invalid inactivity period value: ${value}. Valid values are: ${validInactivityPeriodValues.join(', ')}`
-          )
-        );
-        this.process.exit(1);
-      }
+      return validInactivityPeriodValues.includes(value)
+        ? null
+        : invalidValue('inactivity period value', validInactivityPeriodValues);
     })
     .with('postgres-version', () => {
-      if (!upgradeableImageChoices.some((choice) => choice.name === value)) {
-        this.process.stderr.write(
-          chalk.red(
-            `Invalid PostgreSQL version: ${value}. Not a compatible upgrade for current image ${branch.configuration.image}.\n`
-          )
-        );
-        this.process.exit(1);
-      }
+      return upgradeableImageChoices.some((choice) => choice.name === value)
+        ? null
+        : `Invalid PostgreSQL version: ${value}. Not a compatible upgrade for current image ${branch.configuration.image}.`;
     })
     .exhaustive();
+
+  if (validationError) {
+    return exitWithError(this, validationError);
+  }
 
   const updateBody = match(field)
     .with('name', () => {

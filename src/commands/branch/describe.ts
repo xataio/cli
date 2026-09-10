@@ -17,38 +17,29 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
   });
 
+  const fields: [header: string, value: string][] = [
+    ['branch_id', branch.id],
+    ['created_at', branch.createdAt],
+    ['updated_at', branch.updatedAt],
+    ['instance_type', branch.configuration.instanceType],
+    ['name', branch.name],
+    ['description', branch.description ?? ''],
+    ['parent_id', branch.parentID ?? ''],
+    ['region', branch.region],
+    ['replicas', branch.configuration.replicas.toString()],
+    ['storage', branch.configuration.storage?.toString() ?? ''],
+    ['status', branch.status.status],
+    ['status_type', branch.status.statusType],
+    ['scale_to_zero', branch.scaleToZero.enabled.toString()],
+    ['inactivity_minutes', branch.scaleToZero.inactivityPeriodMinutes.toString()]
+  ];
+
   this.print(
     this,
     flags.json,
     branch,
-    [
-      'branch_id',
-      'created_at',
-      'instance_type',
-      'name',
-      'description',
-      'parent_id',
-      'replicas',
-      'status',
-      'status_type',
-      'scale_to_zero',
-      'inactivity_minutes'
-    ],
-    [
-      [
-        branch.id,
-        branch.createdAt,
-        branch.configuration.instanceType,
-        branch.name,
-        branch.description ?? '',
-        branch.parentID || '',
-        branch.configuration.replicas.toString(),
-        branch.status.status,
-        branch.status.statusType,
-        branch.scaleToZero.enabled.toString(),
-        branch.scaleToZero.inactivityPeriodMinutes.toString()
-      ]
-    ]
+    fields.map(([header]) => header),
+    [fields.map(([, value]) => value)]
   );
 }
 

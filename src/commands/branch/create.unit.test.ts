@@ -31,7 +31,13 @@ function notFound() {
   return new ApiError(404, { message: `Branch with ID [main]: not found` }, `Branch with ID [main]: not found`);
 }
 
-function buildContext() {
+function buildContext({
+  maxStorageGBPerBranch,
+  usageTier = 't1'
+}: {
+  maxStorageGBPerBranch?: number;
+  usageTier?: 't1' | 't2';
+} = {}) {
   const stdout: string[] = [];
   const stderr: string[] = [];
   const createBranch = mock(async ({ body }: { body: Types.CreateBranchMutationRequest }) => {
@@ -55,10 +61,14 @@ function buildContext() {
   const getOrganization = mock(async () => {
     return 'org-id';
   });
+  const getOrganizationDetails = mock(async () => {
+    return { status: { usage_tier: usageTier } };
+  });
 
   const context = {
     api: {
       branches: { createBranch, listBranches, describeBranch },
+      organizations: { getOrganization: getOrganizationDetails },
       projects: {
         getProject: mock(async () => {
           return {
@@ -80,7 +90,10 @@ function buildContext() {
           return { images: [{ name: 'postgresql-17' }] };
         }),
         getOrganizationLimits: mock(async () => {
-          throw new Error('limits unavailable');
+          if (maxStorageGBPerBranch === undefined) {
+            throw new Error('limits unavailable');
+          }
+          return { maxStorageGBPerBranch };
         })
       }
     },
@@ -119,7 +132,16 @@ function buildContext() {
     }
   } as unknown as LocalContext;
 
-  return { context, stderr, createBranch, listBranches, describeBranch, getBranch, getOrganization };
+  return {
+    context,
+    stderr,
+    createBranch,
+    listBranches,
+    describeBranch,
+    getBranch,
+    getOrganization,
+    getOrganizationLimits: context.api.projects.getOrganizationLimits
+  };
 }
 
 function buildResolverContext({
@@ -386,5 +408,129 @@ describe('branch create descriptions', () => {
     });
 
     expect(createBranch.mock.calls[0]?.[0].body).toMatchObject({ description: 'company/infra/managed-by-x' });
+  });
+});
+
+describe('branch create limits', () => {
+  test('asks the API for the organization limits only once per command', async () => {
+    const { context, getOrganizationLimits } = buildContext({ maxStorageGBPerBranch: 100 });
+
+    await implementation.call(context, {
+      ...BASE_FLAGS,
+      'no-parent': true,
+      ...SIZING_FLAGS,
+      description: 'Nightly import',
+      storage: '10'
+    });
+
+    expect(getOrganizationLimits).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('branch create storage', () => {
+  test('sends the storage size in the configuration of a root branch', async () => {
+    const { context, createBranch } = buildContext();
+
+    await implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS, storage: '10' });
+
+    expect(createBranch.mock.calls[0]?.[0].body).toEqual({
+      name: 'my-branch',
+      mode: 'custom',
+      configuration: {
+        replicas: 1,
+        image: 'postgresql-17',
+        region: 'us-east-1',
+        instanceType: 'small',
+        storage: 10
+      },
+      scaleToZero: { enabled: false, inactivityPeriodMinutes: 15 }
+    });
+  });
+
+  test('omits the storage size when the flag is not passed', async () => {
+    const { context, createBranch } = buildContext();
+
+    await implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS });
+
+    expect(createBranch.mock.calls[0]?.[0].body).toEqual({
+      name: 'my-branch',
+      mode: 'custom',
+      configuration: { replicas: 1, image: 'postgresql-17', region: 'us-east-1', instanceType: 'small' },
+      scaleToZero: { enabled: false, inactivityPeriodMinutes: 15 }
+    });
+  });
+
+  test('rejects --storage with --parent-branch before calling the API', async () => {
+    const { context, stderr, createBranch, getOrganization } = buildContext();
+
+    await expect(
+      implementation.call(context, { ...BASE_FLAGS, 'parent-branch': PARENT_ID, storage: '10' })
+    ).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('Storage can only be set when creating a root branch');
+    expect(getOrganization).not.toHaveBeenCalled();
+    expect(createBranch).not.toHaveBeenCalled();
+  });
+
+  test('rejects --storage when a parent branch comes from the prompt', async () => {
+    const { context, stderr, createBranch } = buildContext();
+
+    await expect(implementation.call(context, { ...BASE_FLAGS, storage: '10' })).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('Storage can only be set when creating a root branch');
+    expect(createBranch).not.toHaveBeenCalled();
+  });
+
+  test('rejects storage that is not a whole number without calling the API', async () => {
+    const { context, stderr, createBranch } = buildContext();
+
+    await expect(
+      implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS, storage: '10.5' })
+    ).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('Storage must be a whole number of GB');
+    expect(createBranch).not.toHaveBeenCalled();
+  });
+
+  test('rejects storage below 1 GB without calling the API', async () => {
+    const { context, stderr, createBranch } = buildContext();
+
+    await expect(
+      implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS, storage: '0' })
+    ).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('Storage must be a whole number of GB');
+    expect(createBranch).not.toHaveBeenCalled();
+  });
+
+  test('rejects storage above the limit the organization reports', async () => {
+    const { context, stderr, createBranch } = buildContext({ maxStorageGBPerBranch: 20 });
+
+    await expect(
+      implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS, storage: '50' })
+    ).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('Storage cannot exceed 20 GB on your current plan');
+    expect(stderr.join('')).toContain('add a payment method');
+    expect(createBranch).not.toHaveBeenCalled();
+  });
+
+  test('drops the billing hint when the organization already has a payment method', async () => {
+    const { context, stderr } = buildContext({ maxStorageGBPerBranch: 20, usageTier: 't2' });
+
+    await expect(
+      implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS, storage: '50' })
+    ).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('please contact support');
+    expect(stderr.join('')).not.toContain('add a payment method');
+  });
+
+  test('accepts storage at exactly the limit the organization reports', async () => {
+    const { context, createBranch } = buildContext({ maxStorageGBPerBranch: 20 });
+
+    await implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS, storage: '20' });
+
+    expect(createBranch.mock.calls[0]?.[0].body).toMatchObject({ configuration: { storage: 20 } });
   });
 });

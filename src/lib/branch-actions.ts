@@ -12,6 +12,7 @@ export type RootBranchOptions = {
   scaleToZero: boolean;
   inactivityPeriodMinutes: number;
   image: string;
+  storage?: number;
 };
 
 export type ChildBranchOptions = {
@@ -29,7 +30,8 @@ export async function createRootBranch(context: LocalContext, options: RootBranc
     replicas: options.replicas,
     image: options.image,
     region: options.region,
-    instanceType: options.instanceType
+    instanceType: options.instanceType,
+    storage: options.storage
   };
   const branch = await context.api.branches.createBranch({
     pathParams: { organizationID: options.organizationId, projectID: options.projectId },

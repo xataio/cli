@@ -2,7 +2,7 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { createRootBranch, type RootBranchOptions } from '~/lib/branch-actions';
-import { getDescription, getInstanceType, getImage, getRegion, getReplicas } from '../branch/create';
+import { getDescription, getInstanceType, getImage, getRegion, getReplicas, getStorage } from '../branch/create';
 
 type Flags = {
   organization?: string;
@@ -12,6 +12,7 @@ type Flags = {
   replicas?: string;
   'instance-type'?: string;
   region?: string;
+  storage?: string;
   'scale-to-zero-base'?: 'true' | 'false';
   'scale-to-zero-child'?: 'true' | 'false';
   'inactivity-period-base'?: '15' | '30' | '60' | '120' | '180';
@@ -33,6 +34,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
 
   const description = getDescription(this, flags);
+  const storage = await getStorage(this, flags, { organizationId });
   const region = await getRegion(this, flags, { organizationId });
   const replicas = await getReplicas(this, flags, { organizationId });
   const instanceType = await getInstanceType(this, flags, { organizationId, region });
@@ -72,7 +74,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
     instanceType,
     scaleToZero: project.configuration.scaleToZero.baseBranches.enabled,
     inactivityPeriodMinutes: project.configuration.scaleToZero.baseBranches.inactivityPeriodMinutes,
-    image
+    image,
+    storage
   });
   this.print(this, flags.json, project, ['project_id', 'name'], [[project.id, project.name]]);
 }
@@ -139,6 +142,12 @@ export const ProjectCreateCommand = buildCommand({
       region: {
         kind: 'parsed',
         brief: 'Region to create the project in',
+        parse: String,
+        optional: true
+      },
+      storage: {
+        kind: 'parsed',
+        brief: 'Storage in GB for the first branch',
         parse: String,
         optional: true
       },

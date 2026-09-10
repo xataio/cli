@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { hasProjectContext } from '~/lib/project-config';
-import { getBranchLimits, replicaChoicesFor } from '~/lib/branch-limits';
+import { getBranchLimits, replicaChoicesFor, storageValidationError } from '~/lib/branch-limits';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
 import { pickLatestPostgresImage, sortPostgresImagesDesc } from '@xata.io/utils';
@@ -15,6 +15,11 @@ import { exitWithError, exitWithUnknownBranch, groupAndSortRegions, resolveBranc
 import { config } from '~/lib/config';
 import { implementation as checkout } from './checkout';
 import { implementation as waitReady } from './wait-ready';
+
+// Storage is part of the cluster configuration a root branch is built from, and a fork inherits
+// its parent's disk instead, so the two can never be combined.
+const STORAGE_REQUIRES_ROOT_BRANCH =
+  'Cannot use --storage together with a parent branch. Storage can only be set when creating a root branch.';
 
 type Flags = {
   organization?: string;
@@ -27,6 +32,7 @@ type Flags = {
   'instance-type'?: string;
   region?: string;
   'postgres-version'?: string;
+  storage?: string;
   'scale-to-zero'?: 'true' | 'false';
   'inactivity-period'?: '15' | '30' | '60' | '120' | '180';
   json: boolean;
@@ -75,6 +81,18 @@ export function getDescription(context: LocalContext, flags: { description?: str
     return exitWithError(context, error);
   }
   return flags.description;
+}
+
+export async function getStorage(context: LocalContext, flags: { storage?: string }, options: ProjectOptions) {
+  if (flags.storage === undefined) {
+    return undefined;
+  }
+  const { maxStorage } = await getBranchLimits(context, options.organizationId);
+  const error = await storageValidationError(context, options.organizationId, flags.storage, { maxStorage });
+  if (error) {
+    return exitWithError(context, error);
+  }
+  return Number(flags.storage);
 }
 
 export async function getParentBranchId(context: LocalContext, parentBranch: string, options: BranchLookupOptions) {
@@ -268,8 +286,11 @@ export async function getImage(
 
 export async function implementation(this: LocalContext, flags: Flags) {
   if (flags['parent-branch'] && flags['no-parent']) {
-    this.process.stderr.write(chalk.red('Cannot use --parent-branch together with --no-parent.\n'));
-    this.process.exit(1);
+    return exitWithError(this, 'Cannot use --parent-branch together with --no-parent.');
+  }
+
+  if (flags.storage !== undefined && flags['parent-branch']) {
+    return exitWithError(this, STORAGE_REQUIRES_ROOT_BRANCH);
   }
 
   const organizationId = await this.getOrganization(this, flags, {});
@@ -288,13 +309,17 @@ export async function implementation(this: LocalContext, flags: Flags) {
     flag: flags.name
   });
   if (!branchName) {
-    this.process.stderr.write(chalk.red(`Expected input for flag --name`));
-    this.process.exit(1);
+    return exitWithError(this, 'Expected input for flag --name');
   }
 
   const description = getDescription(this, flags);
+  const storage = await getStorage(this, flags, { organizationId });
 
   const parentBranchId = await resolveParentBranchId(this, flags, { organizationId, projectId });
+
+  if (storage !== undefined && parentBranchId) {
+    return exitWithError(this, STORAGE_REQUIRES_ROOT_BRANCH);
+  }
 
   // Determine if this will be a base branch (no parent)
   const isRootBranch = !parentBranchId;
@@ -326,7 +351,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
         instanceType,
         scaleToZero,
         inactivityPeriodMinutes,
-        image
+        image,
+        storage
       });
     })
     .otherwise(async () => {
@@ -397,6 +423,7 @@ export const BranchCreateCommand = buildCommand({
       { input: '--name my-branch', brief: 'Branch the current branch' },
       { input: '--name my-branch --parent-branch main', brief: 'Branch another branch, by ID or by name' },
       { input: '--name my-branch --no-parent', brief: 'Create a root branch with no parent' },
+      { input: '--name my-branch --no-parent --storage 10', brief: 'Create a root branch with a 10 GB disk' },
       { input: '--name my-branch --description "Nightly import"', brief: 'Describe what the branch is for' },
       {
         input: '--name my-branch --instance-type <type> --replicas 1 --scale-to-zero true',
@@ -462,6 +489,12 @@ export const BranchCreateCommand = buildCommand({
       'postgres-version': {
         kind: 'parsed',
         brief: 'PostgreSQL version for the branch',
+        parse: String,
+        optional: true
+      },
+      storage: {
+        kind: 'parsed',
+        brief: 'Storage in GB for the branch. Root branches only, as a fork inherits its parent',
         parse: String,
         optional: true
       },
