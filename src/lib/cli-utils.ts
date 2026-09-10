@@ -9,7 +9,7 @@ import { CLI_NAME } from './constants';
 import { envNameFor } from './env';
 import { getProfile } from './profile';
 import { getProjectConfigPath, projectConfig } from './project-config';
-import { renderTable } from './table';
+import { renderDetails, renderTable } from './table';
 
 export const print = (
   context: LocalContext,
@@ -26,6 +26,24 @@ export const print = (
   const table = renderTable(headers, rows);
   context.process.stdout.write(`${table}\n`);
   return table;
+};
+
+// Prints one record as field/value lines. Use this over print() when describing a single
+// thing, which does not fit a table well once it carries more than a handful of fields.
+export const printDetails = (
+  context: LocalContext,
+  json: boolean,
+  data: Record<string, unknown>,
+  fields: [field: string, value: string][]
+) => {
+  if (json) {
+    context.process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+    return JSON.stringify(data, null, 2);
+  }
+
+  const details = renderDetails(fields);
+  context.process.stdout.write(`${details}\n`);
+  return details;
 };
 
 /**

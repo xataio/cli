@@ -47,8 +47,8 @@
     "@xata.io/lang": "0.0.5",
     "@xata.io/pgroll": "0.9.1",
     "@xata.io/pgstream": "0.2.3",
-    "@xata.io/sql": "0.2.11",
     "@xata.io/tsconfig": "0.0.2",
+    "@xata.io/sql": "0.2.11",
     "@xata.io/utils": "0.4.0"
   },
   "scripts": {

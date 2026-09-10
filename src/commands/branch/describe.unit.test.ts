@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
-import { getBranch, print } from '~/lib/cli-utils';
+import { getBranch, print, printDetails } from '~/lib/cli-utils';
 import { implementation } from './describe';
 
 const BRANCH_ID = 'oansf546nh1bf3blhj75d674gs';
@@ -32,7 +32,8 @@ function buildContext({ storage }: { storage?: number } = { storage: 42 }) {
     getOrganization: mock(async () => 'org-id'),
     getProject: mock(async () => 'project-id'),
     getBranch,
-    print
+    print,
+    printDetails
   } as unknown as LocalContext;
 
   return { context, stdout, describeBranch };
@@ -73,5 +74,53 @@ describe('branch describe', () => {
     expect(table).toContain('storage');
     expect(table).not.toContain('42');
     expect(table).toContain('us-east-1');
+  });
+
+  test('puts each field on its own line, so a field can be looked up by name', async () => {
+    const { context, stdout } = buildContext();
+
+    await implementation.call(context, { branch: 'main', json: false });
+
+    // What `awk '$1=="storage" {print $2}'` does.
+    const lookup = (field: string) =>
+      stdout
+        .join('')
+        .split('\n')
+        .map((line) => line.split(/\s+/))
+        .find((columns) => columns[0] === field)
+        ?.slice(1)
+        .join(' ');
+
+    expect(lookup('branch_id')).toBe(BRANCH_ID);
+    expect(lookup('region')).toBe('us-east-1');
+    expect(lookup('storage')).toBe('42');
+    expect(lookup('updated_at')).toBe('2026-05-24T10:30:00.000Z');
+  });
+
+  test('keeps a value containing spaces on one line, which a column layout cannot', async () => {
+    const { context, stdout } = buildContext();
+    (context.api.branches.describeBranch as unknown as ReturnType<typeof mock>).mockResolvedValue({
+      ...branch,
+      status: { status: 'Cluster in healthy state', statusType: 'STATUS_TYPE_HEALTHY' }
+    });
+
+    await implementation.call(context, { branch: 'main', json: false });
+
+    const line = stdout
+      .join('')
+      .split('\n')
+      .find((candidate) => candidate.startsWith('status '));
+
+    expect(line?.replace(/^status\s+/, '')).toBe('Cluster in healthy state');
+  });
+
+  test('leaves no trailing whitespace on any line', async () => {
+    const { context, stdout } = buildContext();
+
+    await implementation.call(context, { branch: 'main', json: false });
+
+    for (const line of stdout.join('').split('\n')) {
+      expect(line).toBe(line.trimEnd());
+    }
   });
 });

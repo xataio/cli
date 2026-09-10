@@ -15,7 +15,8 @@ import {
   getOrganization,
   getProject,
   getUserInfo,
-  print
+  print,
+  printDetails
 } from './lib/cli-utils';
 import { confirmPrompt, datePrompt, inputPrompt, multiselectPrompt, selectPrompt } from './lib/enquirer';
 import { env } from './lib/env';
@@ -38,6 +39,7 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
    */
   readonly isInteractive: boolean;
   readonly print: typeof print;
+  readonly printDetails: typeof printDetails;
   readonly getActiveProfile: typeof getActiveProfile;
   readonly getOrganization: typeof getOrganization;
   readonly getProject: typeof getProject;
@@ -86,6 +88,7 @@ export async function buildContext(
     // Treat captured/piped output, CI, and agentic invocations as non-interactive.
     isInteractive: getIsInteractive(process, { isCI: ciInfo.isCI, isAgent: agent.isAgent }),
     print,
+    printDetails,
     getActiveProfile,
     getOrganization,
     getProject,

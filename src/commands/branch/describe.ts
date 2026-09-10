@@ -34,13 +34,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     ['inactivity_minutes', branch.scaleToZero.inactivityPeriodMinutes.toString()]
   ];
 
-  this.print(
-    this,
-    flags.json,
-    branch,
-    fields.map(([header]) => header),
-    [fields.map(([, value]) => value)]
-  );
+  this.printDetails(this, flags.json, branch, fields);
 }
 
 export const BranchDescribeCommand = buildCommand({

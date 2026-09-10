@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { LocalContext } from '~/context';
 import { getApi } from './api';
-import { getBranch, getDatabase, getOrganization, getProject, print } from './cli-utils';
+import { getBranch, getDatabase, getOrganization, getProject, print, printDetails } from './cli-utils';
 import { confirmPrompt, datePrompt, inputPrompt, multiselectPrompt, selectPrompt } from './enquirer';
 import { env } from './env';
 import { getActiveProfile } from './profile';
@@ -66,6 +66,7 @@ export async function getTestContext() {
     path,
     isInteractive: false,
     print,
+    printDetails,
     getActiveProfile,
     getOrganization,
     getProject,
