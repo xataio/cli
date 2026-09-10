@@ -1,5 +1,32 @@
 # xata-cli
 
+## 1.10.0
+
+### Minor Changes
+
+- [#3105](https://github.com/xataio/frontend/pull/3105) [`d517ce1`](https://github.com/xataio/frontend/commit/d517ce1771a69249db2cfd1bb24b0a4db7d4235a) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Add --storage to branch create, and show region, storage and updated_at in branch describe
+
+  `xata branch create --storage` and `xata project create --storage` size a root branch's disk when it is created, which is the only moment it can be made smaller than the server default, since `xata branch set storage` refuses to shrink one. `xata branch describe` now also shows the `region`, `storage` and `updated_at` it was already fetching.
+
+### Patch Changes
+
+- [#3117](https://github.com/xataio/frontend/pull/3117) [`8fa4754`](https://github.com/xataio/frontend/commit/8fa47549171d790344a10ba9356e6586ede6d627) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Lay every single-record command out vertically
+
+  `branch describe` moved to one field per line in [#3110](https://github.com/xataio/frontend/issues/3110). Every other command that can only ever print one record now does the same: `status`, `version`, `branch checkout`, `branch create`, `branch delete`, `branch rotate-password`, `branch wait-ready`, `organization create/delete/describe`, `organization invitations get`, `project create/delete/describe/init`, `project backup describe`, `keys create`, `auth refresh` and `branch query-insights show`.
+
+  Commands whose output can grow to N rows keep the column layout, so `branch list`, `project list` and the rest are unchanged.
+
+- [#3110](https://github.com/xataio/frontend/pull/3110) [`7449527`](https://github.com/xataio/frontend/commit/7449527ee859b48930998829b194b9bf8fe5f385) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Lay `xata branch describe` out vertically
+
+  One field per line instead of a single wide row, so the output fits a terminal regardless of how many fields a branch carries, and a field can be looked up by name rather than by column position.
+
+- Updated dependencies [[`250b910`](https://github.com/xataio/frontend/commit/250b9107b3eb28e59b13af69d0984467e1e9b1ae), [`d517ce1`](https://github.com/xataio/frontend/commit/d517ce1771a69249db2cfd1bb24b0a4db7d4235a)]:
+  - @xata.io/api@0.1.15
+  - @xata.io/utils@0.4.0
+  - @xata.io/sql@0.2.11
+  - @xata.io/ai@0.1.2
+  - @xata.io/config@0.0.16
+
 ## 1.9.0
 
 ### Minor Changes
