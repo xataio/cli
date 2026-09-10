@@ -72,17 +72,21 @@ describe('project describe command tests', () => {
     });
 
     const expectedOutput = stripAnsi(
-      context.print(
+      context.printDetails(
         context,
         false,
         {
           id: project.id,
           name: project.name
         },
-        ['project_id', 'created_at', 'updated_at', 'name'],
-        [[project.id, fetched.createdAt, fetched.updatedAt, project.name]]
+        [
+          ['project_id', project.id],
+          ['created_at', fetched.createdAt],
+          ['updated_at', fetched.updatedAt],
+          ['name', project.name]
+        ]
       )
-    );
+    ).trim();
     expect(output).toStrictEqual(expectedOutput);
   });
 });

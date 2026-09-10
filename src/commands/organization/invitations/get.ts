@@ -45,30 +45,17 @@ export async function implementation(this: LocalContext, flags: Flags) {
       }
     });
 
-    if (flags.json) {
-      this.process.stdout.write(JSON.stringify(invitation, null, 2));
-    } else {
-      this.process.stdout.write(chalk.bold('\nInvitation Details:\n\n'));
-      this.process.stdout.write(`${chalk.gray('ID:')}            ${invitation.id}\n`);
-      this.process.stdout.write(`${chalk.gray('Email:')}         ${invitation.email}\n`);
+    const name = [invitation.first_name, invitation.last_name].filter(Boolean).join(' ');
+    const status = invitation.status === 'pending' ? chalk.yellow(invitation.status) : chalk.red(invitation.status);
 
-      const name = [invitation.first_name, invitation.last_name].filter(Boolean).join(' ');
-      if (name) {
-        this.process.stdout.write(`${chalk.gray('Name:')}          ${name}\n`);
-      }
-
-      this.process.stdout.write(
-        `${chalk.gray('Status:')}        ${invitation.status === 'pending' ? chalk.yellow(invitation.status) : chalk.red(invitation.status)}\n`
-      );
-      this.process.stdout.write(
-        `${chalk.gray('Created:')}       ${new Date(invitation.created_at).toLocaleString()}\n`
-      );
-      this.process.stdout.write(
-        `${chalk.gray('Expires:')}       ${new Date(invitation.expires_at).toLocaleString()}\n`
-      );
-
-      this.process.stdout.write('\n');
-    }
+    this.printDetails(this, flags.json, invitation, [
+      ['invitation_id', invitation.id],
+      ['email', invitation.email],
+      ['name', name],
+      ['status', status],
+      ['created_at', new Date(invitation.created_at).toLocaleString()],
+      ['expires_at', new Date(invitation.expires_at).toLocaleString()]
+    ]);
   } catch (error) {
     const errorMessage = getErrorMessage(error);
     if (flags.json) {

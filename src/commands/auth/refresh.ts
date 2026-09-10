@@ -37,7 +37,10 @@ export async function implementation(this: LocalContext, { profile: profileFlag,
   }
 
   const expiresAt = token.expiresAt.toISOString();
-  this.print(this, json, { profile, expiresAt }, ['profile', 'expires_at'], [[profile, expiresAt]]);
+  this.printDetails(this, json, { profile, expiresAt }, [
+    ['profile', profile],
+    ['expires_at', expiresAt]
+  ]);
 }
 
 export const AuthRefreshCommand = buildCommand({

@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { CLI_NAME } from '~/lib/constants';
 import { getQueryInsightSignals, type QueryInsightSignal } from '~/lib/query-insights';
-import { renderTable } from '~/lib/table';
+import { renderDetails, renderTable } from '~/lib/table';
 import {
   formatCacheHitRate,
   formatInteger,
@@ -97,23 +97,18 @@ export function printQueryInsightsTable(
 }
 
 export function renderQueryInsightDetails(row: QueryInsightRow) {
-  const details = renderTable(
-    ['Query ID', 'Calls', 'Total', 'Mean', 'Min', 'Max', 'Rows', 'Cache Hit', 'DB', 'User'],
-    [
-      [
-        row.queryid,
-        formatInteger(row.calls),
-        formatMilliseconds(row.total_exec_time),
-        formatMilliseconds(row.mean_exec_time),
-        formatMilliseconds(row.min_exec_time),
-        formatMilliseconds(row.max_exec_time),
-        formatInteger(row.rows),
-        formatCacheHitRate(row.cache_hit_rate),
-        row.database,
-        row.user
-      ]
-    ]
-  );
+  const details = renderDetails([
+    ['query_id', row.queryid],
+    ['calls', formatInteger(row.calls)],
+    ['total', formatMilliseconds(row.total_exec_time)],
+    ['mean', formatMilliseconds(row.mean_exec_time)],
+    ['min', formatMilliseconds(row.min_exec_time)],
+    ['max', formatMilliseconds(row.max_exec_time)],
+    ['rows', formatInteger(row.rows)],
+    ['cache_hit', formatCacheHitRate(row.cache_hit_rate)],
+    ['db', row.database],
+    ['user', row.user]
+  ]);
   const signals = getQueryInsightSignals(row);
   const signalSummary = signals.length > 0 ? `\n${chalk.bold('Potential issues')}\n${formatSignals(signals)}\n` : '';
   return `${details}\n${signalSummary}\n${chalk.bold('Query')}\n${row.query}\n`;

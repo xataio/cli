@@ -71,9 +71,25 @@ describe('query insights display', () => {
     const row = buildRow();
     const details = stripAnsi(renderQueryInsightDetails(row));
 
-    expect(details).toContain('Query ID');
-    expect(details).toContain('Cache Hit');
+    expect(details).toContain('query_id');
+    expect(details).toContain('cache_hit');
     expect(details).toContain(row.query);
+  });
+
+  test('puts each detail field on its own line, so it can be looked up by name', () => {
+    const details = stripAnsi(renderQueryInsightDetails(buildRow()));
+
+    const lookup = (field: string) =>
+      details
+        .split('\n')
+        .map((line) => line.split(/\s+/))
+        .find((columns) => columns[0] === field)
+        ?.slice(1)
+        .join(' ');
+
+    expect(lookup('query_id')).toBe('123');
+    expect(lookup('db')).toBe('app');
+    expect(lookup('user')).toBe('postgres');
   });
 
   test('classifies notable query signals conservatively', () => {

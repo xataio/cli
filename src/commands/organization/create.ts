@@ -11,7 +11,10 @@ export async function implementation(this: LocalContext, { name: organizationNam
     body: { name: organizationName }
   });
 
-  this.print(this, json, organization, ['organization_id', 'name'], [[organization.id, organization.name]]);
+  this.printDetails(this, json, organization, [
+    ['organization_id', organization.id],
+    ['name', organization.name]
+  ]);
 }
 
 export const OrganizationCreateCommand = buildCommand({

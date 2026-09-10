@@ -50,15 +50,17 @@ describe('organization describe command tests', async () => {
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0)).trim();
     const expectedOutput = stripAnsi(
-      context.print(
+      context.printDetails(
         context,
         false,
         {
           id: TEST_XATA_ORG,
           name: TEST_XATA_ORG
         },
-        ['organization_id', 'name'],
-        [[TEST_XATA_ORG, TEST_XATA_ORG]]
+        [
+          ['organization_id', TEST_XATA_ORG],
+          ['name', TEST_XATA_ORG]
+        ]
       )
     ).trim();
     expect(output).toStrictEqual(expectedOutput);

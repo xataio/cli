@@ -34,7 +34,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     pathParams: { organizationID: organizationId }
   });
 
-  this.print(this, flags.json, organization, ['organization'], [[organization.name]]);
+  this.printDetails(this, flags.json, organization, [['organization', organization.name]]);
 }
 
 export const OrganizationDeleteCommand = buildCommand({

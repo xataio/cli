@@ -77,7 +77,10 @@ export async function implementation(this: LocalContext, flags: Flags) {
     image,
     storage
   });
-  this.print(this, flags.json, project, ['project_id', 'name'], [[project.id, project.name]]);
+  this.printDetails(this, flags.json, project, [
+    ['project_id', project.id],
+    ['name', project.name]
+  ]);
 }
 
 export async function ensureBranch(context: LocalContext, options: RootBranchOptions) {

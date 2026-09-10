@@ -126,7 +126,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     );
   }
 
-  this.print(
+  this.printDetails(
     this,
     flags.json,
     {
@@ -136,8 +136,13 @@ export async function implementation(this: LocalContext, flags: Flags) {
       branchName: branch.name,
       databaseName
     },
-    ['branch_id', 'branch', 'database', 'organization_id', 'project_id'],
-    [[branchId, branch.name, databaseName, organizationId, projectId]]
+    [
+      ['branch_id', branchId],
+      ['branch', branch.name],
+      ['database', databaseName],
+      ['organization_id', organizationId],
+      ['project_id', projectId]
+    ]
   );
 }
 

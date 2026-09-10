@@ -16,13 +16,13 @@ export async function implementation(this: LocalContext, flags: Flags) {
     body: { name, expiry }
   });
 
-  this.print(
-    this,
-    flags.json,
-    key,
-    ['key_id', 'created_at', 'expiry', 'name', 'token'],
-    [[key.id, key.created_at, key.expiry ?? 'Never', key.name, key.token]]
-  );
+  this.printDetails(this, flags.json, key, [
+    ['key_id', key.id],
+    ['created_at', key.created_at],
+    ['expiry', key.expiry ?? 'Never'],
+    ['name', key.name],
+    ['token', key.token]
+  ]);
 }
 
 export const UserKeysCreateCommand = buildCommand({

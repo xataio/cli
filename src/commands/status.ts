@@ -47,17 +47,17 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     this.process.stdout.write(`Current project config based on ${source}:\n`);
   }
 
-  this.print(
-    this,
-    json,
-    {
-      organization: organization.name,
-      project: `${project.name} (${project.id})`,
-      branch: `${branch.name} (${branch.id})`
-    },
-    ['organization', 'project', 'branch'],
-    [[organization.name, `${project.name} (${project.id})`, `${branch.name} (${branch.id})`]]
-  );
+  const status = {
+    organization: organization.name,
+    project: `${project.name} (${project.id})`,
+    branch: `${branch.name} (${branch.id})`
+  };
+
+  this.printDetails(this, json, status, [
+    ['organization', status.organization],
+    ['project', status.project],
+    ['branch', status.branch]
+  ]);
 }
 
 export const StatusCommand = buildCommand({

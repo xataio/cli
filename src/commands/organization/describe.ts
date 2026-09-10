@@ -19,7 +19,10 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
-  this.print(this, flags.json, organization, ['organization_id', 'name'], [[organization.id, organization.name]]);
+  this.printDetails(this, flags.json, organization, [
+    ['organization_id', organization.id],
+    ['name', organization.name]
+  ]);
 }
 
 export const OrganizationDescribeCommand = buildCommand({

@@ -48,7 +48,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   await deleteBranchById(this, organizationId, projectId, branchToDelete.id);
 
-  this.print(this, flags.json, branchToDelete, ['branch'], [[branchToDelete.name]]);
+  this.printDetails(this, flags.json, branchToDelete, [['branch', branchToDelete.name]]);
 }
 
 export const BranchDeleteCommand = buildCommand({

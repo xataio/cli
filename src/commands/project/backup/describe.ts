@@ -16,13 +16,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
     pathParams: { organizationID: organizationId, projectID: projectId, backupID: flags.backup }
   });
 
-  this.print(
-    this,
-    flags.json,
-    backup,
-    ['backup_id', 'branch_id', 'earliest_restore', 'description'],
-    [[backup.id, backup.branchID, backup.earliestRestore || 'unknown', backup.description]]
-  );
+  this.printDetails(this, flags.json, backup, [
+    ['backup_id', backup.id],
+    ['branch_id', backup.branchID],
+    ['earliest_restore', backup.earliestRestore || 'unknown'],
+    ['description', backup.description]
+  ]);
 }
 
 export const BackupDescribeCommand = buildCommand({

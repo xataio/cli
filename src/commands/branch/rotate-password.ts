@@ -60,13 +60,11 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     body: { username }
   });
 
-  this.print(
-    this,
-    flags.json,
-    { branchId: branch.id, branchName: branch.name, username },
-    ['branch', 'username', 'status'],
-    [[branch.name, username, 'Password rotated successfully']]
-  );
+  this.printDetails(this, flags.json, { branchId: branch.id, branchName: branch.name, username }, [
+    ['branch', branch.name],
+    ['username', username],
+    ['status', 'Password rotated successfully']
+  ]);
 }
 
 export const BranchRotatePasswordCommand = buildCommand({

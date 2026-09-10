@@ -397,13 +397,13 @@ export async function implementation(this: LocalContext, flags: Flags) {
       return branch;
     });
 
-  this.print(
-    this,
-    flags.json,
-    branch,
-    ['branch_id', 'created_at', 'name', 'description', 'parent_id'],
-    [[branch.id, branch.createdAt, branch.name, branch.description ?? '', branch.parentID ?? '']]
-  );
+  this.printDetails(this, flags.json, branch, [
+    ['branch_id', branch.id],
+    ['created_at', branch.createdAt],
+    ['name', branch.name],
+    ['description', branch.description ?? ''],
+    ['parent_id', branch.parentID ?? '']
+  ]);
 
   if (hasProjectContext()) {
     await checkout.call(this, { ...flags, branch: '' }, branch.name);

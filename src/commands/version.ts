@@ -26,17 +26,11 @@ export async function implementation(this: LocalContext, { json, 'skip-download'
   const pgstreamVersion = await getCurrentVersion('pgstream');
   const CLIVersion = getCLIVersion();
 
-  this.print(
-    this,
-    json,
-    {
-      CLIVersion,
-      pgrollVersion,
-      pgstreamVersion
-    },
-    [`${CLI_NAME}`, 'pgroll', 'pgstream'],
-    [[CLIVersion, pgrollVersion ?? 'unknown', pgstreamVersion ?? 'unknown']]
-  );
+  this.printDetails(this, json, { CLIVersion, pgrollVersion, pgstreamVersion }, [
+    [CLI_NAME, CLIVersion],
+    ['pgroll', pgrollVersion ?? 'unknown'],
+    ['pgstream', pgstreamVersion ?? 'unknown']
+  ]);
 }
 
 export const VersionCommand = buildCommand({

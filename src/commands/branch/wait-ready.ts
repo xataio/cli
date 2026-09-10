@@ -45,13 +45,11 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     });
   }
 
-  this.print(
-    this,
-    flags.json,
-    branch,
-    ['branch_id', 'name', 'status'],
-    [[branch.id, branch.name, branch.status.status]]
-  );
+  this.printDetails(this, flags.json, branch, [
+    ['branch_id', branch.id],
+    ['name', branch.name],
+    ['status', branch.status.status]
+  ]);
 }
 
 export const BranchWaitReadyCommand = buildCommand({

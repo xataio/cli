@@ -21,13 +21,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
-  this.print(
-    this,
-    flags.json,
-    project,
-    ['project_id', 'created_at', 'updated_at', 'name'],
-    [[project.id, project.createdAt, project.updatedAt, project.name]]
-  );
+  this.printDetails(this, flags.json, project, [
+    ['project_id', project.id],
+    ['created_at', project.createdAt],
+    ['updated_at', project.updatedAt],
+    ['name', project.name]
+  ]);
 }
 
 export const ProjectDescribeCommand = buildCommand({

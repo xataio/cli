@@ -2,7 +2,7 @@ import { ApiError, NetworkError, type Types } from '@xata.io/api';
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
 import { branchDescriptionMaxLength } from '@xata.io/utils';
-import { print } from '~/lib/cli-utils';
+import { print, printDetails } from '~/lib/cli-utils';
 
 mock.module('~/lib/project-config', () => {
   return {
@@ -114,6 +114,7 @@ function buildContext({
     },
     isInteractive: false,
     print,
+    printDetails,
     getActiveProfile: () => {
       return 'default';
     },
