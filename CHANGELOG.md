@@ -1,5 +1,72 @@
 # xata-cli
 
+## 1.11.0
+
+### Minor Changes
+
+- [#3144](https://github.com/xataio/frontend/pull/3144) [`dd2a081`](https://github.com/xataio/frontend/commit/dd2a08102fc8ba651b39277d3a9f40e11e4be7fd) Thanks [@SferaDev](https://github.com/SferaDev)! - [SSO]: Add the hidden `xata organization sso` commands to claim and verify email domains, connect Google Workspace, Microsoft Entra ID or any OpenID Connect provider to them, and require SSO, with the provider presets and validation shared through `@xata.io/utils/sso`.
+
+### Patch Changes
+
+- [#3152](https://github.com/xataio/frontend/pull/3152) [`adcba88`](https://github.com/xataio/frontend/commit/adcba8818cc325dd69df76c1d2158a5592a51922) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Report `organization members remove` failures as JSON before the API call too
+
+  `organization members remove --json` wrote a `success: false` document to stderr when the API
+  rejected the removal, but the checks that run before it still wrote a red sentence: an organization
+  with no members, no user ID, and a user ID that is not a member. A caller that asked for JSON got
+  prose on exactly the mistakes it is most likely to make.
+
+  All three report the same document as the API failure now. The human output and the exit code are
+  unchanged.
+
+- [#3118](https://github.com/xataio/frontend/pull/3118) [`d1ceb22`](https://github.com/xataio/frontend/commit/d1ceb221f9b7d9cc13f7fedad60a0c42200e350a) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Put every `--json` path through the same helper
+
+  Twenty commands decided between JSON and their human output by hand, and the ones that wrote
+  their JSON with a bare `JSON.stringify` left off the trailing newline that `printTable` and
+  `printDetails` emit. They go through a new `printCustom` helper instead, which pairs the shared
+  JSON path with a renderer for the commands whose human output is neither a table nor a field
+  list: a status block, or the line confirming what just changed.
+
+  `organization members invite` and `organization members remove` wrote their `success: false`
+  document to stdout under `--json` while the human message went to stderr, so a caller
+  redirecting stdout found failures mixed into its results. Both formats go to stderr now, as they
+  already did for the `organization invitations` commands.
+
+  Two gaps closed while the output layer was open:
+
+  - `branch tree` now takes `--json`, and emits the nesting rather than a flat list. `branch list --json` already gives the flat array with `parentID`, so nesting is the only thing this command adds.
+  - `branch list --json` now carries `current`, which the table has always had a column for. Answering "which branch am I on" no longer needs the human output.
+
+- [#3118](https://github.com/xataio/frontend/pull/3118) [`d1ceb22`](https://github.com/xataio/frontend/commit/d1ceb221f9b7d9cc13f7fedad60a0c42200e350a) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Make `--json` a global flag, defaulting to on when an AI agent runs the command
+
+  The CLI already detects an agentic caller to decide whether to prompt. The same signal now picks an output format: an agent parses the output rather than reading it, so it gets JSON without having to remember the flag on every call.
+
+  `--json` is now injected by `addGlobalFlags`, the way `--profile` and `--debug` already are, and read once from the arguments into the context. No command declares it, none passes it around, and a new command that prints through the shared helpers gets the behaviour without its author having to wire anything up.
+
+  Nothing changes for a human, including when output is piped or captured — only a detected agent switches. Pass `--json=false` for the human layout, and `--json` still works as it always has.
+
+  Every command accepts the flag, the way `--profile` and `--debug` already do. On the ones that print a single bare value for `$(xata branch url)`, hand off to the pgroll/pgstream binary, or only print a confirmation, it is inert: they never read it, so `branch url` still writes a bare connection string under an agent.
+
+  On the commands where `--json` is an alias for `--output json`, an explicit `--output` still wins, including when what you asked for is the format that command would have picked anyway.
+
+- [#3124](https://github.com/xataio/frontend/pull/3124) [`3ae7e3e`](https://github.com/xataio/frontend/commit/3ae7e3ede320b8d2ccddee156a889cb186441dd3) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Answer `--json` on the paths `status` and `branch checkout` exit early from
+
+  `xata status --json` printed prose to stdout, and exited 0, when the folder had no project config
+  or no branch checked out. `xata branch checkout <branch> --json` did the same when the branch was
+  already the one checked out. A caller that asked for JSON got a sentence to parse on exactly the
+  paths it most needs to branch on.
+
+  All three report a document now. The human output is unchanged, and so are the exit codes.
+
+  `branch checkout` also said `Already on branch undefined` when the branch came from the prompt
+  rather than the command line; it names the branch ID in that case.
+
+- Updated dependencies [[`57d5d9e`](https://github.com/xataio/frontend/commit/57d5d9e919fec8ffbeaa407820d0e697c93025d1), [`4288c6d`](https://github.com/xataio/frontend/commit/4288c6d539ba6a53f49414936e87b84f1362de2f), [`d7caaf3`](https://github.com/xataio/frontend/commit/d7caaf3e54148c6b5bcdfc568fc9fe76e4cc70dc), [`dd2a081`](https://github.com/xataio/frontend/commit/dd2a08102fc8ba651b39277d3a9f40e11e4be7fd)]:
+  - @xata.io/api@0.1.16
+  - @xata.io/utils@0.5.0
+  - @xata.io/sql@0.2.12
+  - @xata.io/ai@0.1.2
+  - @xata.io/config@0.0.17
+
 ## 1.10.0
 
 ### Minor Changes
