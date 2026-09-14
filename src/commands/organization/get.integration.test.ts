@@ -11,7 +11,6 @@ describe('organization get command tests', async () => {
     await implementation.call(
       context,
       {
-        json: true,
         organization: TEST_XATA_ORG
       },
       'non-existent-field'
@@ -33,7 +32,6 @@ describe('organization get command tests', async () => {
     await implementation.call(
       context,
       {
-        json: true,
         organization: TEST_XATA_ORG
       },
       'id'

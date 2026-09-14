@@ -1,12 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { getErrorMessage } from '~/lib/cli-utils';
+import { exitWithErrorDetails, getErrorMessage, printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   email?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -19,31 +18,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
       body: { email }
     });
 
-    if (flags.json) {
-      this.process.stdout.write(
-        JSON.stringify({
-          success: true,
-          email,
-          organization: organizationId
-        })
-      );
-    } else {
+    printCustom(this, { success: true, email, organization: organizationId }, () => {
       this.process.stdout.write(chalk.green(`✓ Successfully sent invitation to ${email}\n`));
-    }
+    });
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    if (flags.json) {
-      this.process.stderr.write(
-        JSON.stringify({
-          success: false,
-          error: errorMessage,
-          email
-        })
-      );
-    } else {
-      this.process.stderr.write(chalk.red(`Failed to send invitation: ${errorMessage}\n`));
-    }
-    this.process.exit(1);
+    exitWithErrorDetails(this, `Failed to send invitation: ${errorMessage}`, { email });
   }
 }
 
@@ -64,11 +44,6 @@ export const OrganizationInvitationsCreateCommand = buildCommand({
         brief: 'Email address to invite',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

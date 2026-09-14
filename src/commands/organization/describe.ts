@@ -5,7 +5,6 @@ import type { LocalContext } from '~/context';
 
 type Flags = {
   organization?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -19,7 +18,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
-  this.printDetails(this, flags.json, organization, [
+  this.printDetails(this, organization, [
     ['organization_id', organization.id],
     ['name', organization.name]
   ]);
@@ -36,11 +35,6 @@ export const OrganizationDescribeCommand = buildCommand({
         brief: 'Organization ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

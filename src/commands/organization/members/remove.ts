@@ -1,11 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import { exitWithErrorDetails, printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   'user-id'?: string;
-  json: boolean;
   force: boolean;
 };
 
@@ -69,35 +69,20 @@ export async function implementation(this: LocalContext, flags: Flags) {
       }
     });
 
-    if (flags.json) {
-      this.process.stdout.write(
-        JSON.stringify({
-          success: true,
-          removedUser: {
-            id: memberToRemove.id,
-            name: memberToRemove.name,
-            email: memberToRemove.email
-          },
-          organization: organizationId
-        })
-      );
-    } else {
-      const memberName = memberToRemove.name || memberToRemove.email;
-      this.process.stdout.write(chalk.green(`✓ Successfully removed ${memberName} from the organization\n`));
-    }
+    printCustom(
+      this,
+      {
+        success: true,
+        removedUser: { id: memberToRemove.id, name: memberToRemove.name, email: memberToRemove.email },
+        organization: organizationId
+      },
+      () => {
+        const memberName = memberToRemove.name || memberToRemove.email;
+        this.process.stdout.write(chalk.green(`✓ Successfully removed ${memberName} from the organization\n`));
+      }
+    );
   } catch (error: any) {
-    if (flags.json) {
-      this.process.stdout.write(
-        JSON.stringify({
-          success: false,
-          error: error.message,
-          userId
-        })
-      );
-    } else {
-      this.process.stderr.write(chalk.red(`Failed to remove member: ${error.message}\n`));
-    }
-    this.process.exit(1);
+    exitWithErrorDetails(this, `Failed to remove member: ${error.message}`, { userId });
   }
 }
 
@@ -122,11 +107,6 @@ export const OrganizationMembersRemoveCommand = buildCommand({
       force: {
         kind: 'boolean',
         brief: 'Skip confirmation prompt',
-        default: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
         default: false
       }
     }

@@ -11,14 +11,13 @@ import { getProfile } from './profile';
 import { getProjectConfigPath, projectConfig } from './project-config';
 import { renderDetails, renderTable } from './table';
 
-export const print = (
+export const printTable = (
   context: LocalContext,
-  json: boolean,
   data: Record<string, unknown> | Record<string, unknown>[],
   headers: string[] = [],
   rows: string[][] = []
 ) => {
-  if (json) {
+  if (context.outputJson) {
     context.process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
     return JSON.stringify(data, null, 2);
   }
@@ -28,15 +27,14 @@ export const print = (
   return table;
 };
 
-// Prints one record as field/value lines. Use this over print() when describing a single
+// Prints one record as field/value lines. Use this over printTable() when describing a single
 // thing, which does not fit a table well once it carries more than a handful of fields.
 export const printDetails = (
   context: LocalContext,
-  json: boolean,
   data: Record<string, unknown>,
   fields: [field: string, value: string][]
 ) => {
-  if (json) {
+  if (context.outputJson) {
     context.process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
     return JSON.stringify(data, null, 2);
   }
@@ -44,6 +42,19 @@ export const printDetails = (
   const details = renderDetails(fields);
   context.process.stdout.write(`${details}\n`);
   return details;
+};
+
+export const printCustom = (
+  context: LocalContext,
+  data: Record<string, unknown> | Record<string, unknown>[],
+  render: () => void
+) => {
+  if (context.outputJson) {
+    context.process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
+    return;
+  }
+
+  render();
 };
 
 /**
@@ -388,6 +399,23 @@ export const resolveBranchIdOrName = async (
 /** `invariant` drops its message when NODE_ENV is production, which is where the CLI runs in CI. */
 export function exitWithError(context: LocalContext, message: string): never {
   context.process.stderr.write(chalk.red(`${message}\n`));
+  return context.process.exit(1);
+}
+
+/** printCustom's counterpart for a failure, which belongs on stderr in either format. */
+export const printFailure = (context: LocalContext, data: Record<string, unknown>, render: () => void) => {
+  if (context.outputJson) {
+    context.process.stderr.write(`${JSON.stringify(data, null, 2)}\n`);
+    return;
+  }
+
+  render();
+};
+
+export function exitWithErrorDetails(context: LocalContext, message: string, details: Record<string, unknown>): never {
+  printFailure(context, { success: false, error: message, ...details }, () => {
+    context.process.stderr.write(chalk.red(`${message}\n`));
+  });
   return context.process.exit(1);
 }
 

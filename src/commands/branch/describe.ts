@@ -5,7 +5,6 @@ type Flags = {
   organization?: string;
   project?: string;
   branch?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
@@ -34,7 +33,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     ['inactivity_minutes', branch.scaleToZero.inactivityPeriodMinutes.toString()]
   ];
 
-  this.printDetails(this, flags.json, branch, fields);
+  this.printDetails(this, branch, fields);
 }
 
 export const BranchDescribeCommand = buildCommand({
@@ -60,11 +59,6 @@ export const BranchDescribeCommand = buildCommand({
         brief: 'Branch ID or name',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

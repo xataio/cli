@@ -3,12 +3,12 @@ import chalk from 'chalk';
 import { isValidCidr, normalizeCidr } from '@xata.io/lang';
 import type { LocalContext } from '~/context';
 import { getIpFilteringConfig, normalizeIpFilterCidr, printIpFilterStatus, updateIpFiltering } from './shared';
+import { printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   project?: string;
   label?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, cidr?: string) {
@@ -72,12 +72,10 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
 
   const updated = await updateIpFiltering(this, organizationId, projectId, ipFiltering);
 
-  if (flags.json) {
-    this.process.stdout.write(JSON.stringify(updated, null, 2));
-  } else {
+  printCustom(this, updated, () => {
     printIpFilterStatus(this, ipFiltering);
     this.process.stdout.write(chalk.green(`Successfully added ${normalized} to project ${project.name}\n`));
-  }
+  });
 }
 
 export const IpFilterAddCommand = buildCommand({
@@ -107,11 +105,6 @@ export const IpFilterAddCommand = buildCommand({
         brief: 'Label for the CIDR entry',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

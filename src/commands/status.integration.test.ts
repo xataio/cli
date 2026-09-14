@@ -6,9 +6,7 @@ describe('status command tests', async () => {
   test('status command when not initialized', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
-    await implementation.call(context, {
-      json: false
-    });
+    await implementation.call({ ...context, outputJson: false });
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
@@ -18,9 +16,7 @@ describe('status command tests', async () => {
   test('status command with json when not initialized', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
-    await implementation.call(context, {
-      json: true
-    });
+    await implementation.call({ ...context, outputJson: true });
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);

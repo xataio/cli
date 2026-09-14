@@ -1,12 +1,12 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import { printCustom } from '~/lib/cli-utils';
 import { resetQueryInsights } from './queries';
 import { withBranchQueryInsightsSql, type BranchQueryInsightsFlags } from './shared';
 
 type Flags = BranchQueryInsightsFlags & {
   yes: boolean;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
@@ -26,11 +26,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   await withBranchQueryInsightsSql(this, flags, branchName, async (sql, meta) => {
     await resetQueryInsights(sql);
-    if (flags.json) {
-      this.print(this, true, { reset: true, branchId: meta.branchId });
-      return;
-    }
-    this.process.stdout.write(chalk.green('Query statistics reset successfully.\n'));
+    printCustom(this, { reset: true, branchId: meta.branchId }, () => {
+      this.process.stdout.write(chalk.green('Query statistics reset successfully.\n'));
+    });
   });
 }
 
@@ -65,11 +63,6 @@ export const QueryInsightsResetCommand = buildCommand({
       yes: {
         kind: 'boolean',
         brief: 'Do not ask for confirmation, assume yes.',
-        default: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
         default: false
       }
     },

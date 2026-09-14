@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
-import { implementation } from './metrics';
+import { implementation, resolveOutputFormat } from './metrics';
 
 const baseFlags = {
   organization: 'org',
@@ -14,8 +14,7 @@ const baseFlags = {
   aggregation: 'avg' as const,
   refresh: '10s',
   output: 'json' as const,
-  watch: false,
-  json: false
+  watch: false
 };
 
 function buildContext() {
@@ -117,6 +116,32 @@ describe('branch metrics command', () => {
     expect(output).toContain('Primary');
   });
 
+  test('keeps an explicit --output table under an agent, where the JSON default would win', async () => {
+    const { context, stdout } = buildContext();
+
+    await implementation.call({ ...context, isAgent: true } as LocalContext, { ...baseFlags, output: 'table' });
+
+    const output = stdout.join('');
+    expect(output).toContain('Metrics for main (branch)');
+    expect(() => JSON.parse(output)).toThrow();
+  });
+
+  test('falls back to JSON under an agent when no --output was chosen', async () => {
+    const { context, stdout } = buildContext();
+
+    await implementation.call({ ...context, isAgent: true } as LocalContext, { ...baseFlags, output: undefined });
+
+    expect(JSON.parse(stdout.join('')).schemaVersion).toBe(1);
+  });
+
+  test('still prints the human table when nothing is chosen and no agent is detected', async () => {
+    const { context, stdout } = buildContext();
+
+    await implementation.call(context, { ...baseFlags, output: undefined });
+
+    expect(stdout.join('')).toContain('Metrics for main (branch)');
+  });
+
   test('shows the expected timestamp format for invalid start and end times', async () => {
     const { context: startContext } = buildContext();
     await expect(implementation.call(startContext, { ...baseFlags, start: '10' })).rejects.toThrow(
@@ -126,6 +151,38 @@ describe('branch metrics command', () => {
     const { context: endContext } = buildContext();
     await expect(implementation.call(endContext, { ...baseFlags, end: 'tomorrow' })).rejects.toThrow(
       'Invalid --end time: tomorrow. Use format YYYY-MM-DDTHH:mm:ss.sssZ, for example 2026-05-23T10:00:00.000Z.'
+    );
+  });
+});
+
+describe('resolveOutputFormat', () => {
+  const asContext = (json: boolean | undefined, isAgent: boolean, isInteractive = false) =>
+    ({ json, isAgent, isInteractive }) as unknown as LocalContext;
+
+  test('gives an agent watching metrics the streaming shape, not one JSON document per refresh', () => {
+    const format = resolveOutputFormat({ ...baseFlags, output: undefined, watch: true }, asContext(undefined, true));
+
+    expect(format).toBe('ndjson');
+  });
+
+  test('keeps the TUI for an interactive human watching', () => {
+    const format = resolveOutputFormat(
+      { ...baseFlags, output: undefined, watch: true },
+      asContext(undefined, false, true)
+    );
+
+    expect(format).toBe('tui');
+  });
+
+  test('leaves an explicit --output alone, including the value that is also the default', () => {
+    expect(resolveOutputFormat({ ...baseFlags, output: 'table', watch: false }, asContext(undefined, true))).toBe(
+      'table'
+    );
+  });
+
+  test('gives an agent JSON when it chose no format and is not watching', () => {
+    expect(resolveOutputFormat({ ...baseFlags, output: undefined, watch: false }, asContext(undefined, true))).toBe(
+      'json'
     );
   });
 });

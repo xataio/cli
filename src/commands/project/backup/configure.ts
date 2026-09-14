@@ -1,5 +1,6 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
+import { printCustom } from '~/lib/cli-utils';
 import { formatCronExpression, parseCronExpression } from '@xata.io/utils';
 import chalk from 'chalk';
 import { dayOfWeekMapReverse } from '@xata.io/utils';
@@ -11,7 +12,6 @@ type Flags = {
   cadence?: string;
   'day-of-week'?: string;
   time?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
@@ -55,37 +55,33 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   // If no configuration flags passed, just show current configuration
   if (!hasConfigChanges) {
-    if (flags.json) {
-      this.process.stdout.write(
-        `${JSON.stringify(
-          {
-            branchId,
-            projectId,
-            organizationId,
-            backupsEnabled: branch.backupsEnabled,
-            configuration: {
-              retention: currentRetention,
-              cadence: current.cadence,
-              dayOfWeek: current.cadence === 'weekly' ? current.dayOfWeek : undefined,
-              time: current.time,
-              backupTime: currentConfig.backupTime
-            }
-          },
-          null,
-          2
-        )}\n`
-      );
-    } else {
-      this.process.stdout.write(`\n${chalk.bold('Backup Configuration')} for branch ${chalk.bold(branchId)}\n\n`);
-      this.process.stdout.write(`  Retention: ${currentRetention} days\n`);
-      this.process.stdout.write(`  Cadence:   ${current.cadence}`);
-      if (current.cadence === 'weekly') {
-        this.process.stdout.write(` (${current.dayOfWeek})`);
+    printCustom(
+      this,
+      {
+        branchId,
+        projectId,
+        organizationId,
+        backupsEnabled: branch.backupsEnabled,
+        configuration: {
+          retention: currentRetention,
+          cadence: current.cadence,
+          dayOfWeek: current.cadence === 'weekly' ? current.dayOfWeek : undefined,
+          time: current.time,
+          backupTime: currentConfig.backupTime
+        }
+      },
+      () => {
+        this.process.stdout.write(`\n${chalk.bold('Backup Configuration')} for branch ${chalk.bold(branchId)}\n\n`);
+        this.process.stdout.write(`  Retention: ${currentRetention} days\n`);
+        this.process.stdout.write(`  Cadence:   ${current.cadence}`);
+        if (current.cadence === 'weekly') {
+          this.process.stdout.write(` (${current.dayOfWeek})`);
+        }
+        this.process.stdout.write(`\n`);
+        this.process.stdout.write(`  Time:      ${current.time}\n`);
+        this.process.stdout.write(`  Pattern:   ${currentConfig.backupTime}\n\n`);
       }
-      this.process.stdout.write(`\n`);
-      this.process.stdout.write(`  Time:      ${current.time}\n`);
-      this.process.stdout.write(`  Pattern:   ${currentConfig.backupTime}\n\n`);
-    }
+    );
     return;
   }
 
@@ -144,7 +140,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     time: newTime
   });
 
-  if (!flags.json) {
+  if (!this.outputJson) {
     this.process.stdout.write(
       `\nUpdating backup schedule for branch ${chalk.bold(branchId)} in project ${chalk.bold(projectId)}...\n\n`
     );
@@ -178,33 +174,24 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     }
   });
 
-  if (flags.json) {
-    this.process.stdout.write(
-      `${JSON.stringify(
-        {
-          branchId,
-          projectId,
-          organizationId,
-          previous: {
-            retention: currentRetention,
-            cadence: current.cadence,
-            dayOfWeek: current.cadence === 'weekly' ? current.dayOfWeek : undefined,
-            time: current.time
-          },
-          current: {
-            retention: newRetention,
-            cadence: newCadence,
-            dayOfWeek: newDayOfWeek,
-            time: newTime
-          }
-        },
-        null,
-        2
-      )}\n`
-    );
-  } else {
-    this.process.stdout.write(`${chalk.green('✔')} Backup configuration updated successfully.\n`);
-  }
+  printCustom(
+    this,
+    {
+      branchId,
+      projectId,
+      organizationId,
+      previous: {
+        retention: currentRetention,
+        cadence: current.cadence,
+        dayOfWeek: current.cadence === 'weekly' ? current.dayOfWeek : undefined,
+        time: current.time
+      },
+      current: { retention: newRetention, cadence: newCadence, dayOfWeek: newDayOfWeek, time: newTime }
+    },
+    () => {
+      this.process.stdout.write(`${chalk.green('✔')} Backup configuration updated successfully.\n`);
+    }
+  );
 }
 
 export const BackupConfigureCommand = buildCommand({
@@ -248,11 +235,6 @@ export const BackupConfigureCommand = buildCommand({
         brief: 'Backup time in 24-hour HH:MM format (e.g., 02:30)',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

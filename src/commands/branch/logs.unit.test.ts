@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 import { sortBranchLogsChronologically } from '@xata.io/utils';
 import { pruneSeenLogs } from '~/lib/branch-logs';
-import { buildFilters, buildTimeRange, formatCsvLogs, formatRawLog, parseLogTime } from './logs';
+import type { LocalContext } from '~/context';
+import { buildFilters, buildTimeRange, formatCsvLogs, formatRawLog, parseLogTime, resolveOutputFormat } from './logs';
 
 describe('branch logs helpers', () => {
   test('parses relative log times from now', () => {
@@ -140,5 +141,31 @@ describe('branch logs helpers', () => {
     pruneSeenLogs(seen, new Date('2026-05-23T11:59:55.000Z').getTime());
 
     expect([...seen.keys()]).toEqual(['overlap-start', 'new']);
+  });
+});
+
+describe('resolveOutputFormat', () => {
+  const asContext = (json: boolean | undefined, isAgent: boolean) => ({ json, isAgent }) as unknown as LocalContext;
+
+  test('gives an agent JSON when it chose no format', () => {
+    expect(resolveOutputFormat(asContext(undefined, true), { output: undefined, follow: false })).toBe('json');
+  });
+
+  test('gives an agent the streaming shape when following, because a JSON array never ends', () => {
+    expect(resolveOutputFormat(asContext(undefined, true), { output: undefined, follow: true })).toBe('ndjson');
+  });
+
+  test('leaves an explicit --output alone, including the value that is also the default', () => {
+    expect(resolveOutputFormat(asContext(undefined, true), { output: 'raw', follow: false })).toBe('raw');
+    expect(resolveOutputFormat(asContext(undefined, true), { output: 'csv', follow: false })).toBe('csv');
+  });
+
+  test('still reports the conflict when --json was asked for outright', () => {
+    expect(resolveOutputFormat(asContext(true, true), { output: undefined, follow: true })).toBe('json');
+  });
+
+  test('leaves a human, and an agent that passed --json=false, on the default', () => {
+    expect(resolveOutputFormat(asContext(undefined, false), { output: undefined, follow: false })).toBe('raw');
+    expect(resolveOutputFormat(asContext(false, true), { output: undefined, follow: false })).toBe('raw');
   });
 });

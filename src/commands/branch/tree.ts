@@ -1,9 +1,9 @@
 import { buildCommand } from '@stricli/core';
 import type { Types } from '@xata.io/api';
 import chalk from 'chalk';
-import treeify from 'treeify';
+import treeify, { type TreeObject } from 'treeify';
 import type { LocalContext } from '~/context';
-import { writeNoBranchesInProject } from '~/lib/cli-utils';
+import { printCustom, writeNoBranchesInProject } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
@@ -13,66 +13,53 @@ type Flags = {
 };
 
 type BranchNode = Types.BranchListMetadata & {
+  current: boolean;
   children: BranchNode[];
 };
 
-function buildBranchTree(
-  branches: Types.BranchListMetadata[],
-  showId: boolean,
-  currentBranch?: Types.BranchListMetadata
-): Record<string, any> {
+function buildBranchTree(branches: Types.BranchListMetadata[], currentBranch?: Types.BranchListMetadata): BranchNode[] {
   const branchMap: Record<string, BranchNode> = {};
   const rootBranches: BranchNode[] = [];
 
   branches.forEach((branch) => {
-    branchMap[branch.id] = { ...branch, children: [] };
+    branchMap[branch.id] = { ...branch, current: currentBranch?.id === branch.id, children: [] };
   });
 
   branches.forEach((branch) => {
+    const branchNode = branchMap[branch.id];
+    if (!branchNode) {
+      throw new Error(`invariant: branch node not found for branch ${branch.id}`);
+    }
     if (branch.parentID) {
-      const branchNode = branchMap[branch.id];
-      if (!branchNode) {
-        throw new Error(`invariant: branch node not found for branch ${branch.id}`);
-      }
       branchMap[branch.parentID]?.children.push(branchNode);
     } else {
-      const branchNode = branchMap[branch.id];
-      if (!branchNode) {
-        throw new Error(`invariant: branch node not found for branch ${branch.id}`);
-      }
       rootBranches.push(branchNode);
     }
   });
 
-  function getBranchName(branch: BranchNode, showId: boolean, currentBranch?: Types.BranchListMetadata): string {
-    const current = currentBranch?.id === branch.id ? ' (current)' : '';
-    if (showId) {
-      return `${branch.name} (id: ${branch.id})${current}`;
-    }
-    return `${branch.name}${current}`;
+  return rootBranches;
+}
+
+function getBranchName(branch: BranchNode, showId: boolean): string {
+  const current = branch.current ? ' (current)' : '';
+  if (showId) {
+    return `${branch.name} (id: ${branch.id})${current}`;
   }
+  return `${branch.name}${current}`;
+}
 
-  function convertToTreeifyFormat(branch: BranchNode): Record<string, unknown> {
-    const children = branch.children.reduce(
-      (acc, child) => {
-        acc[getBranchName(child, showId, currentBranch)] = convertToTreeifyFormat(child);
-        return acc;
-      },
-      {} as Record<string, unknown>
-    );
+function toTreeifyChildren(branch: BranchNode, showId: boolean): TreeObject {
+  return branch.children.reduce((acc, child) => {
+    acc[getBranchName(child, showId)] = toTreeifyChildren(child, showId);
+    return acc;
+  }, {} as TreeObject);
+}
 
-    return children;
-  }
-  const tree = rootBranches.reduce(
-    (acc, rootBranch) => {
-      const rootBranchName = chalk.bold(getBranchName(rootBranch, showId, currentBranch));
-      acc[rootBranchName] = convertToTreeifyFormat(rootBranch);
-      return acc;
-    },
-    {} as Record<string, unknown>
-  );
-
-  return tree;
+function toTreeifyFormat(rootBranches: BranchNode[], showId: boolean): TreeObject {
+  return rootBranches.reduce((acc, rootBranch) => {
+    acc[chalk.bold(getBranchName(rootBranch, showId))] = toTreeifyChildren(rootBranch, showId);
+    return acc;
+  }, {} as TreeObject);
 }
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -91,8 +78,11 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   const currentBranch = branches.find((branch) => branch.id === branchId);
 
-  const tree = buildBranchTree(branches, flags['show-id'], currentBranch);
-  this.process.stdout.write(treeify.asTree(tree, true, false));
+  const rootBranches = buildBranchTree(branches, currentBranch);
+
+  printCustom(this, rootBranches, () => {
+    this.process.stdout.write(treeify.asTree(toTreeifyFormat(rootBranches, flags['show-id']), true, false));
+  });
 }
 
 export const BranchTreeCommand = buildCommand({

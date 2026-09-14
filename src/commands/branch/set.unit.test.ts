@@ -1,10 +1,10 @@
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
 import { branchDescriptionMaxLength } from '@xata.io/utils';
-import { print } from '~/lib/cli-utils';
+import { printTable } from '~/lib/cli-utils';
 import { implementation } from './set';
 
-const FLAGS = { json: false };
+const FLAGS = {};
 
 function buildContext({ description }: { description?: string } = {}) {
   const stdout: string[] = [];
@@ -64,7 +64,8 @@ function buildContext({ description }: { description?: string } = {}) {
       })
     },
     isInteractive: false,
-    print,
+    outputJson: false,
+    printTable,
     getActiveProfile: () => {
       return 'default';
     },

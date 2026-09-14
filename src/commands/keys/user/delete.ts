@@ -1,16 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 
-interface Flags {
-  json: boolean;
-}
-
-export async function implementation(this: LocalContext, flags: Flags, ...ids: string[]) {
+export async function implementation(this: LocalContext, _flags: Record<string, never>, ...ids: string[]) {
   await this.api.apiKeys.deleteUserAPIKeys({ body: { ids } });
 
-  this.print(
+  this.printTable(
     this,
-    flags.json,
     { deleted: ids.length },
     ['deleted_key_id'],
     ids.map((id) => [id])
@@ -22,13 +17,7 @@ export const UserKeysDeleteCommand = buildCommand({
     brief: 'Delete one or more API keys'
   },
   parameters: {
-    flags: {
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
-      }
-    },
+    flags: {},
     positional: {
       kind: 'array',
       parameter: {

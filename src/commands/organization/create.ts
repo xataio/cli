@@ -3,15 +3,14 @@ import type { LocalContext } from '~/context';
 
 type Flags = {
   name: string;
-  json: boolean;
 };
 
-export async function implementation(this: LocalContext, { name: organizationName, json }: Flags) {
+export async function implementation(this: LocalContext, { name: organizationName }: Flags) {
   const organization = await this.api.organizations.createOrganization({
     body: { name: organizationName }
   });
 
-  this.printDetails(this, json, organization, [
+  this.printDetails(this, organization, [
     ['organization_id', organization.id],
     ['name', organization.name]
   ]);
@@ -28,11 +27,6 @@ export const OrganizationCreateCommand = buildCommand({
         brief: 'Organization Name',
         parse: String,
         optional: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

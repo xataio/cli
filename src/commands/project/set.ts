@@ -4,11 +4,11 @@ import { match } from 'ts-pattern';
 import { CLI_NAME } from '~/lib/constants';
 import { scaleToZeroChoices, timeChoices, validScaleToZeroValues, validInactivityPeriodValues } from '~/lib/config';
 import type { LocalContext } from '~/context';
+import { printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   project?: string;
-  json: boolean;
 };
 
 type Field =
@@ -209,11 +209,9 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     }
   });
 
-  if (flags.json) {
-    this.process.stdout.write(JSON.stringify(updatedProject, null, 2));
-  } else {
+  printCustom(this, updatedProject, () => {
     this.process.stdout.write(chalk.green(`Successfully updated ${field} for project ${projectName}\n`));
-  }
+  });
 }
 
 export const ProjectSetCommand = buildCommand({
@@ -236,11 +234,6 @@ export const ProjectSetCommand = buildCommand({
         brief: 'Project ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

@@ -1,12 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { getErrorMessage } from '~/lib/cli-utils';
+import { exitWithErrorDetails, getErrorMessage, printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   'invitation-id'?: string;
-  json: boolean;
   force: boolean;
 };
 
@@ -64,34 +63,20 @@ export async function implementation(this: LocalContext, flags: Flags) {
       }
     });
 
-    if (flags.json) {
-      this.process.stdout.write(
-        JSON.stringify({
-          success: true,
-          deletedInvitation: {
-            id: invitation.id,
-            email: invitation.email
-          },
-          organization: organizationId
-        })
-      );
-    } else {
-      this.process.stdout.write(chalk.green(`✓ Successfully deleted invitation for ${invitation.email}\n`));
-    }
+    printCustom(
+      this,
+      {
+        success: true,
+        deletedInvitation: { id: invitation.id, email: invitation.email },
+        organization: organizationId
+      },
+      () => {
+        this.process.stdout.write(chalk.green(`✓ Successfully deleted invitation for ${invitation.email}\n`));
+      }
+    );
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    if (flags.json) {
-      this.process.stderr.write(
-        JSON.stringify({
-          success: false,
-          error: errorMessage,
-          invitationId
-        })
-      );
-    } else {
-      this.process.stderr.write(chalk.red(`Failed to delete invitation: ${errorMessage}\n`));
-    }
-    this.process.exit(1);
+    exitWithErrorDetails(this, `Failed to delete invitation: ${errorMessage}`, { invitationId });
   }
 }
 
@@ -116,11 +101,6 @@ export const OrganizationInvitationsDeleteCommand = buildCommand({
       force: {
         kind: 'boolean',
         brief: 'Skip confirmation prompt',
-        default: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
         default: false
       }
     }

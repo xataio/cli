@@ -1,12 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { getErrorMessage } from '~/lib/cli-utils';
+import { exitWithErrorDetails, getErrorMessage, printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   'invitation-id'?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -52,34 +51,20 @@ export async function implementation(this: LocalContext, flags: Flags) {
       }
     });
 
-    if (flags.json) {
-      this.process.stdout.write(
-        JSON.stringify({
-          success: true,
-          resentInvitation: {
-            id: invitation.id,
-            email: invitation.email
-          },
-          organization: organizationId
-        })
-      );
-    } else {
-      this.process.stdout.write(chalk.green(`✓ Successfully resent invitation to ${invitation.email}\n`));
-    }
+    printCustom(
+      this,
+      {
+        success: true,
+        resentInvitation: { id: invitation.id, email: invitation.email },
+        organization: organizationId
+      },
+      () => {
+        this.process.stdout.write(chalk.green(`✓ Successfully resent invitation to ${invitation.email}\n`));
+      }
+    );
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    if (flags.json) {
-      this.process.stderr.write(
-        JSON.stringify({
-          success: false,
-          error: errorMessage,
-          invitationId
-        })
-      );
-    } else {
-      this.process.stderr.write(chalk.red(`Failed to resend invitation: ${errorMessage}\n`));
-    }
-    this.process.exit(1);
+    exitWithErrorDetails(this, `Failed to resend invitation: ${errorMessage}`, { invitationId });
   }
 }
 
@@ -100,11 +85,6 @@ export const OrganizationInvitationsResendCommand = buildCommand({
         brief: 'ID of the invitation to resend',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

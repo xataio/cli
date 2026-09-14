@@ -8,10 +8,7 @@ describe('organization describe command tests', async () => {
     const context = await getTestContext();
     const organizationId = 'ORG_ID_THAT_DOES_NOT_EXIST';
     await expect(
-      implementation.call(context, {
-        json: true,
-        organization: organizationId
-      })
+      implementation.call({ ...context, outputJson: true }, { organization: organizationId })
     ).rejects.toThrow(`access denied`);
   });
 
@@ -19,10 +16,7 @@ describe('organization describe command tests', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
     const _stderrWriteSpy = spyOn(context.process.stderr, 'write');
-    await implementation.call(context, {
-      json: true,
-      organization: TEST_XATA_ORG
-    });
+    await implementation.call({ ...context, outputJson: true }, { organization: TEST_XATA_ORG });
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = JSON.parse(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
@@ -42,17 +36,13 @@ describe('organization describe command tests', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
     const _stderrWriteSpy = spyOn(context.process.stderr, 'write');
-    await implementation.call(context, {
-      json: false,
-      organization: TEST_XATA_ORG
-    });
+    await implementation.call({ ...context, outputJson: false }, { organization: TEST_XATA_ORG });
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0)).trim();
     const expectedOutput = stripAnsi(
       context.printDetails(
         context,
-        false,
         {
           id: TEST_XATA_ORG,
           name: TEST_XATA_ORG

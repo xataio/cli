@@ -6,7 +6,6 @@ type Flags = {
   status?: 'pending' | 'expired';
   email?: string;
   search?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -27,9 +26,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
     queryParams
   });
 
-  this.print(
+  this.printTable(
     this,
-    flags.json,
     invitations,
     ['invitation_id', 'email', 'name', 'status', 'expires_at'],
     invitations.map((inv) => [
@@ -76,11 +74,6 @@ export const OrganizationInvitationsListCommand = buildCommand({
         brief: 'Search invitations by email or name',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

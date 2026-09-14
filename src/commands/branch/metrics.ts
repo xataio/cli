@@ -30,9 +30,8 @@ type Flags = {
   aggregations: string;
   aggregation: BranchMetricAggregation;
   refresh: string;
-  output: OutputFormat;
+  output?: OutputFormat;
   watch: boolean;
-  json: boolean;
 };
 
 type SnapshotOptions = BranchMetricsFetchOptions & {
@@ -46,7 +45,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     flags.aggregation
   );
   const refreshMs = parseRefreshInterval(flags.refresh);
-  const format = resolveOutputFormat(flags, this.isInteractive);
+  const format = resolveOutputFormat(flags, this);
 
   const organizationId = await this.getOrganization(this, flags, {});
   const projectId = await this.getProject(this, flags, { organizationId });
@@ -227,10 +226,16 @@ function ensureAggregationIncluded(
   return [...aggregations, selected];
 }
 
-function resolveOutputFormat(flags: Flags, isInteractive: boolean): OutputFormat {
-  if (flags.json) return 'json';
-  if (flags.watch && flags.output === 'table') return isInteractive ? 'tui' : 'ndjson';
-  return flags.output;
+export function resolveOutputFormat(
+  flags: Flags,
+  { isInteractive, isAgent, json }: Pick<LocalContext, 'isInteractive' | 'isAgent' | 'json'>
+): OutputFormat {
+  if (json === true) return 'json';
+  // An explicit --output is what the caller asked for
+  if (flags.output !== undefined) return flags.output;
+  // An agent is never interactive, so it lands on the streaming shape rather than the TUI.
+  if (flags.watch) return isInteractive ? 'tui' : 'ndjson';
+  return (json ?? isAgent) ? 'json' : 'table';
 }
 
 function parseRefreshInterval(value: string): number {
@@ -337,17 +342,12 @@ export const BranchMetricsCommand = buildCommand({
       output: {
         kind: 'enum',
         values: ['table', 'json', 'ndjson', 'tui'],
-        brief: 'Output format',
-        default: 'table'
+        brief: 'Output format. Defaults to table, or json when an AI agent runs the command.',
+        optional: true
       },
       watch: {
         kind: 'boolean',
         brief: 'Refresh metrics continuously',
-        default: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
         default: false
       }
     },

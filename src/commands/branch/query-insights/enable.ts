@@ -7,6 +7,8 @@ import {
 } from '@xata.io/sql';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import { printCustom, printFailure } from '~/lib/cli-utils';
+
 import { CLI_NAME } from '~/lib/constants';
 import {
   executeQuery,
@@ -16,9 +18,7 @@ import {
   type BranchQueryInsightsFlags
 } from './shared';
 
-type Flags = BranchQueryInsightsFlags & {
-  json: boolean;
-};
+type Flags = BranchQueryInsightsFlags & {};
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
   const target = await resolveBranchQueryInsightsTarget(this, flags, branchName);
@@ -33,8 +33,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   if (!extension) {
     const message = `${PG_STAT_STATEMENTS_EXTENSION} is not available for this branch image/region.`;
-    if (flags.json) this.print(this, true, { enabled: false, preloaded: false, branchId, error: message });
-    else this.process.stderr.write(chalk.red(`${message}\n`));
+    printFailure(this, { enabled: false, preloaded: false, branchId, error: message }, () => {
+      this.process.stderr.write(chalk.red(`${message}\n`));
+    });
     this.process.exitCode = 1;
     return;
   }
@@ -49,21 +50,12 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     });
 
     const waitCommand = `${CLI_NAME} branch wait-ready ${branch.name} --wake`;
-    if (flags.json) {
-      this.print(this, true, {
-        enabled: false,
-        preloaded: true,
-        branchId,
-        restartRequired: true,
-        waitCommand
-      });
-      return;
-    }
-
-    this.process.stdout.write(
-      chalk.green(`${PG_STAT_STATEMENTS_EXTENSION} added to preload libraries. The branch will restart.\n`)
-    );
-    this.process.stdout.write(`Wait for it to become ready, then run this command again:\n  ${waitCommand}\n`);
+    printCustom(this, { enabled: false, preloaded: true, branchId, restartRequired: true, waitCommand }, () => {
+      this.process.stdout.write(
+        chalk.green(`${PG_STAT_STATEMENTS_EXTENSION} added to preload libraries. The branch will restart.\n`)
+      );
+      this.process.stdout.write(`Wait for it to become ready, then run this command again:\n  ${waitCommand}\n`);
+    });
     return;
   }
 
@@ -78,8 +70,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
       if (extension.preloadRequired && !status?.preloaded) {
         const waitCommand = `${CLI_NAME} branch wait-ready ${branch.name} --wake`;
         const message = `${PG_STAT_STATEMENTS_EXTENSION} is configured for preload but is not loaded yet. Run \`${waitCommand}\` and try again.`;
-        if (flags.json) this.print(this, true, { enabled: false, preloaded: false, branchId, error: message });
-        else this.process.stderr.write(chalk.yellow(`${message}\n`));
+        printFailure(this, { enabled: false, preloaded: false, branchId, error: message }, () => {
+          this.process.stderr.write(chalk.yellow(`${message}\n`));
+        });
         this.process.exitCode = 1;
         return;
       }
@@ -89,17 +82,15 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
       }
       await executeQuery(sql, checkPgStatStatementsUsable());
 
-      if (flags.json) {
-        this.print(this, true, { enabled: true, preloaded: Boolean(status?.preloaded), branchId });
-        return;
-      }
-      this.process.stdout.write(chalk.green(`${PG_STAT_STATEMENTS_EXTENSION} is enabled and ready.\n`));
+      printCustom(this, { enabled: true, preloaded: Boolean(status?.preloaded), branchId }, () => {
+        this.process.stdout.write(chalk.green(`${PG_STAT_STATEMENTS_EXTENSION} is enabled and ready.\n`));
+      });
     });
   } catch (error) {
     const message = formatQueryInsightsError(error);
-    if (flags.json)
-      this.print(this, true, { enabled: false, preloaded: isConfiguredForPreload, branchId, error: message });
-    else this.process.stderr.write(chalk.red(`${message}\n`));
+    printFailure(this, { enabled: false, preloaded: isConfiguredForPreload, branchId, error: message }, () => {
+      this.process.stderr.write(chalk.red(`${message}\n`));
+    });
     this.process.exitCode = 1;
   }
 }
@@ -129,11 +120,6 @@ export const QueryInsightsEnableCommand = buildCommand({
         brief: 'Branch ID or name',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

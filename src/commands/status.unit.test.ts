@@ -33,7 +33,7 @@ describe('status without a usable config', () => {
     projectConfig.projectId = undefined;
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { json: true });
+    await implementation.call({ ...context, outputJson: true });
 
     expect(JSON.parse(stdout.join(''))).toEqual({ configured: false, reason: 'no-project-config' });
   });
@@ -43,7 +43,7 @@ describe('status without a usable config', () => {
     projectConfig.projectId = undefined;
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { json: false });
+    await implementation.call({ ...context, outputJson: false });
 
     expect(stdout.join('')).toContain("Couldn't find a project config");
     expect(() => JSON.parse(stdout.join(''))).toThrow();
@@ -55,7 +55,7 @@ describe('status without a usable config', () => {
     branchConfig.branchId = undefined;
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { json: true });
+    await implementation.call({ ...context, outputJson: true });
 
     expect(JSON.parse(stdout.join(''))).toEqual({
       configured: false,
@@ -70,7 +70,7 @@ describe('status without a usable config', () => {
     branchConfig.branchId = undefined;
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { json: false });
+    await implementation.call({ ...context, outputJson: false });
 
     expect(stdout.join('')).toContain('No branch is checked out');
   });

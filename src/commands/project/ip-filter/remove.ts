@@ -2,12 +2,12 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { getIpFilteringConfig, normalizeIpFilterCidr, printIpFilterStatus, updateIpFiltering } from './shared';
+import { printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   project?: string;
   force: boolean;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, cidr?: string) {
@@ -58,12 +58,10 @@ export async function implementation(this: LocalContext, flags: Flags, cidr?: st
 
   const updated = await updateIpFiltering(this, organizationId, projectId, ipFiltering);
 
-  if (flags.json) {
-    this.process.stdout.write(JSON.stringify(updated, null, 2));
-  } else {
+  printCustom(this, updated, () => {
     printIpFilterStatus(this, ipFiltering);
     this.process.stdout.write(chalk.green(`Successfully removed ${cidrToRemove} from project ${project.name}\n`));
-  }
+  });
 }
 
 export const IpFilterRemoveCommand = buildCommand({
@@ -87,11 +85,6 @@ export const IpFilterRemoveCommand = buildCommand({
       force: {
         kind: 'boolean',
         brief: 'Skip confirmation prompts',
-        default: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
         default: false
       }
     },

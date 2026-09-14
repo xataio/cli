@@ -2,7 +2,7 @@ import { buildCommand } from '@stricli/core';
 import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { type ContextFlags, contextFlags, getErrorMessage, resolveContext } from '~/lib/cli-utils';
+import { contextFlags, getErrorMessage, resolveContext, type ContextFlags } from '~/lib/cli-utils';
 import { updateBranchConfig } from '~/lib/branch-config';
 import { getLocalConfigDir } from '~/lib/config-dir';
 import { getProjectConfigPath, hasProjectConfigFile, updateProjectConfig } from '~/lib/project-config';
@@ -60,9 +60,7 @@ export async function ensureDatabase(context: LocalContext, connectionString: st
   }
 }
 
-type Flags = ContextFlags & {
-  json: boolean;
-};
+type Flags = ContextFlags & {};
 
 export async function implementation(this: LocalContext, flags: Flags) {
   if (hasProjectConfigFile()) {
@@ -120,7 +118,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     databaseName
   });
 
-  if (!flags.json) {
+  if (!this.outputJson) {
     this.process.stdout.write(
       chalk.green(`Wrote project.json and branch.json to ${getLocalConfigDir()}. The following details were written\n`)
     );
@@ -128,7 +126,6 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   this.printDetails(
     this,
-    flags.json,
     {
       organization: organizationId,
       project: projectId,
@@ -157,12 +154,7 @@ export const ProjectInitCommand = buildCommand({
   },
   parameters: {
     flags: {
-      ...contextFlags,
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
-      }
+      ...contextFlags
     }
   },
   func: implementation

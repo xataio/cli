@@ -6,10 +6,9 @@ import { resolveProfile } from '~/lib/profile';
 
 type Flags = {
   profile?: string;
-  json: boolean;
 };
 
-export async function implementation(this: LocalContext, { profile: profileFlag, json }: Flags) {
+export async function implementation(this: LocalContext, { profile: profileFlag }: Flags) {
   const { profile, profileData } = resolveProfile({ profileFlag });
 
   if (!profileData) {
@@ -37,7 +36,7 @@ export async function implementation(this: LocalContext, { profile: profileFlag,
   }
 
   const expiresAt = token.expiresAt.toISOString();
-  this.printDetails(this, json, { profile, expiresAt }, [
+  this.printDetails(this, { profile, expiresAt }, [
     ['profile', profile],
     ['expires_at', expiresAt]
   ]);
@@ -56,11 +55,6 @@ export const AuthRefreshCommand = buildCommand({
         parse: String,
         brief: 'The profile to refresh',
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

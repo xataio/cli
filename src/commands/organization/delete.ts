@@ -4,8 +4,6 @@ import type { LocalContext } from '~/context';
 
 type Flags = {
   organization?: string;
-
-  json: boolean;
   yes: boolean;
 };
 
@@ -34,7 +32,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     pathParams: { organizationID: organizationId }
   });
 
-  this.printDetails(this, flags.json, organization, [['organization', organization.name]]);
+  this.printDetails(this, organization, [['organization', organization.name]]);
 }
 
 export const OrganizationDeleteCommand = buildCommand({
@@ -48,11 +46,6 @@ export const OrganizationDeleteCommand = buildCommand({
         brief: 'Organization ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       },
       yes: {
         kind: 'boolean',

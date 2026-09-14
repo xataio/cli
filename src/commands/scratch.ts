@@ -12,6 +12,7 @@ import {
   SCRATCH_SCALE_TO_ZERO,
   type ScratchBranch
 } from '~/lib/scratch-session';
+import { printCustom } from '~/lib/cli-utils';
 import { renderTable } from '~/lib/table';
 import { getParentBranchId } from './branch/create';
 
@@ -21,7 +22,6 @@ type Flags = {
   'parent-branch'?: string;
   database?: string;
   execute?: string;
-  json: boolean;
 };
 
 const SIGNAL_CLEANUP_TIMEOUT_MS = 10 * 1000;
@@ -68,12 +68,11 @@ function formatCell(value: unknown) {
   return String(value);
 }
 
-function printSQLResult(context: LocalContext, json: boolean, result: unknown[]) {
-  if (json) {
-    context.print(context, true, result as Record<string, unknown>[]);
-    return;
-  }
+function printSQLResult(context: LocalContext, result: unknown[]) {
+  printCustom(context, result as Record<string, unknown>[], () => renderSQLResult(context, result));
+}
 
+function renderSQLResult(context: LocalContext, result: unknown[]) {
   const rows = result.filter((row): row is Record<string, unknown> => {
     return typeof row === 'object' && row !== null && !Array.isArray(row);
   });
@@ -150,7 +149,8 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
     this.process.exit(1);
   }
 
-  if (flags.json && hasBinary) {
+  // Only an outright --json conflicts, not the agent default.
+  if (this.json && hasBinary) {
     this.process.stderr.write(chalk.red('--json is only supported with --execute/-x.\n'));
     this.process.exit(1);
   }
@@ -278,7 +278,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
 
     if (flags.execute) {
       const result = await executeSQL(this, flags.execute, connectionString);
-      printSQLResult(this, flags.json, result);
+      printSQLResult(this, result);
     } else {
       invariant(resolvedBinary, 'Binary should have been resolved before creating the scratch branch.');
       this.process.stderr.write(
@@ -347,11 +347,6 @@ export const ScratchCommand = buildCommand({
         brief: 'SQL query to execute in the scratch branch',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output SQL query results in JSON format',
-        default: false
       }
     },
     aliases: {

@@ -1,12 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { getErrorMessage } from '~/lib/cli-utils';
+import { exitWithErrorDetails, getErrorMessage } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   'invitation-id'?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -48,7 +47,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     const name = [invitation.first_name, invitation.last_name].filter(Boolean).join(' ');
     const status = invitation.status === 'pending' ? chalk.yellow(invitation.status) : chalk.red(invitation.status);
 
-    this.printDetails(this, flags.json, invitation, [
+    this.printDetails(this, invitation, [
       ['invitation_id', invitation.id],
       ['email', invitation.email],
       ['name', name],
@@ -58,18 +57,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     ]);
   } catch (error) {
     const errorMessage = getErrorMessage(error);
-    if (flags.json) {
-      this.process.stderr.write(
-        JSON.stringify({
-          success: false,
-          error: errorMessage,
-          invitationId
-        })
-      );
-    } else {
-      this.process.stderr.write(chalk.red(`Failed to get invitation: ${errorMessage}\n`));
-    }
-    this.process.exit(1);
+    exitWithErrorDetails(this, `Failed to get invitation: ${errorMessage}`, { invitationId });
   }
 }
 
@@ -90,11 +78,6 @@ export const OrganizationInvitationsGetCommand = buildCommand({
         brief: 'ID of the invitation to view',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

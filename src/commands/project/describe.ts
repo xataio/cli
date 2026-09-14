@@ -6,7 +6,6 @@ import type { LocalContext } from '~/context';
 type Flags = {
   organization?: string;
   project?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -21,7 +20,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this.process.exit(1);
   }
 
-  this.printDetails(this, flags.json, project, [
+  this.printDetails(this, project, [
     ['project_id', project.id],
     ['created_at', project.createdAt],
     ['updated_at', project.updatedAt],
@@ -46,11 +45,6 @@ export const ProjectDescribeCommand = buildCommand({
         brief: 'Project ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

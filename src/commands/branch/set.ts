@@ -8,7 +8,7 @@ import {
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
-import { exitWithError } from '~/lib/cli-utils';
+import { exitWithError, printCustom } from '~/lib/cli-utils';
 import { CLI_NAME } from '~/lib/constants';
 import { getBranchLimits, replicaChoicesFor, storageValidationError } from '~/lib/branch-limits';
 import { buildInstanceTypeChoices, instanceTypes, shouldShowInstanceTypePricing } from './create';
@@ -18,7 +18,6 @@ type Flags = {
   organization?: string;
   project?: string;
   branch?: string;
-  json: boolean;
 };
 
 type Field =
@@ -308,11 +307,9 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     body: updateBody
   });
 
-  if (flags.json) {
-    this.process.stdout.write(JSON.stringify(updatedBranch, null, 2));
-  } else {
+  printCustom(this, updatedBranch, () => {
     this.process.stdout.write(chalk.green(`Successfully updated ${field} to ${value}\n`));
-  }
+  });
 }
 
 export const BranchSetCommand = buildCommand({
@@ -347,11 +344,6 @@ export const BranchSetCommand = buildCommand({
         brief: 'Branch ID or name',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

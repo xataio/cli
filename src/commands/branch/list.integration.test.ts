@@ -12,11 +12,7 @@ describe('branch list command tests', () => {
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
     const _stderrWriteSpy = spyOn(context.process.stderr, 'write');
 
-    await implementation.call(context, {
-      json: true,
-      organization: TEST_XATA_ORG,
-      project: project.id
-    });
+    await implementation.call({ ...context, outputJson: true }, { organization: TEST_XATA_ORG, project: project.id });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
@@ -34,11 +30,7 @@ describe('branch list command tests', () => {
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
     const _stderrWriteSpy = spyOn(context.process.stderr, 'write');
 
-    await implementation.call(context, {
-      json: false,
-      organization: TEST_XATA_ORG,
-      project: project.id
-    });
+    await implementation.call({ ...context, outputJson: false }, { organization: TEST_XATA_ORG, project: project.id });
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
@@ -54,12 +46,10 @@ describe('branch list command tests', () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
 
-    await implementation.call(context, {
-      json: false,
-      organization: TEST_XATA_ORG,
-      project: project.id,
-      branch: branch.id
-    });
+    await implementation.call(
+      { ...context, outputJson: false },
+      { organization: TEST_XATA_ORG, project: project.id, branch: branch.id }
+    );
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));

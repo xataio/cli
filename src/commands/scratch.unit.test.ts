@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import type { LocalContext } from '~/context';
-import { print } from '~/lib/cli-utils';
+import { printTable } from '~/lib/cli-utils';
 import { implementation } from './scratch';
 
 const tempPaths: string[] = [];
@@ -60,7 +60,7 @@ function buildContext() {
     os,
     path,
     isInteractive: false,
-    print,
+    printTable,
     getOrganization: mock(async () => 'org-id'),
     getProject: mock(async () => 'project-id'),
     getBranch: mock(async () => 'source-branch-id'),
@@ -86,7 +86,7 @@ describe('scratch command', () => {
   test('creates a child branch, executes SQL, prints a table, and deletes the branch', async () => {
     const { context, stdout, stderr, createBranch, deleteBranch, unsafe, end } = buildContext();
 
-    await implementation.call(context, { execute: 'select 1', json: false });
+    await implementation.call({ ...context, outputJson: false }, { execute: 'select 1' });
 
     expect(createBranch).toHaveBeenCalledTimes(1);
     expect(createBranch.mock.calls[0]?.[0]).toMatchObject({
@@ -111,7 +111,7 @@ describe('scratch command', () => {
     const { context, createBranch, listBranches } = buildContext();
     listBranches.mockImplementationOnce(async () => ({ branches: [{ id: 'source-branch-id', name: 'main' }] }));
 
-    await implementation.call(context, { execute: 'select 1', json: false, 'parent-branch': 'main' });
+    await implementation.call({ ...context, outputJson: false }, { execute: 'select 1', 'parent-branch': 'main' });
 
     expect(listBranches).toHaveBeenCalledTimes(1);
     expect(createBranch.mock.calls[0]?.[0]).toMatchObject({ body: { parentID: 'source-branch-id' } });
@@ -120,7 +120,7 @@ describe('scratch command', () => {
   test('reads the credentials of the branch it just created', async () => {
     const { context, getBranchCredentials, unsafe } = buildContext();
 
-    await implementation.call(context, { execute: 'select 1', json: false });
+    await implementation.call({ ...context, outputJson: false }, { execute: 'select 1' });
 
     expect(getBranchCredentials).toHaveBeenCalledTimes(1);
     expect(getBranchCredentials).toHaveBeenCalledWith({
@@ -132,7 +132,7 @@ describe('scratch command', () => {
   test('prints SQL results as JSON when --json is passed', async () => {
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { execute: 'select 1', json: true });
+    await implementation.call({ ...context, outputJson: true }, { execute: 'select 1' });
 
     expect(JSON.parse(stdout.join(''))).toEqual([{ id: 1, name: 'hello' }]);
   });
@@ -143,7 +143,7 @@ describe('scratch command', () => {
       throw new Error('query failed');
     });
 
-    await expect(implementation.call(context, { execute: 'select broken', json: false })).rejects.toThrow(
+    await expect(implementation.call({ ...context, outputJson: false }, { execute: 'select broken' })).rejects.toThrow(
       'query failed'
     );
 
@@ -161,7 +161,7 @@ describe('scratch command', () => {
       branches: [{ id: 'recovered-scratch-branch-id', name: branchName }]
     }));
 
-    await expect(implementation.call(context, { execute: 'select 1', json: false })).rejects.toThrow(
+    await expect(implementation.call({ ...context, outputJson: false }, { execute: 'select 1' })).rejects.toThrow(
       'connection reset'
     );
 
@@ -180,7 +180,9 @@ describe('scratch command', () => {
       branches: [{ id: 'other-scratch-branch-id', name: 'scratch-other-run' }]
     }));
 
-    await expect(implementation.call(context, { execute: 'select 1', json: false })).rejects.toThrow('create failed');
+    await expect(implementation.call({ ...context, outputJson: false }, { execute: 'select 1' })).rejects.toThrow(
+      'create failed'
+    );
 
     expect(listBranches).toHaveBeenCalledTimes(1);
     expect(deleteBranch).not.toHaveBeenCalled();
@@ -213,7 +215,9 @@ describe('scratch command', () => {
     const queryStarted = new Promise<void>((resolve) => {
       startQuery = resolve;
     });
-    const run = implementation.call(context, { execute: 'select pg_sleep(60)', json: false }).catch(() => {});
+    const run = implementation
+      .call({ ...context, outputJson: false }, { execute: 'select pg_sleep(60)' })
+      .catch(() => {});
 
     await queryStarted;
     handlers.get('SIGINT')?.();
@@ -232,9 +236,7 @@ describe('scratch command', () => {
   test('fails before creating a branch when the binary does not exist', async () => {
     const { context, createBranch } = buildContext();
 
-    await expect(
-      implementation.call(context, { json: false }, 'definitely-missing-xata-scratch-binary')
-    ).rejects.toThrow('exit:1');
+    await expect(implementation.call(context, {}, 'definitely-missing-xata-scratch-binary')).rejects.toThrow('exit:1');
 
     expect(createBranch).not.toHaveBeenCalled();
   });
@@ -251,7 +253,7 @@ describe('scratch command', () => {
     fs.chmodSync(binary, 0o755);
 
     await expect(
-      implementation.call(context, { json: false }, binary, '-c', 'SELECT version();', '--profile', 'child', '--debug')
+      implementation.call(context, {}, binary, '-c', 'SELECT version();', '--profile', 'child', '--debug')
     ).rejects.toThrow('exit:7');
 
     expect(deleteBranch).toHaveBeenCalledTimes(1);

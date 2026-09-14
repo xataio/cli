@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
-import { getBranch, print, printDetails } from '~/lib/cli-utils';
+import { getBranch, printDetails, printTable } from '~/lib/cli-utils';
 import { implementation } from './describe';
 
 const BRANCH_ID = 'oansf546nh1bf3blhj75d674gs';
@@ -32,7 +32,7 @@ function buildContext({ storage }: { storage?: number } = { storage: 42 }) {
     getOrganization: mock(async () => 'org-id'),
     getProject: mock(async () => 'project-id'),
     getBranch,
-    print,
+    printTable,
     printDetails
   } as unknown as LocalContext;
 
@@ -43,7 +43,7 @@ describe('branch describe', () => {
   test('describes the branch named by the --branch flag', async () => {
     const { context, stdout, describeBranch } = buildContext();
 
-    await implementation.call(context, { branch: 'main', json: true });
+    await implementation.call({ ...context, outputJson: true }, { branch: 'main' });
 
     expect(describeBranch).toHaveBeenCalledWith({
       pathParams: { organizationID: 'org-id', projectID: 'project-id', branchID: BRANCH_ID }
@@ -54,7 +54,7 @@ describe('branch describe', () => {
   test('shows the region, storage and updated_at it already fetched', async () => {
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { branch: 'main', json: false });
+    await implementation.call({ ...context, outputJson: false }, { branch: 'main' });
 
     const table = stdout.join('');
     expect(table).toContain('region');
@@ -68,7 +68,7 @@ describe('branch describe', () => {
   test('leaves storage blank when the branch does not report one', async () => {
     const { context, stdout } = buildContext({ storage: undefined });
 
-    await implementation.call(context, { branch: 'main', json: false });
+    await implementation.call({ ...context, outputJson: false }, { branch: 'main' });
 
     const table = stdout.join('');
     expect(table).toContain('storage');
@@ -79,7 +79,7 @@ describe('branch describe', () => {
   test('puts each field on its own line, so a field can be looked up by name', async () => {
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { branch: 'main', json: false });
+    await implementation.call({ ...context, outputJson: false }, { branch: 'main' });
 
     // What `awk '$1=="storage" {print $2}'` does.
     const lookup = (field: string) =>
@@ -104,7 +104,7 @@ describe('branch describe', () => {
       status: { status: 'Cluster in healthy state', statusType: 'STATUS_TYPE_HEALTHY' }
     });
 
-    await implementation.call(context, { branch: 'main', json: false });
+    await implementation.call({ ...context, outputJson: false }, { branch: 'main' });
 
     const line = stdout
       .join('')
@@ -117,7 +117,7 @@ describe('branch describe', () => {
   test('leaves no trailing whitespace on any line', async () => {
     const { context, stdout } = buildContext();
 
-    await implementation.call(context, { branch: 'main', json: false });
+    await implementation.call({ ...context, outputJson: false }, { branch: 'main' });
 
     for (const line of stdout.join('').split('\n')) {
       expect(line).toBe(line.trimEnd());

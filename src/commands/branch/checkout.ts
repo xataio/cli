@@ -2,13 +2,13 @@ import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 import { updateBranchConfig } from '~/lib/branch-config';
 import { updateProjectConfig } from '~/lib/project-config';
+import { printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   project?: string;
   branch?: string;
   database?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
@@ -28,11 +28,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   if (targetBranchId === currentBranchId) {
     const alreadyOn = branchName ?? targetBranchId;
-    if (flags.json) {
-      this.printDetails(this, flags.json, { id: targetBranchId, name: branchName ?? null }, []);
-    } else {
+    printCustom(this, { id: targetBranchId, name: branchName ?? null }, () => {
       this.process.stdout.write(`Already on branch ${alreadyOn}\n`);
-    }
+    });
     this.process.exit(0);
   }
 
@@ -45,7 +43,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   await updateBranchConfig({ branchId: targetBranch.id, branchName: targetBranch.name, databaseName: database });
 
   const { id, name } = targetBranch;
-  this.printDetails(this, flags.json, { id, name }, [['branch', targetBranch.name]]);
+  this.printDetails(this, { id, name }, [['branch', targetBranch.name]]);
 }
 
 export const BranchCheckoutCommand = buildCommand({
@@ -86,11 +84,6 @@ export const BranchCheckoutCommand = buildCommand({
         brief: 'Database name',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

@@ -2,7 +2,7 @@ import { ApiError, NetworkError, type Types } from '@xata.io/api';
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
 import { branchDescriptionMaxLength } from '@xata.io/utils';
-import { print, printDetails } from '~/lib/cli-utils';
+import { printDetails, printTable } from '~/lib/cli-utils';
 
 mock.module('~/lib/project-config', () => {
   return {
@@ -16,7 +16,7 @@ const { implementation, getParentBranchId, promptForParentBranchId } = await imp
 
 const PARENT_ID = 'oansf546nh1bf3blhj75d674gs';
 
-const BASE_FLAGS = { name: 'my-branch', json: false, 'no-parent': false };
+const BASE_FLAGS = { name: 'my-branch', 'no-parent': false };
 
 const SIZING_FLAGS = {
   region: 'us-east-1',
@@ -113,8 +113,9 @@ function buildContext({
       })
     },
     isInteractive: false,
-    print,
+    printTable,
     printDetails,
+    outputJson: false,
     getActiveProfile: () => {
       return 'default';
     },

@@ -15,8 +15,8 @@ import {
   getOrganization,
   getProject,
   getUserInfo,
-  print,
-  printDetails
+  printDetails,
+  printTable
 } from './lib/cli-utils';
 import { confirmPrompt, datePrompt, inputPrompt, multiselectPrompt, selectPrompt } from './lib/enquirer';
 import { env } from './lib/env';
@@ -38,7 +38,13 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
    * etc.). Prompt helpers short-circuit when this is false.
    */
   readonly isInteractive: boolean;
-  readonly print: typeof print;
+  /** Whether the CLI was invoked by an AI agent (Claude Code, Cursor, Codex, etc.). */
+  readonly isAgent: boolean;
+  /** `--json` as passed, undefined when it was not. Prefer `outputJson` unless you need that difference. */
+  readonly json: boolean | undefined;
+  /** `json`, resolved against the agent default. */
+  readonly outputJson: boolean;
+  readonly printTable: typeof printTable;
   readonly printDetails: typeof printDetails;
   readonly getActiveProfile: typeof getActiveProfile;
   readonly getOrganization: typeof getOrganization;
@@ -64,9 +70,14 @@ export function getIsInteractive(process: NodeJS.Process, { isCI, isAgent }: { i
   return process.stdin.isTTY === true && process.stdout.isTTY === true && !(isCI || isAgent);
 }
 
+/** An agent parses the output rather than reading it, so it gets JSON unless it says otherwise. */
+export function getOutputJson(json: boolean | undefined, isAgent: boolean) {
+  return json ?? isAgent;
+}
+
 export async function buildContext(
   process: NodeJS.Process,
-  options: ApiOptionsFromCommand & { debug?: boolean } = {}
+  options: ApiOptionsFromCommand & { debug?: boolean; json?: boolean } = {}
 ): Promise<LocalContext> {
   const debug = options.debug ?? Boolean(Bun.env.DEBUG);
   const usingEnvApiKey = Boolean(env.XATA_API_KEY);
@@ -87,7 +98,10 @@ export async function buildContext(
     path,
     // Treat captured/piped output, CI, and agentic invocations as non-interactive.
     isInteractive: getIsInteractive(process, { isCI: ciInfo.isCI, isAgent: agent.isAgent }),
-    print,
+    isAgent: agent.isAgent,
+    json: options.json,
+    outputJson: getOutputJson(options.json, agent.isAgent),
+    printTable,
     printDetails,
     getActiveProfile,
     getOrganization,

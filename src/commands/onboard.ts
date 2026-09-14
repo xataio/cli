@@ -21,7 +21,6 @@ type Flags = {
   'inactivity-period-base'?: '15' | '30' | '60' | '120' | '180';
   'inactivity-period-child'?: '15' | '30' | '60' | '120' | '180';
   database?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -82,8 +81,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   // Step 1: Create organization
   this.process.stdout.write(chalk.blue('Step 1/4: Creating organization...\n'));
   await orgCreateImplementation.call(this, {
-    name: organizationName,
-    json: false
+    name: organizationName
   });
   this.process.stdout.write(chalk.green('✓ Organization created successfully!\n\n'));
 
@@ -107,8 +105,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     'scale-to-zero-base': flags['scale-to-zero-base'],
     'scale-to-zero-child': flags['scale-to-zero-child'],
     'inactivity-period-base': flags['inactivity-period-base'],
-    'inactivity-period-child': flags['inactivity-period-child'],
-    json: false
+    'inactivity-period-child': flags['inactivity-period-child']
   });
   this.process.stdout.write(chalk.green('✓ Project and branch created successfully!\n\n'));
 
@@ -172,8 +169,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       organization: createdOrg.id,
       project: createdProject.id,
       branch: mainBranch.id,
-      database: flags.database,
-      json: false
+      database: flags.database
     });
     this.process.stdout.write(chalk.green('✓ Project initialized successfully!\n\n'));
   } else {
@@ -181,7 +177,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
 
   // Summary
-  if (!flags.json) {
+  if (!this.outputJson) {
     this.process.stdout.write(chalk.bold.green('🎉 Onboarding complete!\n\n'));
     this.process.stdout.write(chalk.bold('What was created:\n'));
     this.process.stdout.write(`• Organization: ${chalk.cyan(organizationName)}\n`);
@@ -269,11 +265,6 @@ export const OnboardCommand = buildCommand({
         brief: 'Database name',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

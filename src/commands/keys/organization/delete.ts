@@ -3,7 +3,6 @@ import type { LocalContext } from '~/context';
 
 interface Flags {
   organization?: string;
-  json: boolean;
 }
 
 export async function implementation(this: LocalContext, flags: Flags, ...ids: string[]) {
@@ -11,9 +10,8 @@ export async function implementation(this: LocalContext, flags: Flags, ...ids: s
 
   await this.api.apiKeys.deleteOrganizationAPIKeys({ pathParams: { organizationID: organizationId }, body: { ids } });
 
-  this.print(
+  this.printTable(
     this,
-    flags.json,
     { deleted: ids.length },
     ['deleted_key_id'],
     ids.map((id) => [id])
@@ -31,11 +29,6 @@ export const OrgKeysDeleteCommand = buildCommand({
         brief: 'Organization ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

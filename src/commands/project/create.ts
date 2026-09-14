@@ -17,7 +17,6 @@ type Flags = {
   'scale-to-zero-child'?: 'true' | 'false';
   'inactivity-period-base'?: '15' | '30' | '60' | '120' | '180';
   'inactivity-period-child'?: '15' | '30' | '60' | '120' | '180';
-  json: boolean;
   'postgres-version'?: string;
 };
 
@@ -77,7 +76,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     image,
     storage
   });
-  this.printDetails(this, flags.json, project, [
+  this.printDetails(this, project, [
     ['project_id', project.id],
     ['name', project.name]
   ]);
@@ -183,11 +182,6 @@ export const ProjectCreateCommand = buildCommand({
         values: ['15', '30', '60', '120', '180'],
         brief: 'Default inactivity period in minutes for child branches',
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

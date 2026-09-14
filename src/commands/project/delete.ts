@@ -5,8 +5,6 @@ import type { LocalContext } from '~/context';
 type Flags = {
   organization?: string;
   project?: string;
-
-  json: boolean;
   yes: boolean;
 };
 
@@ -36,7 +34,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     pathParams: { organizationID: organizationId, projectID: projectId }
   });
 
-  this.printDetails(this, flags.json, project, [['project', project.name]]);
+  this.printDetails(this, project, [['project', project.name]]);
 }
 
 export const ProjectDeleteCommand = buildCommand({
@@ -56,11 +54,6 @@ export const ProjectDeleteCommand = buildCommand({
         brief: 'Project ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       },
       yes: {
         kind: 'boolean',

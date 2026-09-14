@@ -6,7 +6,6 @@ interface Flags {
   organization?: string;
   name?: string;
   expiry?: string;
-  json: boolean;
 }
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -20,7 +19,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     body: { name, expiry }
   });
 
-  this.printDetails(this, flags.json, key, [
+  this.printDetails(this, key, [
     ['key_id', key.id],
     ['created_at', key.created_at],
     ['expiry', key.expiry ?? 'Never'],
@@ -55,11 +54,6 @@ export const OrgKeysCreateCommand = buildCommand({
         brief: `Expiry, as a date or a phrase such as 'in 1 week', or 'never'`,
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

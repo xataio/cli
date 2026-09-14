@@ -7,8 +7,6 @@ type Flags = {
   organization?: string;
   project?: string;
   branch?: string;
-
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -22,22 +20,26 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   if (branches.length === 0) {
     writeNoBranchesInProject(this);
-    if (!flags.json) {
+    if (!this.outputJson) {
       return;
     }
   }
 
   const currentBranch = branches.find((branch) => branch.id === branchId);
+  const rows = branches.map((branch) => ({ ...branch, current: currentBranch?.id === branch.id }));
 
-  this.print(
+  this.printTable(
     this,
-    flags.json,
-    branches,
+    rows,
     ['branch_id', 'created_at', 'name', 'description', 'parent_id', 'current'],
-    branches.map((branch) => {
-      const current = currentBranch?.id === branch.id ? 'true' : 'false';
-      return [branch.id, branch.createdAt, branch.name, branch.description ?? '-', branch.parentID ?? '-', current];
-    })
+    rows.map((branch) => [
+      branch.id,
+      branch.createdAt,
+      branch.name,
+      branch.description ?? '-',
+      branch.parentID ?? '-',
+      String(branch.current)
+    ])
   );
 }
 
@@ -64,11 +66,6 @@ export const BranchListCommand = buildCommand({
         brief: 'Branch ID or name',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

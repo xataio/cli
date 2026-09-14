@@ -5,18 +5,15 @@ import type { LocalContext } from '~/context';
 import { branchConfig } from '~/lib/branch-config';
 import { CLI_NAME } from '~/lib/constants';
 import { getProjectConfigPath, hasProjectConfigFile, projectConfig } from '~/lib/project-config';
+import { printCustom } from '~/lib/cli-utils';
 
-type Flags = {
-  json: boolean;
-};
-
-export async function implementation(this: LocalContext, { json }: Flags) {
+export async function implementation(this: LocalContext) {
   const organizationId = projectConfig.organizationId;
   const projectId = projectConfig.projectId;
   const branchId = branchConfig.branchId;
 
   if (!organizationId || !projectId) {
-    printStatusProblem(this, json, { configured: false, reason: 'no-project-config' }, () => {
+    printCustom(this, { configured: false, reason: 'no-project-config' }, () => {
       this.process.stdout.write(`Couldn't find a project config in ${chalk.bold(getProjectConfigPath())}.\n`);
       this.process.stdout.write(`Please connect a project to a folder using ${chalk.bold(`${CLI_NAME} init`)}\n\n`);
     });
@@ -25,7 +22,7 @@ export async function implementation(this: LocalContext, { json }: Flags) {
 
   // `init` refuses to run again once the project file exists, so pointing there would dead-end.
   if (!branchId) {
-    printStatusProblem(this, json, { configured: false, reason: 'no-branch-checked-out', project: projectId }, () => {
+    printCustom(this, { configured: false, reason: 'no-branch-checked-out', project: projectId }, () => {
       this.process.stdout.write(`No branch is checked out, the project is ${chalk.bold(projectId)}.\n`);
       this.process.stdout.write(
         `Please check one out using ${chalk.bold(`${CLI_NAME} checkout <branch>`)} or set XATA_BRANCH_ID\n\n`
@@ -46,7 +43,7 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
   });
 
-  if (!json) {
+  if (!this.outputJson) {
     const source = hasProjectConfigFile() ? chalk.bold(getProjectConfigPath()) : 'environment variables';
     this.process.stdout.write(`Current project config based on ${source}:\n`);
   }
@@ -57,20 +54,11 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     branch: `${branch.name} (${branch.id})`
   };
 
-  this.printDetails(this, json, status, [
+  this.printDetails(this, status, [
     ['organization', status.organization],
     ['project', status.project],
     ['branch', status.branch]
   ]);
-}
-
-function printStatusProblem(context: LocalContext, json: boolean, data: Record<string, unknown>, render: () => void) {
-  if (json) {
-    context.process.stdout.write(`${JSON.stringify(data, null, 2)}\n`);
-    return;
-  }
-
-  render();
 }
 
 export const StatusCommand = buildCommand({
@@ -80,13 +68,7 @@ export const StatusCommand = buildCommand({
       'Reads the context from the `XATA_*` variables and the local config, so it is the quickest way to see which branch the commands run here will act on.'
   },
   parameters: {
-    flags: {
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
-      }
-    }
+    flags: {}
   },
   func: implementation
 });

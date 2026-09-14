@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { getIsInteractive } from './context';
+import { getIsInteractive, getOutputJson } from './context';
 
 function buildProcess({ stdinIsTTY, stdoutIsTTY }: { stdinIsTTY: boolean; stdoutIsTTY: boolean }) {
   return {
@@ -8,6 +8,22 @@ function buildProcess({ stdinIsTTY, stdoutIsTTY }: { stdinIsTTY: boolean; stdout
     stderr: { write: () => {} }
   } as unknown as NodeJS.Process;
 }
+
+describe('getOutputJson', () => {
+  test('gives an agent JSON when --json was not passed, and a human the table', () => {
+    expect(getOutputJson(undefined, true)).toBe(true);
+    expect(getOutputJson(undefined, false)).toBe(false);
+  });
+
+  test('lets an agent opt back out with --json=false', () => {
+    expect(getOutputJson(false, true)).toBe(false);
+  });
+
+  test('honours an explicit --json either way', () => {
+    expect(getOutputJson(true, true)).toBe(true);
+    expect(getOutputJson(true, false)).toBe(true);
+  });
+});
 
 describe('buildContext', () => {
   test('is interactive when stdin and stdout are TTYs', async () => {

@@ -8,7 +8,6 @@ type Flags = {
   project?: string;
   branch?: string;
   yes: boolean;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
@@ -48,7 +47,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   await deleteBranchById(this, organizationId, projectId, branchToDelete.id);
 
-  this.printDetails(this, flags.json, branchToDelete, [['branch', branchToDelete.name]]);
+  this.printDetails(this, branchToDelete, [['branch', branchToDelete.name]]);
 }
 
 export const BranchDeleteCommand = buildCommand({
@@ -86,11 +85,6 @@ export const BranchDeleteCommand = buildCommand({
       yes: {
         kind: 'boolean',
         brief: 'Do not ask for confirmation, assume yes.',
-        default: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
         default: false
       }
     },

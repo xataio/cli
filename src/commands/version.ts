@@ -8,11 +8,10 @@ import { getPgStream } from '~/lib/pgstream/binary';
 import { getCLIVersion } from '~/lib/updates';
 
 type Flags = {
-  json: boolean;
   'skip-download': boolean;
 };
 
-export async function implementation(this: LocalContext, { json, 'skip-download': skipDownload }: Flags) {
+export async function implementation(this: LocalContext, { 'skip-download': skipDownload }: Flags) {
   if (!skipDownload) {
     await getPgRoll(this).catch(
       (e) => this.debug && this.process.stderr.write(`DEBUG: pgroll ensure failed: ${e.message}\n`)
@@ -26,7 +25,7 @@ export async function implementation(this: LocalContext, { json, 'skip-download'
   const pgstreamVersion = await getCurrentVersion('pgstream');
   const CLIVersion = getCLIVersion();
 
-  this.printDetails(this, json, { CLIVersion, pgrollVersion, pgstreamVersion }, [
+  this.printDetails(this, { CLIVersion, pgrollVersion, pgstreamVersion }, [
     [CLI_NAME, CLIVersion],
     ['pgroll', pgrollVersion ?? 'unknown'],
     ['pgstream', pgstreamVersion ?? 'unknown']
@@ -39,11 +38,6 @@ export const VersionCommand = buildCommand({
   },
   parameters: {
     flags: {
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
-      },
       'skip-download': {
         kind: 'boolean',
         brief: 'Skip downloading the pgroll/pgstream binaries',

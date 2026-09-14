@@ -2,11 +2,11 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { getIpFilteringConfig, printIpFilterStatus, updateIpFiltering } from './shared';
+import { printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   project?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -29,12 +29,10 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   const updated = await updateIpFiltering(this, organizationId, projectId, ipFiltering);
 
-  if (flags.json) {
-    this.process.stdout.write(JSON.stringify(updated, null, 2));
-  } else {
+  printCustom(this, updated, () => {
     printIpFilterStatus(this, ipFiltering);
     this.process.stdout.write(chalk.green(`Successfully enabled IP filtering for project ${project.name}\n`));
-  }
+  });
 }
 
 export const IpFilterEnableCommand = buildCommand({
@@ -54,11 +52,6 @@ export const IpFilterEnableCommand = buildCommand({
         brief: 'Project ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

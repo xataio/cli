@@ -2,22 +2,16 @@ import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 import { PRODUCT_NAME } from '~/lib/constants';
 import { config } from '../../lib/config';
-import { print, getUserInfo } from '../../lib/cli-utils';
+import { getUserInfo, printCustom, printTable } from '../../lib/cli-utils';
 import { getActiveProfile } from '../../lib/profile';
 
-type Flags = {
-  json?: boolean;
-};
-
-export async function implementation(this: LocalContext, { json }: Flags) {
+export async function implementation(this: LocalContext) {
   const profiles = Object.keys(config.profiles || {});
 
   if (profiles.length === 0) {
-    if (json) {
-      print(this, true, []);
-    } else {
-      console.log('No profiles found. Please log in first using "auth login"');
-    }
+    printCustom(this, [], () => {
+      this.process.stdout.write('No profiles found. Please log in first using "auth login"\n');
+    });
     return;
   }
 
@@ -37,14 +31,10 @@ export async function implementation(this: LocalContext, { json }: Flags) {
     };
   });
 
-  if (json) {
-    print(this, true, profileData);
-  } else {
-    const headers = ['profile', 'type', 'email', 'name', 'current'];
-    const rows = profileData.map((data) => [data.profile, data.type, data.email, data.name, data.current ? '✓' : '']);
+  const headers = ['profile', 'type', 'email', 'name', 'current'];
+  const rows = profileData.map((data) => [data.profile, data.type, data.email, data.name, data.current ? '✓' : '']);
 
-    print(this, false, profileData, headers, rows);
-  }
+  printTable(this, profileData, headers, rows);
 }
 
 export const AuthListCommand = buildCommand({
@@ -52,13 +42,7 @@ export const AuthListCommand = buildCommand({
     brief: `List all available ${PRODUCT_NAME} account profiles`
   },
   parameters: {
-    flags: {
-      json: {
-        kind: 'boolean',
-        optional: true,
-        brief: 'Output in JSON format'
-      }
-    }
+    flags: {}
   },
   func: implementation
 });

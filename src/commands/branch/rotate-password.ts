@@ -10,7 +10,6 @@ type Flags = {
   project?: string;
   branch?: string;
   yes: boolean;
-  json: boolean;
 };
 
 async function resolveDatabaseUsername(
@@ -60,7 +59,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     body: { username }
   });
 
-  this.printDetails(this, flags.json, { branchId: branch.id, branchName: branch.name, username }, [
+  this.printDetails(this, { branchId: branch.id, branchName: branch.name, username }, [
     ['branch', branch.name],
     ['username', username],
     ['status', 'Password rotated successfully']
@@ -96,11 +95,6 @@ export const BranchRotatePasswordCommand = buildCommand({
       yes: {
         kind: 'boolean',
         brief: 'Do not ask for confirmation, assume yes.',
-        default: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
         default: false
       }
     },

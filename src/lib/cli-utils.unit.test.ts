@@ -2,7 +2,16 @@ import { describe, expect, it, mock } from 'bun:test';
 import { ApiError } from '@xata.io/api';
 import stripAnsi from 'strip-ansi';
 import type { LocalContext } from '~/context';
-import { getBranch, getErrorMessage, groupAndSortRegions, print, resolveBranchIdOrName } from './cli-utils';
+import {
+  getBranch,
+  getErrorMessage,
+  groupAndSortRegions,
+  exitWithErrorDetails,
+  printCustom,
+  printDetails,
+  printTable,
+  resolveBranchIdOrName
+} from './cli-utils';
 import { renderTable } from './table';
 
 type Region = {
@@ -333,10 +342,11 @@ describe('getErrorMessage', () => {
   });
 });
 
-describe('print', () => {
+describe('printTable', () => {
   it('should print JSON output unchanged by table headers', () => {
     const writes: string[] = [];
     const context = {
+      outputJson: true,
       process: {
         stdout: {
           write: (value: string) => writes.push(value)
@@ -345,7 +355,7 @@ describe('print', () => {
     };
     const data = { id: 'branch-id', name: 'main' };
 
-    const result = print(context as any, true, data, ['branch_id', 'name'], [['ignored', 'ignored']]);
+    const result = printTable(context as any, data, ['branch_id', 'name'], [['ignored', 'ignored']]);
 
     expect(result).toBe(JSON.stringify(data, null, 2));
     expect(writes).toEqual([`${JSON.stringify(data, null, 2)}\n`]);
@@ -361,9 +371,8 @@ describe('print', () => {
       }
     };
 
-    const result = print(
+    const result = printTable(
       context as any,
-      false,
       [
         { name: 'alpha', status: 'ready' },
         { name: 'beta', status: 'paused' }
@@ -381,6 +390,131 @@ describe('print', () => {
       ['alpha', 'ready'],
       ['beta', 'paused']
     ]);
+  });
+});
+
+describe('printDetails', () => {
+  const buildContext = (outputJson: boolean) => {
+    const writes: string[] = [];
+    const context = {
+      outputJson,
+      process: { stdout: { write: (value: string) => writes.push(value) } }
+    } as unknown as LocalContext;
+    return { context, writes };
+  };
+
+  const branch = { id: 'branch-id', name: 'main' };
+  const fields: [string, string][] = [
+    ['branch_id', branch.id],
+    ['name', branch.name]
+  ];
+
+  it('lays a single record out one field per line', () => {
+    const { context, writes } = buildContext(false);
+
+    const result = printDetails(context, branch, fields);
+
+    expect(writes).toEqual([`${result}\n`]);
+    expect(normalizeTableOutput(result)).toEqual([
+      ['branch_id', 'branch-id'],
+      ['name', 'main']
+    ]);
+  });
+
+  it('emits JSON for an agent that did not ask for either', () => {
+    const { context, writes } = buildContext(true);
+
+    const result = printDetails(context, branch, fields);
+
+    expect(result).toBe(JSON.stringify(branch, null, 2));
+    expect(writes).toEqual([`${JSON.stringify(branch, null, 2)}\n`]);
+  });
+});
+
+describe('printCustom', () => {
+  const buildContext = (outputJson: boolean) => {
+    const writes: string[] = [];
+    const context = {
+      outputJson,
+      process: { stdout: { write: (value: string) => writes.push(value) } }
+    } as unknown as LocalContext;
+    return { context, writes };
+  };
+
+  const data = { enabled: true, entries: ['10.0.0.0/8'] };
+
+  it('runs the renderer for a human and leaves the JSON alone', () => {
+    const { context, writes } = buildContext(false);
+
+    printCustom(context, data, () => context.process.stdout.write('IP filtering: enabled\n'));
+
+    expect(writes).toEqual(['IP filtering: enabled\n']);
+  });
+
+  it('emits JSON for an agent instead of running the renderer', () => {
+    const { context, writes } = buildContext(true);
+    let rendered = false;
+
+    printCustom(context, data, () => {
+      rendered = true;
+    });
+
+    expect(rendered).toBe(false);
+    expect(writes).toEqual([`${JSON.stringify(data, null, 2)}\n`]);
+  });
+
+  it('terminates its JSON with a newline, like printTable and printDetails', () => {
+    const { context, writes } = buildContext(true);
+
+    printCustom(context, data, () => {});
+
+    expect(writes[0]?.endsWith('}\n')).toBe(true);
+  });
+});
+
+describe('exitWithErrorDetails', () => {
+  const buildContext = (outputJson: boolean) => {
+    const stdout: string[] = [];
+    const stderr: string[] = [];
+    const context = {
+      outputJson,
+      process: {
+        stdout: { write: (value: string) => stdout.push(value) },
+        stderr: { write: (value: string) => stderr.push(value) },
+        exit: () => undefined
+      }
+    } as unknown as LocalContext;
+    return { context, stdout, stderr };
+  };
+
+  it('reports a machine-readable failure on stderr, not stdout', () => {
+    const { context, stdout, stderr } = buildContext(true);
+
+    exitWithErrorDetails(context, 'Failed to send invitation: nope', { email: 'a@b.c' });
+
+    expect(stdout).toEqual([]);
+    expect(JSON.parse(stderr.join(''))).toEqual({
+      success: false,
+      error: 'Failed to send invitation: nope',
+      email: 'a@b.c'
+    });
+  });
+
+  it('terminates its JSON with a newline', () => {
+    const { context, stderr } = buildContext(true);
+
+    exitWithErrorDetails(context, 'nope', { email: 'a@b.c' });
+
+    expect(stderr[0]?.endsWith('}\n')).toBe(true);
+  });
+
+  it('leaves a human the plain message, without the details', () => {
+    const { context, stdout, stderr } = buildContext(false);
+
+    exitWithErrorDetails(context, 'Failed to send invitation: nope', { email: 'a@b.c' });
+
+    expect(stdout).toEqual([]);
+    expect(stripAnsi(stderr.join(''))).toBe('Failed to send invitation: nope\n');
   });
 });
 

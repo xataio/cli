@@ -14,7 +14,7 @@ import type { BranchLookupOptions, ProjectOptions } from '~/lib/cli-utils';
 import { exitWithError, exitWithUnknownBranch, groupAndSortRegions, resolveBranchIdOrName } from '~/lib/cli-utils';
 import { config } from '~/lib/config';
 import { implementation as checkout } from './checkout';
-import { implementation as waitReady } from './wait-ready';
+import { waitForBranchReady } from './wait-ready';
 
 // Storage is part of the cluster configuration a root branch is built from, and a fork inherits
 // its parent's disk instead, so the two can never be combined.
@@ -35,7 +35,6 @@ type Flags = {
   storage?: string;
   'scale-to-zero'?: 'true' | 'false';
   'inactivity-period'?: '15' | '30' | '60' | '120' | '180';
-  json: boolean;
 };
 
 export async function instanceTypes(context: LocalContext, organizationId: string, region: string) {
@@ -367,7 +366,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       });
 
       if (flags['instance-type']) {
-        await waitReady.call(this, { json: true }, branchName);
+        await waitForBranchReady(this, { organizationId, projectId, branchId: branch.id });
 
         const describedBranch = await this.api.branches.describeBranch({
           pathParams: { organizationID: organizationId, projectID: projectId, branchID: branch.id }
@@ -397,7 +396,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       return branch;
     });
 
-  this.printDetails(this, flags.json, branch, [
+  this.printDetails(this, branch, [
     ['branch_id', branch.id],
     ['created_at', branch.createdAt],
     ['name', branch.name],
@@ -509,11 +508,6 @@ export const BranchCreateCommand = buildCommand({
         values: ['15', '30', '60', '120', '180'],
         brief: 'Inactivity period in minutes for the branch',
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

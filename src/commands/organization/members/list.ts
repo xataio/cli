@@ -3,7 +3,6 @@ import type { LocalContext } from '~/context';
 
 type Flags = {
   organization?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -13,9 +12,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
     pathParams: { organizationID: organizationId! }
   });
 
-  this.print(
+  this.printTable(
     this,
-    flags.json,
     members,
     ['member_id', 'email', 'name'],
     members.map((member) => [member.id, member.email, member.name || '-'])
@@ -33,11 +31,6 @@ export const OrganizationMembersListCommand = buildCommand({
         brief: 'Organization ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

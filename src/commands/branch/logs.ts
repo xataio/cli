@@ -9,6 +9,7 @@ import {
 } from '@xata.io/utils';
 import type { BranchLogLevel } from '@xata.io/utils';
 import type { LocalContext } from '~/context';
+
 import {
   BRANCH_LOG_FOLLOW_INTERVAL_MS,
   createBranchLogFollowState,
@@ -19,6 +20,7 @@ import {
 } from '~/lib/branch-logs';
 
 const DEFAULT_LIMIT = 100;
+const DEFAULT_OUTPUT = 'raw';
 const DATE_FLAG_FORMAT = 'YYYY-MM-DDTHH:mm:ss.sssZ';
 const DATE_FLAG_EXAMPLE = '2026-05-23T10:00:00.000Z';
 const DATE_FLAG_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
@@ -37,8 +39,7 @@ type Flags = {
   end?: string;
   limit: number;
   follow: boolean;
-  output: OutputFormat;
-  json: boolean;
+  output?: OutputFormat;
 };
 
 type TimeRange = {
@@ -131,8 +132,13 @@ function parseLimit(value: string): number {
   return limit;
 }
 
-function resolveOutputFormat(flags: Pick<Flags, 'json' | 'output'>): OutputFormat {
-  return flags.json ? 'json' : flags.output;
+export function resolveOutputFormat(context: LocalContext, flags: Pick<Flags, 'output' | 'follow'>): OutputFormat {
+  if (context.json === true) return 'json';
+  // An explicit --output is what the caller asked for
+  if (flags.output !== undefined) return flags.output;
+  if (context.json === false || !context.isAgent) return DEFAULT_OUTPUT;
+  // A JSON array never terminates while following, so an agent gets the streaming shape.
+  return flags.follow ? 'ndjson' : 'json';
 }
 
 export function formatRawLog(log: Types.LogEntry): string {
@@ -241,7 +247,7 @@ async function runFollow(
 }
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
-  const output = resolveOutputFormat(flags);
+  const output = resolveOutputFormat(this, flags);
   if (flags.follow && output === 'json') {
     throw new Error('Cannot use --follow with JSON array output. Use --output ndjson, --output csv, or --output raw.');
   }
@@ -365,13 +371,8 @@ export const BranchLogsCommand = buildCommand({
       output: {
         kind: 'enum',
         values: ['raw', 'json', 'ndjson', 'csv'],
-        brief: 'Output format',
-        default: 'raw'
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format. Alias for --output json.',
-        default: false
+        brief: 'Output format. Defaults to raw, or json when an AI agent runs the command.',
+        optional: true
       }
     },
     positional: {

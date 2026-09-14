@@ -4,7 +4,6 @@ import type { LocalContext } from '~/context';
 
 type Flags = {
   organization?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -12,9 +11,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   const { projects } = await this.api.projects.listProjects({ pathParams: { organizationID: organizationId } });
 
-  this.print(
+  this.printTable(
     this,
-    flags.json,
     projects,
     ['project_id', 'created_at', 'updated_at', 'name'],
     projects.map((p) => [p.id, p.createdAt, p.updatedAt, p.name])
@@ -32,11 +30,6 @@ export const ProjectListCommand = buildCommand({
         brief: 'Organization ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

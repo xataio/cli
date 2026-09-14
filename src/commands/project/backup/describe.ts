@@ -5,7 +5,6 @@ type Flags = {
   organization?: string;
   project?: string;
   backup: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -16,7 +15,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     pathParams: { organizationID: organizationId, projectID: projectId, backupID: flags.backup }
   });
 
-  this.printDetails(this, flags.json, backup, [
+  this.printDetails(this, backup, [
     ['backup_id', backup.id],
     ['branch_id', backup.branchID],
     ['earliest_restore', backup.earliestRestore || 'unknown'],
@@ -47,11 +46,6 @@ export const BackupDescribeCommand = buildCommand({
         brief: 'Backup ID',
         parse: String,
         optional: false
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },

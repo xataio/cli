@@ -1,6 +1,7 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import { printCustom } from '~/lib/cli-utils';
 import { printQueryInsightDetails } from './display';
 import { showQueryInsight } from './queries';
 import { withBranchQueryInsightsSql, type BranchQueryInsightsFlags } from './shared';
@@ -8,7 +9,6 @@ import { withBranchQueryInsightsSql, type BranchQueryInsightsFlags } from './sha
 type Flags = BranchQueryInsightsFlags & {
   db?: string;
   role?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, queryId: string, branchName?: string) {
@@ -31,12 +31,7 @@ export async function implementation(this: LocalContext, flags: Flags, queryId: 
       return;
     }
 
-    if (flags.json) {
-      this.print(this, true, row as unknown as Record<string, unknown>);
-      return;
-    }
-
-    printQueryInsightDetails(this, row);
+    printCustom(this, row as unknown as Record<string, unknown>, () => printQueryInsightDetails(this, row));
   });
 }
 
@@ -83,11 +78,6 @@ export const QueryInsightsShowCommand = buildCommand({
         brief: 'Role name to disambiguate the query ID',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

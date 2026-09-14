@@ -5,10 +5,11 @@ import { getQueryPreviewLength, normalizeQueryForPreview, truncate } from './for
 import { listActiveQueries } from './queries';
 import { withBranchQueryInsightsSql, type BranchQueryInsightsFlags } from './shared';
 import type { ActiveQueryRow } from './types';
+import { printCustom } from '~/lib/cli-utils';
+import { renderTable } from '~/lib/table';
 
 type Flags = BranchQueryInsightsFlags & {
   watch?: number;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
@@ -18,7 +19,8 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     return;
   }
 
-  if (flags.watch !== undefined && flags.json) {
+  // Only an outright --json conflicts, not the agent default.
+  if (flags.watch !== undefined && this.json) {
     this.process.stderr.write(chalk.red('--watch cannot be used with --json.\n'));
     this.process.exitCode = 1;
     return;
@@ -31,7 +33,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     async (sql) => {
       if (flags.watch === undefined) {
         const rows = await listActiveQueries(sql);
-        printActiveQueries(this, rows, flags.json);
+        printCustom(this, { queries: rows }, () => renderActiveQueries(this, rows));
         return;
       }
 
@@ -39,7 +41,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
         const rows = await listActiveQueries(sql);
         this.process.stdout.write('\x1b[2J\x1b[H');
         this.process.stdout.write(`${chalk.bold('Active queries')} (${new Date().toLocaleTimeString()})\n\n`);
-        printActiveQueries(this, rows, false);
+        renderActiveQueries(this, rows);
         await new Promise((resolve) => setTimeout(resolve, flags.watch! * 1000));
       }
     },
@@ -47,12 +49,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   );
 }
 
-function printActiveQueries(context: LocalContext, rows: ActiveQueryRow[], json: boolean) {
-  if (json) {
-    context.print(context, true, { queries: rows });
-    return;
-  }
-
+function renderActiveQueries(context: LocalContext, rows: ActiveQueryRow[]) {
   const headers = ['PID', 'Age', 'State', 'Wait', 'DB', 'User', 'Client', 'Query'];
   const rowsWithoutQuery = rows.map((row) => [
     String(row.pid),
@@ -65,16 +62,14 @@ function printActiveQueries(context: LocalContext, rows: ActiveQueryRow[], json:
   ]);
   const queryPreviewLength = getQueryPreviewLength(context, headers, rowsWithoutQuery, 50);
 
-  context.print(
-    context,
-    false,
-    rows as unknown as Record<string, unknown>[],
+  const table = renderTable(
     headers,
     rows.map((row, index) => [
       ...rowsWithoutQuery[index]!,
       truncate(normalizeQueryForPreview(row.query), queryPreviewLength)
     ])
   );
+  context.process.stdout.write(`${table}\n`);
 }
 
 function formatAge(start: Date | string) {
@@ -119,11 +114,6 @@ export const QueryInsightsActiveCommand = buildCommand({
         brief: 'Refresh interval in seconds. Cannot be combined with --json',
         parse: Number,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     },
     positional: {

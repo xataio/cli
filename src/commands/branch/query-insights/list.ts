@@ -24,12 +24,11 @@ type Flags = BranchQueryInsightsFlags & {
   limit?: string;
   offset: string;
   wide: boolean;
-  output: OutputFormat;
-  json: boolean;
+  output?: OutputFormat;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
-  const output = resolveOutputFormat(flags);
+  const output = resolveOutputFormat(this, flags);
   if (output === 'tui' && !this.isInteractive) {
     throw new Error('--output tui requires an interactive terminal.');
   }
@@ -85,7 +84,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   };
 
   if (output === 'json') {
-    this.print(this, true, outputValue);
+    this.process.stdout.write(`${JSON.stringify(outputValue, null, 2)}\n`);
     return;
   }
 
@@ -195,13 +194,8 @@ export const QueryInsightsListCommand = buildCommand({
       output: {
         kind: 'enum',
         values: ['table', 'json', 'ndjson', 'tui'],
-        brief: 'Output format',
-        default: 'table'
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format. Alias for --output json.',
-        default: false
+        brief: 'Output format. Defaults to table, or json when an AI agent runs the command.',
+        optional: true
       }
     },
     positional: {
@@ -223,8 +217,10 @@ export const QueryInsightsListCommand = buildCommand({
   func: implementation
 });
 
-function resolveOutputFormat(flags: Pick<Flags, 'json' | 'output'>): OutputFormat {
-  return flags.json ? 'json' : flags.output;
+function resolveOutputFormat(context: LocalContext, flags: Pick<Flags, 'output'>): OutputFormat {
+  // An explicit --output is what the caller asked for
+  if (context.json ?? (context.isAgent && flags.output === undefined)) return 'json';
+  return flags.output ?? 'table';
 }
 
 function parsePositiveInteger(value: string, label: string) {

@@ -1,11 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
+import { exitWithErrorDetails, printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
   email?: string;
-  json: boolean;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -18,30 +18,11 @@ export async function implementation(this: LocalContext, flags: Flags) {
       body: { email }
     });
 
-    if (flags.json) {
-      this.process.stdout.write(
-        JSON.stringify({
-          success: true,
-          email,
-          organization: organizationId
-        })
-      );
-    } else {
+    printCustom(this, { success: true, email, organization: organizationId }, () => {
       this.process.stdout.write(chalk.green(`✓ Successfully sent invitation to ${email}\n`));
-    }
+    });
   } catch (error: any) {
-    if (flags.json) {
-      this.process.stdout.write(
-        JSON.stringify({
-          success: false,
-          error: error.message,
-          email
-        })
-      );
-    } else {
-      this.process.stderr.write(chalk.red(`Failed to send invitation: ${error.message}\n`));
-    }
-    this.process.exit(1);
+    exitWithErrorDetails(this, `Failed to send invitation: ${error.message}`, { email });
   }
 }
 
@@ -62,11 +43,6 @@ export const OrganizationMembersInviteCommand = buildCommand({
         brief: 'Email address to invite',
         parse: String,
         optional: true
-      },
-      json: {
-        kind: 'boolean',
-        brief: 'Output in JSON format',
-        default: false
       }
     }
   },
