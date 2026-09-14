@@ -18,8 +18,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   });
 
   if (!members || members.length === 0) {
-    this.process.stderr.write(chalk.red('No members found in this organization\n'));
-    this.process.exit(1);
+    return exitWithErrorDetails(this, 'No members found in this organization', { organization: organizationId });
   }
 
   let userId = flags['user-id'];
@@ -38,14 +37,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
 
   if (!userId) {
-    this.process.stderr.write(chalk.red('User ID is required\n'));
-    this.process.exit(1);
+    return exitWithErrorDetails(this, 'User ID is required', { organization: organizationId });
   }
   // Find the member to remove
   const memberToRemove = members.find((m) => m.id === userId);
   if (!memberToRemove) {
-    this.process.stderr.write(chalk.red(`User with ID ${userId} not found in organization\n`));
-    this.process.exit(1);
+    return exitWithErrorDetails(this, `User with ID ${userId} not found in organization`, { userId });
   }
 
   // Confirmation prompt (unless --force is used)
