@@ -48,6 +48,15 @@ export function getProfileApi(profile: string): XataApi {
   return new XataApi(getApiOptions(profile));
 }
 
+export function getIssuer({ profile: profileFlag }: ApiOptionsFromCommand = {}): string {
+  try {
+    const profile = getProfile({ profileFlag });
+    return getAuthConfig(config?.profiles?.[profile]?.customConfig).client.issuer;
+  } catch {
+    return DEFAULT_API_ISSUER;
+  }
+}
+
 // We should inject the environment secrets during the build process
 export function getAuthConfig(customConfig?: CustomConfig) {
   return {

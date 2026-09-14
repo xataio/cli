@@ -6,12 +6,16 @@ import { OrganizationGetCommand } from './get';
 import { OrganizationInvitationsRoute } from './invitations';
 import { OrganizationListCommand } from './list';
 import { OrganizationMembersRoute } from './members';
+import { OrganizationSsoRoute } from './sso';
 
 export const OrganizationRoute = buildRouteMap({
   docs: {
     brief: 'Create, list, and manage organizations',
     fullDescription:
-      'An organization owns projects and their billing, and the people who can reach them. Members belong to it, invitations bring them in.'
+      'An organization owns projects and their billing, and the people who can reach them. Members belong to it, invitations bring them in.',
+    hideRoute: {
+      sso: true
+    }
   },
   routes: {
     list: OrganizationListCommand,
@@ -20,7 +24,8 @@ export const OrganizationRoute = buildRouteMap({
     delete: OrganizationDeleteCommand,
     get: OrganizationGetCommand,
     members: OrganizationMembersRoute,
-    invitations: OrganizationInvitationsRoute
+    invitations: OrganizationInvitationsRoute,
+    sso: OrganizationSsoRoute
   },
   aliases: {
     ls: 'list',

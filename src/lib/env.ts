@@ -25,6 +25,7 @@ const schema = z.object({
   XATA_API_ISSUER: z.string().optional(),
   XATA_API_CLIENT_SECRET: z.string().optional(),
   XATA_API_CLIENT_ID: z.string().optional(),
+  XATA_SSO_CLIENT_SECRET: z.string().optional(),
 
   XATA_PGROLL_BINARY_VERSION: z.string().optional(),
   XATA_PGSTREAM_BINARY_VERSION: z.string().optional(),
