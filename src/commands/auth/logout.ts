@@ -6,13 +6,12 @@ import { resolveProfile } from '~/lib/profile';
 import { revokeSession } from '~/lib/session';
 
 type Flags = {
-  profile: string;
   yes: boolean;
   local: boolean;
 };
 
-export async function implementation(this: LocalContext, { profile: profileFlag, yes, local }: Flags) {
-  const { profile, profileData } = resolveProfile({ profileFlag });
+export async function implementation(this: LocalContext, { yes, local }: Flags) {
+  const { profile, profileData } = resolveProfile({ profileFlag: this.profile });
   if (!profileData) {
     console.log(`Profile "${profile}" does not exist. You are already logged out.`);
     return;
@@ -85,12 +84,6 @@ export const AuthLogoutCommand = buildCommand({
   },
   parameters: {
     flags: {
-      profile: {
-        kind: 'parsed',
-        parse: String,
-        brief: 'The profile to log out of',
-        default: 'default'
-      },
       yes: {
         kind: 'boolean',
         brief: 'Do not ask for confirmation, assume yes.',

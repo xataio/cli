@@ -5,12 +5,8 @@ import { resolveProfile } from '~/lib/profile';
 import { getSessionExpiry } from '~/lib/session';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
-type Flags = {
-  profile?: string;
-};
-
-export function implementation(this: LocalContext, { profile: profileFlag }: Flags) {
-  const { profile, profileData } = resolveProfile({ profileFlag });
+export function implementation(this: LocalContext, _flags: Record<string, never>) {
+  const { profile, profileData } = resolveProfile({ profileFlag: this.profile });
   if (!profileData) {
     console.log(`You are not logged in with profile "${profile}"`);
     return;
@@ -43,14 +39,7 @@ export const AuthStatusCommand = buildCommand({
       'Reads the stored session without contacting the server, so it stays fast and works offline. It reports an expiry the stored session has already passed, but it cannot see a session revoked server-side. Use `xata auth refresh` to verify against the server.'
   },
   parameters: {
-    flags: {
-      profile: {
-        kind: 'parsed',
-        parse: String,
-        brief: 'The profile to check',
-        optional: true
-      }
-    }
+    flags: {}
   },
   func: implementation
 });

@@ -2,12 +2,8 @@ import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 import { resolveProfile } from '~/lib/profile';
 
-type Flags = {
-  profile: string;
-};
-
-export async function implementation(this: LocalContext, { profile: profileFlag }: Flags) {
-  const { profile, profileData } = resolveProfile({ profileFlag });
+export async function implementation(this: LocalContext, _flags: Record<string, never>) {
+  const { profile, profileData } = resolveProfile({ profileFlag: this.profile });
 
   if (!profileData) {
     this.process.stderr.write(`Profile "${profile}" does not exist.\n`);
@@ -32,14 +28,7 @@ export const AuthRefreshTokenCommand = buildCommand({
     brief: 'Print the stored refresh token, without refreshing the session'
   },
   parameters: {
-    flags: {
-      profile: {
-        kind: 'parsed',
-        parse: String,
-        brief: 'The profile to use',
-        default: 'default'
-      }
-    }
+    flags: {}
   },
   func: implementation
 });

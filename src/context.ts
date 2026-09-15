@@ -45,6 +45,8 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
   readonly json: boolean | undefined;
   /** `json`, resolved against the agent default. */
   readonly outputJson: boolean;
+  /** `--profile` as passed, undefined when it was not, which means the active profile. */
+  readonly profile: string | undefined;
   readonly printTable: typeof printTable;
   readonly printDetails: typeof printDetails;
   readonly getActiveProfile: typeof getActiveProfile;
@@ -103,6 +105,7 @@ export async function buildContext(
     isAgent: agent.isAgent,
     json: options.json,
     outputJson: getOutputJson(options.json, agent.isAgent),
+    profile: options.profile,
     printTable,
     printDetails,
     getActiveProfile,

@@ -4,12 +4,8 @@ import { getProfileApi } from '~/lib/api';
 import { CLI_NAME } from '~/lib/constants';
 import { resolveProfile } from '~/lib/profile';
 
-type Flags = {
-  profile?: string;
-};
-
-export async function implementation(this: LocalContext, { profile: profileFlag }: Flags) {
-  const { profile, profileData } = resolveProfile({ profileFlag });
+export async function implementation(this: LocalContext, _flags: Record<string, never>) {
+  const { profile, profileData } = resolveProfile({ profileFlag: this.profile });
 
   if (!profileData) {
     this.process.stderr.write(
@@ -49,14 +45,7 @@ export const AuthRefreshCommand = buildCommand({
       'Refreshes the session even when the current access token is still valid, and stores the new one. Every command already refreshes on its own when the token is about to expire, so this is for scripts that want to fail early, or to rotate the token before a long job.'
   },
   parameters: {
-    flags: {
-      profile: {
-        kind: 'parsed',
-        parse: String,
-        brief: 'The profile to refresh',
-        optional: true
-      }
-    }
+    flags: {}
   },
   func: implementation
 });

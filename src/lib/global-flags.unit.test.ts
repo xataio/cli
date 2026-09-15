@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { app } from '~/app';
-import { getDebugFlag, getJsonFlag } from './global-flags';
+import { getDebugFlag, getJsonFlag, profileFlag } from './global-flags';
 
 type Entry = {
   name: Record<string, string>;
@@ -138,5 +138,20 @@ describe('getDebugFlag', () => {
 
   test('stops at --, so an inner command keeps its own flags', () => {
     expect(getDebugFlag(['scratch', '--', 'psql', '--debug'])).toBe(false);
+  });
+});
+
+describe('--profile', () => {
+  // The auth commands once declared their own `profile` flag, some with `default: 'default'`, which
+  // shadowed this one and made them act on a profile named `default` instead of the active one.
+  // `clone start` and `clone stream` forward pgstream's own `--profile`, which turns on CPU and
+  // memory profiling rather than naming a Xata profile.
+  test('is the global flag on every command but the ones pgstream defines it for', () => {
+    const commands = collectCommands((app as unknown as { root: Entry['target'] }).root, ['xata']);
+    const redeclared = commands.filter(({ flags }) => {
+      return flags.profile !== profileFlag;
+    });
+
+    expect(redeclared.map(({ route }) => route)).toEqual(['xata clone start', 'xata clone stream']);
   });
 });

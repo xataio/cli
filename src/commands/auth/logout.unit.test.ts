@@ -58,7 +58,7 @@ describe('auth logout', () => {
     const { context, logs, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', yes: true, local: false });
+      await implementation.call({ ...context, profile: 'default' }, { yes: true, local: false });
     } finally {
       restore();
     }
@@ -78,7 +78,7 @@ describe('auth logout', () => {
     const { context, logs, stderr, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', yes: true, local: false });
+      await implementation.call({ ...context, profile: 'default' }, { yes: true, local: false });
     } finally {
       restore();
     }
@@ -96,7 +96,7 @@ describe('auth logout', () => {
     const { context, logs, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', yes: true, local: true });
+      await implementation.call({ ...context, profile: 'default' }, { yes: true, local: true });
     } finally {
       restore();
     }
@@ -113,7 +113,7 @@ describe('auth logout', () => {
     const { context, logs, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', yes: true, local: false });
+      await implementation.call({ ...context, profile: 'default' }, { yes: true, local: false });
     } finally {
       restore();
     }
@@ -127,7 +127,7 @@ describe('auth logout', () => {
     const { context, confirmPrompt, stderr, exit, restore } = buildContext({ confirm: false });
 
     try {
-      await implementation.call(context, { profile: 'default', yes: false, local: false });
+      await implementation.call({ ...context, profile: 'default' }, { yes: false, local: false });
     } finally {
       restore();
     }
@@ -147,7 +147,7 @@ describe('auth logout', () => {
     const { context, logs, stderr, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', yes: true, local: false });
+      await implementation.call({ ...context, profile: 'default' }, { yes: true, local: false });
     } finally {
       restore();
     }
@@ -168,7 +168,7 @@ describe('auth logout', () => {
     const { context, confirmPrompt, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', yes: false, local: false });
+      await implementation.call({ ...context, profile: 'default' }, { yes: false, local: false });
     } finally {
       restore();
     }
@@ -182,7 +182,7 @@ describe('auth logout', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'work', yes: true, local: false });
+      await implementation.call({ ...context, profile: 'work' }, { yes: true, local: false });
     } finally {
       restore();
     }
@@ -198,7 +198,7 @@ describe('auth logout', () => {
     const { context, logs, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'missing', yes: true, local: false });
+      await implementation.call({ ...context, profile: 'missing' }, { yes: true, local: false });
     } finally {
       restore();
     }
@@ -206,5 +206,38 @@ describe('auth logout', () => {
     expect(revokeSession).not.toHaveBeenCalled();
     expect(updateConfig).not.toHaveBeenCalled();
     expect(logs.join('')).toContain('does not exist');
+  });
+
+  test('logs out of the active profile when --profile is not passed, even with no profile named default', async () => {
+    configState.activeProfile = 'staging';
+    configState.profiles = { staging: oidcProfile, personal: { ...oidcProfile, refreshToken: 'personal-refresh' } };
+    const { context, logs, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { yes: true, local: true });
+    } finally {
+      restore();
+    }
+
+    expect(logs.join('')).not.toContain('does not exist');
+    expect(configState.profiles.staging).toBeUndefined();
+    expect(configState.profiles.personal).toBeDefined();
+    expect(configState.activeProfile).toBe('');
+  });
+
+  test('revokes the session of the active profile rather than of one named default', async () => {
+    configState.activeProfile = 'staging';
+    configState.profiles = { default: oidcProfile, staging: { ...oidcProfile, refreshToken: 'staging-refresh' } };
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { yes: true, local: false });
+    } finally {
+      restore();
+    }
+
+    expect(revokeSession).toHaveBeenCalledWith('staging');
+    expect(configState.profiles.staging).toBeUndefined();
+    expect(configState.profiles.default).toEqual(oidcProfile);
   });
 });

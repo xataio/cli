@@ -10,7 +10,6 @@ import { DEFAULT_PROFILE } from '~/lib/profile';
 import { isSessionValid, revokeSession } from '~/lib/session';
 
 type Flags = {
-  profile: string;
   force: boolean;
   'api-key'?: string;
   issuer?: string;
@@ -19,7 +18,9 @@ type Flags = {
   'client-secret'?: string;
 };
 
-export async function implementation(this: LocalContext, { profile = DEFAULT_PROFILE, force, ...customFlags }: Flags) {
+export async function implementation(this: LocalContext, { force, ...customFlags }: Flags) {
+  // Logging in names the profile it creates, so an absent --profile means `default`, not the active one.
+  const profile = this.profile ?? DEFAULT_PROFILE;
   const profiles = config?.profiles || {};
   const existing = profiles[profile];
   if (existing && !force) {
@@ -184,12 +185,6 @@ export const AuthLoginCommand = buildCommand({
   },
   parameters: {
     flags: {
-      profile: {
-        kind: 'parsed',
-        parse: String,
-        brief: 'The profile to log in to',
-        default: 'default'
-      },
       force: {
         kind: 'boolean',
         brief: 'Force login even if already logged in, revoking the previous session',

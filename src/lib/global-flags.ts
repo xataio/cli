@@ -5,7 +5,7 @@ import type { LocalContext } from '~/context';
 /** A route map holds commands or more route maps, a union stricli does not export. */
 type RoutingTarget = Command<LocalContext> | RouteMap<LocalContext>;
 
-const profileFlag = {
+export const profileFlag = {
   kind: 'parsed',
   parse: String,
   brief: 'The profile to use',

@@ -85,7 +85,7 @@ describe('auth login --api-key', () => {
     const { context, logs, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'xau_test' });
+      await implementation.call({ ...context, profile: 'default' }, { force: false, 'api-key': 'xau_test' });
     } finally {
       restore();
     }
@@ -105,7 +105,7 @@ describe('auth login --api-key', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'work', force: false, 'api-key': 'xau_work' });
+      await implementation.call({ ...context, profile: 'work' }, { force: false, 'api-key': 'xau_work' });
     } finally {
       restore();
     }
@@ -118,12 +118,14 @@ describe('auth login --api-key', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, {
-        profile: 'default',
-        force: false,
-        'api-key': 'xau_custom',
-        'api-url': 'https://api.staging.xata.tech'
-      });
+      await implementation.call(
+        { ...context, profile: 'default' },
+        {
+          force: false,
+          'api-key': 'xau_custom',
+          'api-url': 'https://api.staging.xata.tech'
+        }
+      );
     } finally {
       restore();
     }
@@ -140,7 +142,7 @@ describe('auth login --api-key', () => {
     const { context, errors, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'bad-key' });
+      await implementation.call({ ...context, profile: 'default' }, { force: false, 'api-key': 'bad-key' });
     } finally {
       restore();
     }
@@ -161,7 +163,7 @@ describe('auth login --api-key', () => {
     const { context, errors, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'bad-key' });
+      await implementation.call({ ...context, profile: 'default' }, { force: false, 'api-key': 'bad-key' });
     } finally {
       restore();
     }
@@ -181,7 +183,7 @@ describe('auth login --api-key', () => {
     const { context, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'bad-key' });
+      await implementation.call({ ...context, profile: 'default' }, { force: true, 'api-key': 'bad-key' });
     } finally {
       restore();
     }
@@ -197,7 +199,7 @@ describe('auth login --api-key', () => {
     const { context, logs, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'xau_new' });
+      await implementation.call({ ...context, profile: 'default' }, { force: false, 'api-key': 'xau_new' });
     } finally {
       restore();
     }
@@ -215,7 +217,7 @@ describe('auth login --api-key', () => {
     const { context, logs, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'xau_new' });
+      await implementation.call({ ...context, profile: 'default' }, { force: false, 'api-key': 'xau_new' });
     } finally {
       restore();
     }
@@ -238,7 +240,7 @@ describe('auth login --api-key', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false, 'api-key': 'xau_new' });
+      await implementation.call({ ...context, profile: 'default' }, { force: false, 'api-key': 'xau_new' });
     } finally {
       restore();
     }
@@ -255,12 +257,14 @@ describe('auth login --api-key', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, {
-        profile: 'default',
-        force: true,
-        'api-key': 'xau_new',
-        'api-url': 'https://api.xata.tech'
-      });
+      await implementation.call(
+        { ...context, profile: 'default' },
+        {
+          force: true,
+          'api-key': 'xau_new',
+          'api-url': 'https://api.xata.tech'
+        }
+      );
     } finally {
       restore();
     }
@@ -270,11 +274,27 @@ describe('auth login --api-key', () => {
     });
   });
 
+  test('logs in to a profile named default when --profile is not passed, whatever profile is active', async () => {
+    configState.activeProfile = 'staging';
+    configState.profiles = { staging: { type: 'apiKey', apiKey: 'existing' } };
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(context, { force: false, 'api-key': 'xau_test' });
+    } finally {
+      restore();
+    }
+
+    expect(configState.activeProfile).toBe('default');
+    expect(configState.profiles.default).toMatchObject({ type: 'apiKey', apiKey: 'xau_test' });
+    expect(configState.profiles.staging).toEqual({ type: 'apiKey', apiKey: 'existing' });
+  });
+
   test('falls through to the device flow when no --api-key is passed', async () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false });
+      await implementation.call({ ...context, profile: 'default' }, { force: false });
     } finally {
       restore();
     }
@@ -312,7 +332,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true });
+      await implementation.call({ ...context, profile: 'default' }, { force: true });
     } finally {
       restore();
     }
@@ -335,7 +355,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, stderr, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true });
+      await implementation.call({ ...context, profile: 'default' }, { force: true });
     } finally {
       restore();
     }
@@ -355,7 +375,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, errors, stderr, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true });
+      await implementation.call({ ...context, profile: 'default' }, { force: true });
     } finally {
       restore();
     }
@@ -383,7 +403,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'xau_new' });
+      await implementation.call({ ...context, profile: 'default' }, { force: true, 'api-key': 'xau_new' });
     } finally {
       restore();
     }
@@ -399,7 +419,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'bad-key' });
+      await implementation.call({ ...context, profile: 'default' }, { force: true, 'api-key': 'bad-key' });
     } finally {
       restore();
     }
@@ -416,7 +436,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, exit, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true, 'api-key': 'xau_new' });
+      await implementation.call({ ...context, profile: 'default' }, { force: true, 'api-key': 'xau_new' });
     } finally {
       restore();
     }
@@ -431,7 +451,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true });
+      await implementation.call({ ...context, profile: 'default' }, { force: true });
     } finally {
       restore();
     }
@@ -445,7 +465,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: false });
+      await implementation.call({ ...context, profile: 'default' }, { force: false });
     } finally {
       restore();
     }
@@ -459,7 +479,7 @@ describe('auth login --force revokes the previous session', () => {
     const { context, restore } = buildContext();
 
     try {
-      await implementation.call(context, { profile: 'default', force: true });
+      await implementation.call({ ...context, profile: 'default' }, { force: true });
     } finally {
       restore();
     }
