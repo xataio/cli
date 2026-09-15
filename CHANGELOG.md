@@ -1,5 +1,36 @@
 # xata-cli
 
+## 1.11.1
+
+### Patch Changes
+
+- [#3156](https://github.com/xataio/frontend/pull/3156) [`469f180`](https://github.com/xataio/frontend/commit/469f180d49a84892b037ac7d74ad89f2b9cfa6fe) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Say in `--json`'s help that not every command answers it
+
+  Every command accepts `--json`, and its help said `Output in JSON format. Defaults to on when an AI
+agent runs the command.` everywhere, including on the commands that never print JSON, such as
+  `auth status`, `branch url`, `branch get` and the `roll`, `clone` and `stream` commands. There the
+  flag is accepted and ignored, so the help promised a document the command does not produce.
+
+  The help now says the flag applies when the command supports it. Nothing else changes: the flag is
+  still accepted everywhere, and a command that prints JSON behaves as before.
+
+- [#3153](https://github.com/xataio/frontend/pull/3153) [`9e39278`](https://github.com/xataio/frontend/commit/9e39278c4a7f1ca774da235483af695fa189273a) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Use the active profile in `auth access-token`, `auth refresh-token` and `auth logout`
+
+  `--profile` is a global flag, but the `auth` commands declared their own, and three of them
+  defaulted it to `default`, which shadowed the global one and took `default` literally. Without a
+  profile of that name, a user who had switched to another profile got
+  `Profile "default" does not exist.` from the token commands, and `auth logout` answered
+  `You are already logged out.` while the active session stayed in place. With one,
+  `auth refresh-token` printed the refresh token of `default` rather than of the active profile, and
+  `auth logout` logged out of `default` instead.
+
+  No command declares `--profile` any more: the context carries it, the way it carries `--json` and
+  `--debug`, so an absent flag means the active profile everywhere, and `--profile` still picks
+  another one. `auth login` still logs in to a profile named `default` when none is given.
+
+- Updated dependencies [[`15d9d4d`](https://github.com/xataio/frontend/commit/15d9d4d0483ff71f9c377f562d53099980bff785)]:
+  - @xata.io/utils@0.5.1
+
 ## 1.11.0
 
 ### Minor Changes
