@@ -45,8 +45,8 @@ importers:
         specifier: 0.0.2
         version: 0.0.2
       '@xata.io/utils':
-        specifier: 0.5.1
-        version: 0.5.1
+        specifier: 0.5.2
+        version: 0.5.2
       chalk:
         specifier: 6.0.0
         version: 6.0.0
@@ -127,8 +127,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@xata.io/test-utils':
-        specifier: 0.0.22
-        version: 0.0.22
+        specifier: 0.0.23
+        version: 0.0.23
 
 packages:
 
@@ -339,14 +339,14 @@ packages:
   '@xata.io/sql@0.2.12':
     resolution: {integrity: sha512-85McX/KI7fJyLriW8EwXjeCiIdRAYvZMstRdsw6RwsswZY4FjpbVlaxqhJJQc7vX2LRMhUtmwTWi7JvK5IBlGQ==}
 
-  '@xata.io/test-utils@0.0.22':
-    resolution: {integrity: sha512-0oboXo8r76+6AaOIMoYHu30e8vnQdWR7Xpm/LrAo+BubpTFv9qNWJ35UkTXHRntuTFpIqKnfUi9Hp00hQFvpPQ==}
+  '@xata.io/test-utils@0.0.23':
+    resolution: {integrity: sha512-CjyzxwjueXNgvuAPRG1w/dtKK6SWT1EiTQ7bFKeJuvZR8+aWeFBL243/Oy/aWD09GX8HMsBlxIm3VyS/h5HjWg==}
 
   '@xata.io/tsconfig@0.0.2':
     resolution: {integrity: sha512-7uY1tUBZbA1g7PTSrJ+DWEo1qOxIpN3DU1W94ttWL7Ns76+DmL1JVYtXOw6i9Ta7SYeEii3pxQZnaOQRLe/EAw==}
 
-  '@xata.io/utils@0.5.1':
-    resolution: {integrity: sha512-jaaQM5TLx3ijqbVsLDC5xIWZmJ4SbgNN73aXDGAEtM9TJ4vRQJ0Sx1xUeAfmsH7LZ67TDJ2vb076SFuud2/FWw==}
+  '@xata.io/utils@0.5.2':
+    resolution: {integrity: sha512-XHNGHZpXcEfnh1JE1rR3cMSjct7l7HaToqlofBhx+z8gHFO+0m9uYFPO02hg48J1kug6OUAJf04RG2dAFxWidw==}
 
   ai@7.0.93:
     resolution: {integrity: sha512-CJss6zb9mlltk/mCr8qom20NBnqEQxVawkqwtT62tCwsxilZpXfHNRMRwcS3XRpzdP1kEluVuDBUayYWEEd95g==}
@@ -1285,17 +1285,17 @@ snapshots:
       qs: 6.16.0
       zod: 4.6.2
 
-  '@xata.io/test-utils@0.0.22':
+  '@xata.io/test-utils@0.0.23':
     dependencies:
       '@neondatabase/serverless': 1.1.0
       '@xata.io/api': 0.1.16
       '@xata.io/lang': 0.0.5
       '@xata.io/sql': 0.2.12
-      '@xata.io/utils': 0.5.1
+      '@xata.io/utils': 0.5.2
 
   '@xata.io/tsconfig@0.0.2': {}
 
-  '@xata.io/utils@0.5.1':
+  '@xata.io/utils@0.5.2':
     dependencies:
       '@xata.io/api': 0.1.16
       '@xata.io/lang': 0.0.5
