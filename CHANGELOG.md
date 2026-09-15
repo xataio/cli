@@ -1,5 +1,12 @@
 # xata-cli
 
+## 1.11.2
+
+### Patch Changes
+
+- Updated dependencies [[`838c411`](https://github.com/xataio/frontend/commit/838c4113b2c90dd44738eddcdb3e04f1e54bfc0c)]:
+  - @xata.io/utils@0.5.2
+
 ## 1.11.1
 
 ### Patch Changes
