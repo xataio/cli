@@ -23,7 +23,9 @@ const booleanFlag = (brief: string) =>
   }) as const;
 
 const debugFlag = booleanFlag('Print where each resolved value came from');
-const jsonFlag = booleanFlag('Output in JSON format. Defaults to on when an AI agent runs the command.');
+const jsonFlag = booleanFlag(
+  'Output in JSON format when the command supports it. Defaults to on when an AI agent runs the command.'
+);
 
 function isRouteMap(target: RoutingTarget): target is RouteMap<LocalContext> {
   return 'getAllEntries' in target;
