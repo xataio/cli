@@ -9,10 +9,10 @@ const branches = [
   { id: 'cccccccccccccccccccccccccc', name: 'feature', parentID: 'bbbbbbbbbbbbbbbbbbbbbbbbbb' }
 ];
 
-function buildContext() {
+function buildContext(list: { id: string; name: string; parentID: string | null }[] = branches) {
   const stdout: string[] = [];
   const context = {
-    api: { branches: { listBranches: mock(async () => ({ branches })) } },
+    api: { branches: { listBranches: mock(async () => ({ branches: list })) } },
     process: { stdout: { write: (value: string) => stdout.push(value) }, stderr: { write: () => {} } },
     isInteractive: false,
     isAgent: false,
@@ -59,5 +59,20 @@ describe('branch tree', () => {
     expect(output).toContain('dev (current)');
     expect(output).toContain('feature');
     expect(output).not.toContain('"children"');
+  });
+
+  test('keeps a branch whose parent is not listed, as a root of its own', async () => {
+    const orphan = { id: 'dddddddddddddddddddddddddd', name: 'orphan', parentID: 'zzzzzzzzzzzzzzzzzzzzzzzzzz' };
+    const json = buildContext([...branches, orphan]);
+    const human = buildContext([...branches, orphan]);
+
+    await implementation.call({ ...json.context, outputJson: true }, { 'show-id': false });
+    await implementation.call({ ...human.context, outputJson: false }, { 'show-id': false });
+
+    const roots = JSON.parse(json.stdout.join(''));
+    expect(roots.map((root: { name: string }) => root.name)).toEqual(['main', 'orphan']);
+    expect(roots[1].children).toEqual([]);
+    expect(roots[0].children[0].children[0].name).toBe('feature');
+    expect(human.stdout.join('')).toContain('orphan');
   });
 });

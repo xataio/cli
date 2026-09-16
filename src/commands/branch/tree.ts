@@ -30,8 +30,10 @@ function buildBranchTree(branches: Types.BranchListMetadata[], currentBranch?: T
     if (!branchNode) {
       throw new Error(`invariant: branch node not found for branch ${branch.id}`);
     }
-    if (branch.parentID) {
-      branchMap[branch.parentID]?.children.push(branchNode);
+    // A branch whose parent is not listed, such as one forked from a deleted branch, is a root here.
+    const parentNode = branch.parentID ? branchMap[branch.parentID] : undefined;
+    if (parentNode) {
+      parentNode.children.push(branchNode);
     } else {
       rootBranches.push(branchNode);
     }

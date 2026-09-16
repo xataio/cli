@@ -1,0 +1,18 @@
+minimumReleaseAge: 4320
+minimumReleaseAgeExclude:
+  - turbo
+  - turbo-*
+  - "@turbo/*"
+  - typescript
+  - react
+  - react-dom
+  - next
+  - "@next/*"
+  - ai
+  - "@ai-sdk/*"
+  - "@vercel/*"
+  - better-auth
+  - "@better-auth/*"
+  - "@better-fetch/fetch"
+  - better-call
+  - "@xata.io/*"
