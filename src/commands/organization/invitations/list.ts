@@ -29,11 +29,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
   this.printTable(
     this,
     invitations,
-    ['invitation_id', 'email', 'name', 'status', 'expires_at'],
+    ['invitation_id', 'email', 'name', 'role', 'status', 'expires_at'],
     invitations.map((inv) => [
       inv.id,
       inv.email,
       [inv.first_name, inv.last_name].filter(Boolean).join(' ') || '-',
+      inv.role,
       inv.status,
       new Date(inv.expires_at).toISOString()
     ])

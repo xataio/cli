@@ -2,6 +2,7 @@ import { buildRouteMap } from '@stricli/core';
 import { OrganizationMembersInviteCommand } from './invite';
 import { OrganizationMembersListCommand } from './list';
 import { OrganizationMembersRemoveCommand } from './remove';
+import { OrganizationMembersSetRoleCommand } from './set-role';
 
 export const OrganizationMembersRoute = buildRouteMap({
   docs: {
@@ -10,7 +11,8 @@ export const OrganizationMembersRoute = buildRouteMap({
   routes: {
     list: OrganizationMembersListCommand,
     invite: OrganizationMembersInviteCommand,
-    remove: OrganizationMembersRemoveCommand
+    remove: OrganizationMembersRemoveCommand,
+    'set-role': OrganizationMembersSetRoleCommand
   },
   aliases: {
     ls: 'list',

@@ -15,8 +15,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
   this.printTable(
     this,
     members,
-    ['member_id', 'email', 'name'],
-    members.map((member) => [member.id, member.email, member.name || '-'])
+    ['member_id', 'email', 'name', 'role'],
+    members.map((member) => [member.id, member.email, member.name || '-', member.role])
   );
 }
 

@@ -51,6 +51,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       ['invitation_id', invitation.id],
       ['email', invitation.email],
       ['name', name],
+      ['role', invitation.role],
       ['status', status],
       ['created_at', new Date(invitation.created_at).toLocaleString()],
       ['expires_at', new Date(invitation.expires_at).toLocaleString()]
