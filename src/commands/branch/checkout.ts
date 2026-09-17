@@ -26,17 +26,16 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     branchName
   });
 
-  if (targetBranchId === currentBranchId) {
-    const alreadyOn = branchName ?? targetBranchId;
-    printCustom(this, { id: targetBranchId, name: branchName ?? null }, () => {
-      this.process.stdout.write(`Already on branch ${alreadyOn}\n`);
-    });
-    this.process.exit(0);
-  }
-
   const targetBranch = await this.api.branches.describeBranch({
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: targetBranchId }
   });
+
+  if (targetBranch.id === currentBranchId) {
+    printCustom(this, { id: targetBranch.id, name: targetBranch.name }, () => {
+      this.process.stdout.write(`Already on branch ${targetBranch.name}\n`);
+    });
+    this.process.exit(0);
+  }
 
   const database = await this.getDatabase(flags);
   await updateProjectConfig({ organizationId, projectId });
