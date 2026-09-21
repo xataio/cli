@@ -1,5 +1,69 @@
 # xata-cli
 
+## 1.12.0
+
+### Minor Changes
+
+- [#3095](https://github.com/xataio/frontend/pull/3095) [`8bcfade`](https://github.com/xataio/frontend/commit/8bcfade54e3747998dbc42b9b45dd8473048dcac) Thanks [@SferaDev](https://github.com/SferaDev)! - Manage organization member roles: `xata organization members set-role` changes a member's role, `--role` on `invitations create` and `members invite` picks the role an invitee joins with, and `members list`, `invitations list` and `invitations get` show roles. Role definitions are shared through `@xata.io/utils`
+
+### Patch Changes
+
+- [#3155](https://github.com/xataio/frontend/pull/3155) [`248c7bc`](https://github.com/xataio/frontend/commit/248c7bc0852ed38806cc31261085c015876bac05) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Keep branches whose parent is not listed in `branch tree`
+
+  `branch tree` attached every branch with a `parentID` to its parent, and silently dropped the ones
+  whose parent was not in the listing, such as a branch forked from one that has since been deleted.
+  The tree then disagreed with `branch list`, in the human output and in `--json` alike.
+
+  Such a branch is drawn as a root of its own now.
+
+- [#3189](https://github.com/xataio/frontend/pull/3189) [`ba008b4`](https://github.com/xataio/frontend/commit/ba008b49ed98e5e46c0fa632aa4988703023f113) Thanks [@SferaDev](https://github.com/SferaDev)! - [Repo]: Move the shared organization roles into @xata.io/utils ([#3189](https://github.com/xataio/frontend/issues/3189))
+
+- [#3154](https://github.com/xataio/frontend/pull/3154) [`158b96b`](https://github.com/xataio/frontend/commit/158b96b3cff0b467dedea5ef88cc6cd4fa3c1f63) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: End `get` output with a newline and tidy two help screens
+
+  `branch get`, `organization get` and `project get` wrote their value, JSON or field list without
+  a trailing newline, so the shell prompt landed on the same line and `>>` into a file ran values
+  together. They end with one now; `$(xata branch get name)` strips it as before.
+
+  Two help screens showed internals: `project set` and `branch set` listed the field argument as
+  `[default = .catalog]`, the placeholder they use to print the field list, and `branch wait-ready`
+  offered a camelCase `--noWake`. The field is shown as optional, and `--wake` stands alone. Running
+  the commands behaves as it did.
+
+- [#3138](https://github.com/xataio/frontend/pull/3138) [`5111593`](https://github.com/xataio/frontend/commit/51115931e5d1182bdea655a51a4fa6a5725c1221) Thanks [@SferaDev](https://github.com/SferaDev)! - bump pgstream to v1.5.0 and regenerate the pgstream transformer definitions from the v1.5.0 tag
+
+- [#3151](https://github.com/xataio/frontend/pull/3151) [`5fddeb7`](https://github.com/xataio/frontend/commit/5fddeb71231ae6a85390c549fe9720541d260d1c) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Name the branch when `branch checkout` finds it already checked out
+
+  `xata branch checkout <branch> --json` on the branch already checked out reported whatever was typed
+  as its `name`, so checking it out by ID answered `{ "id": "<id>", "name": "<id>" }`, and checking
+  it out through `--branch` or the prompt answered `"name": null`. The human output said
+  `Already on branch <id>` in the same cases.
+
+  Both now name the branch itself, read from the API, however it was given.
+
+- [#3199](https://github.com/xataio/frontend/pull/3199) [`993ca0e`](https://github.com/xataio/frontend/commit/993ca0e7f6a88ab726e83a89ea26ae8e0bcde206) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Print one JSON document from `branch create --json` in a project folder
+
+  In a folder linked to a project, `branch create` checks the new branch out, and that checkout
+  printed its own `{ id, name }` after the created branch. With `--json` this put two documents on
+  stdout, which broke `jq` and anything else expecting one. The checkout output is now left out in
+  JSON mode; the human output is unchanged.
+
+- [#3159](https://github.com/xataio/frontend/pull/3159) [`0e1dd6b`](https://github.com/xataio/frontend/commit/0e1dd6bf255c3f3decc8ea630118bcc2344e8b65) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Forward the pgroll and pgstream flags the `roll`, `clone` and `stream` commands list
+
+  Most of these flags were accepted and silently dropped. They now reach the binary, and switches are
+  booleans: `--json`, `--json=true` and `--json=false` work, `--json true` no longer does.
+  pgstream's `--profile` is exposed as `--debug-profile`. The pgstream flags `clone start` and
+  `clone stream` set from the branch, such as `--postgres-url`, `--target-url` and `--snapshot-tables`,
+  are no longer listed and are now rejected.
+
+- [#3192](https://github.com/xataio/frontend/pull/3192) [`bd6e471`](https://github.com/xataio/frontend/commit/bd6e4713c8aa26f74428f4ae612c39f0de13efc6) Thanks [@divyenduz](https://github.com/divyenduz)! - add login code as url parameter to the printed url
+- Updated dependencies [[`e36d3a8`](https://github.com/xataio/frontend/commit/e36d3a84d5c921d1f425d0750330bff237391e08), [`ba008b4`](https://github.com/xataio/frontend/commit/ba008b49ed98e5e46c0fa632aa4988703023f113), [`8bcfade`](https://github.com/xataio/frontend/commit/8bcfade54e3747998dbc42b9b45dd8473048dcac), [`5111593`](https://github.com/xataio/frontend/commit/51115931e5d1182bdea655a51a4fa6a5725c1221), [`bd6e471`](https://github.com/xataio/frontend/commit/bd6e4713c8aa26f74428f4ae612c39f0de13efc6)]:
+  - @xata.io/api@0.1.17
+  - @xata.io/utils@0.6.0
+  - @xata.io/pgstream@0.2.4
+  - @xata.io/sql@0.2.13
+  - @xata.io/ai@0.1.2
+  - @xata.io/config@0.0.18
+
 ## 1.11.2
 
 ### Patch Changes
