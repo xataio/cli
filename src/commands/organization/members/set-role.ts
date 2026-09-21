@@ -4,7 +4,7 @@ import { ORGANIZATION_ROLE_IDS, organizationRoleLabel } from '@xata.io/utils';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { exitWithErrorDetails, getErrorMessage, printCustom } from '~/lib/cli-utils';
-import { promptRole } from '~/lib/organization-roles';
+import { ensureRolesEnabled, promptRole } from '~/lib/organization-roles';
 
 type Flags = {
   organization?: string;
@@ -16,8 +16,10 @@ export async function implementation(this: LocalContext, flags: Flags) {
   const organizationId = await this.getOrganization(this, flags, {});
   const details = { organization: organizationId };
 
+  await ensureRolesEnabled(this, organizationId);
+
   const { members } = await this.api.organizations.listOrganizationMembers({
-    pathParams: { organizationID: organizationId! }
+    pathParams: { organizationID: organizationId }
   });
 
   if (members.length === 0) {
@@ -53,7 +55,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   try {
     await this.api.organizations.setOrganizationMemberRole({
-      pathParams: { organizationID: organizationId!, userID: member.id },
+      pathParams: { organizationID: organizationId, userID: member.id },
       body: { role }
     });
 

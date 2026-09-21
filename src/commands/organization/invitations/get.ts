@@ -1,4 +1,5 @@
 import { buildCommand } from '@stricli/core';
+import { organizationRoleLabel } from '@xata.io/utils';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { exitWithErrorDetails, getErrorMessage } from '~/lib/cli-utils';
@@ -51,7 +52,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       ['invitation_id', invitation.id],
       ['email', invitation.email],
       ['name', name],
-      ['role', invitation.role],
+      ['role', organizationRoleLabel(invitation.role)],
       ['status', status],
       ['created_at', new Date(invitation.created_at).toLocaleString()],
       ['expires_at', new Date(invitation.expires_at).toLocaleString()]

@@ -26,8 +26,9 @@
 
   Two help screens showed internals: `project set` and `branch set` listed the field argument as
   `[default = .catalog]`, the placeholder they use to print the field list, and `branch wait-ready`
-  offered a camelCase `--noWake`. The field is shown as optional, and `--wake` stands alone. Running
-  the commands behaves as it did.
+  offered a camelCase `--noWake`. The field is shown as optional, and `project set` and `branch set`
+  behave as they did. `--noWake` is removed and now rejected; leaving out `--wake` already skips
+  waking the branch.
 
 - [#3138](https://github.com/xataio/frontend/pull/3138) [`5111593`](https://github.com/xataio/frontend/commit/51115931e5d1182bdea655a51a4fa6a5725c1221) Thanks [@SferaDev](https://github.com/SferaDev)! - bump pgstream to v1.5.0 and regenerate the pgstream transformer definitions from the v1.5.0 tag
 
@@ -53,7 +54,8 @@
   booleans: `--json`, `--json=true` and `--json=false` work, `--json true` no longer does.
   pgstream's `--profile` is exposed as `--debug-profile`. The pgstream flags `clone start` and
   `clone stream` set from the branch, such as `--postgres-url`, `--target-url` and `--snapshot-tables`,
-  are no longer listed and are now rejected.
+  are no longer listed and are now rejected. So are `--reset`, `--tables` and `--target`, which were
+  dropped before; the clone already cleans the target.
 
 - [#3192](https://github.com/xataio/frontend/pull/3192) [`bd6e471`](https://github.com/xataio/frontend/commit/bd6e4713c8aa26f74428f4ae612c39f0de13efc6) Thanks [@divyenduz](https://github.com/divyenduz)! - add login code as url parameter to the printed url
 - Updated dependencies [[`e36d3a8`](https://github.com/xataio/frontend/commit/e36d3a84d5c921d1f425d0750330bff237391e08), [`ba008b4`](https://github.com/xataio/frontend/commit/ba008b49ed98e5e46c0fa632aa4988703023f113), [`8bcfade`](https://github.com/xataio/frontend/commit/8bcfade54e3747998dbc42b9b45dd8473048dcac), [`5111593`](https://github.com/xataio/frontend/commit/51115931e5d1182bdea655a51a4fa6a5725c1221), [`bd6e471`](https://github.com/xataio/frontend/commit/bd6e4713c8aa26f74428f4ae612c39f0de13efc6)]:

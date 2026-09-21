@@ -1,4 +1,5 @@
 import { buildCommand } from '@stricli/core';
+import { organizationRoleLabel } from '@xata.io/utils';
 import type { LocalContext } from '~/context';
 
 type Flags = {
@@ -16,7 +17,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     this,
     members,
     ['member_id', 'email', 'name', 'role'],
-    members.map((member) => [member.id, member.email, member.name || '-', member.role])
+    members.map((member) => [member.id, member.email, member.name || '-', organizationRoleLabel(member.role)])
   );
 }
 

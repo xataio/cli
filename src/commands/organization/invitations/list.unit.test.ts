@@ -38,14 +38,15 @@ function buildContext({ outputJson }: { outputJson: boolean }) {
 }
 
 describe('organization invitations list', () => {
-  test('shows each invitation role in the table', async () => {
+  test('shows each invitation role label in the table', async () => {
     const { context, stdout } = buildContext({ outputJson: false });
 
     await implementation.call(context, {});
 
     const output = stripAnsi(stdout.join(''));
     expect(output).toContain('role');
-    expect(output).toContain('editor');
+    expect(output).toContain('Editor');
+    expect(output).not.toContain('editor');
   });
 
   test('includes the role in JSON', async () => {

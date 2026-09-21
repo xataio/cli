@@ -39,14 +39,15 @@ function buildContext({ outputJson }: { outputJson: boolean }) {
 }
 
 describe('organization invitations get', () => {
-  test('shows the invitation role in the details', async () => {
+  test('shows the invitation role label in the details', async () => {
     const { context, stdout } = buildContext({ outputJson: false });
 
     await implementation.call(context, { 'invitation-id': 'inv_1' });
 
     const output = stripAnsi(stdout.join(''));
     expect(output).toContain('role');
-    expect(output).toContain('editor');
+    expect(output).toContain('Editor');
+    expect(output).not.toContain('editor');
   });
 
   test('includes the role in JSON', async () => {

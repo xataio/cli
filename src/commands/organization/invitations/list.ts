@@ -1,4 +1,5 @@
 import { buildCommand } from '@stricli/core';
+import { organizationRoleLabel } from '@xata.io/utils';
 import type { LocalContext } from '~/context';
 
 type Flags = {
@@ -34,7 +35,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       inv.id,
       inv.email,
       [inv.first_name, inv.last_name].filter(Boolean).join(' ') || '-',
-      inv.role,
+      organizationRoleLabel(inv.role),
       inv.status,
       new Date(inv.expires_at).toISOString()
     ])

@@ -15,11 +15,11 @@ type Flags = {
 export async function implementation(this: LocalContext, flags: Flags) {
   const organizationId = await this.getOrganization(this, flags, {});
   const email = await this.enquirer.inputPrompt(this.isInteractive, 'Email address to invite', { flag: flags.email });
-  const role = await resolveInvitationRole(this, flags.role);
+  const role = await resolveInvitationRole(this, organizationId, flags.role);
 
   try {
     await this.api.organizations.createOrganizationInvitation({
-      pathParams: { organizationID: organizationId! },
+      pathParams: { organizationID: organizationId },
       body: role ? { email, role } : { email }
     });
 
