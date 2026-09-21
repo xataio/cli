@@ -1,5 +1,5 @@
 import type { Types } from '@xata.io/api';
-import { DEFAULT_INVITATION_ROLE, ORGANIZATION_ROLES } from '@xata.io/roles';
+import { DEFAULT_INVITATION_ROLE, ORGANIZATION_ROLES } from '@xata.io/utils';
 import type { LocalContext } from '~/context';
 
 export async function promptRole(

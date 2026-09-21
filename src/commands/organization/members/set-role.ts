@@ -1,6 +1,6 @@
 import { buildCommand } from '@stricli/core';
 import type { Types } from '@xata.io/api';
-import { ORGANIZATION_ROLE_IDS, organizationRoleLabel } from '@xata.io/roles';
+import { ORGANIZATION_ROLE_IDS, organizationRoleLabel } from '@xata.io/utils';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { exitWithErrorDetails, getErrorMessage, printCustom } from '~/lib/cli-utils';
