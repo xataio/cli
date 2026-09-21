@@ -32,8 +32,8 @@ type Field =
   | 'postgres-version';
 type FieldArg = Field | '.catalog';
 
-export async function implementation(this: LocalContext, flags: Flags, fieldArg: string, value?: string) {
-  const field = fieldArg as FieldArg;
+export async function implementation(this: LocalContext, flags: Flags, fieldArg?: string, value?: string) {
+  const field = (fieldArg ?? '.catalog') as FieldArg;
   const organizationId = await this.getOrganization(this, flags, {});
   const projectId = await this.getProject(this, flags, { organizationId });
   const branchId = await this.getBranch(this, flags, { organizationId, projectId });
@@ -354,7 +354,7 @@ export const BranchSetCommand = buildCommand({
             'The field to set: name, description, replicas, instance-type, storage, hibernate, scale-to-zero, inactivity-period or postgres-version',
           parse: String,
           placeholder: 'field',
-          default: '.catalog'
+          optional: true
         },
         {
           brief: 'The value to set. Prompted for when omitted in an interactive terminal',

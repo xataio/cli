@@ -19,8 +19,8 @@ type Field =
   | 'inactivity-period-child';
 type FieldArg = Field | '.catalog';
 
-export async function implementation(this: LocalContext, flags: Flags, fieldArg: string, value?: string) {
-  const field = fieldArg as FieldArg;
+export async function implementation(this: LocalContext, flags: Flags, fieldArg?: string, value?: string) {
+  const field = (fieldArg ?? '.catalog') as FieldArg;
 
   const organizationId = await this.getOrganization(this, flags, {});
   const projectId = await this.getProject(this, flags, { organizationId });
@@ -38,10 +38,10 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg:
     this.process.stdout.write(`Usage ${chalk.bold.italic(`${CLI_NAME} project set <field> <value>`)}\n\n`);
     this.process.stdout.write(`The following fields are available:\n\n`);
     this.process.stdout.write(
-      validFields
+      `${validFields
         .filter((field) => !excludedFields.includes(field))
         .map((field) => `- ${field}`)
-        .join('\n')
+        .join('\n')}\n`
     );
     return;
   }
@@ -243,7 +243,7 @@ export const ProjectSetCommand = buildCommand({
           brief: 'The field to set',
           parse: String,
           placeholder: 'field',
-          default: '.catalog'
+          optional: true
         },
         {
           brief: 'The value to set',

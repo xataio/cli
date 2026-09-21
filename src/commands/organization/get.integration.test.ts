@@ -39,6 +39,6 @@ describe('organization get command tests', async () => {
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    expect(output).toStrictEqual(TEST_XATA_ORG);
+    expect(output).toStrictEqual(`${TEST_XATA_ORG}\n`);
   });
 });

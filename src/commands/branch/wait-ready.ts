@@ -101,7 +101,8 @@ export const BranchWaitReadyCommand = buildCommand({
       wake: {
         kind: 'boolean',
         brief: 'Wake up the branch if it is hibernated',
-        optional: true
+        optional: true,
+        withNegated: false
       }
     },
     positional: {

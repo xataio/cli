@@ -54,7 +54,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...args: 
   if (field === '.catalog') {
     this.process.stdout.write(`Usage ${chalk.bold.italic(`${CLI_NAME} project get <field>`)}\n\n`);
     this.process.stdout.write(`The following fields are available:\n\n`);
-    this.process.stdout.write(possibleFields.map((field) => `- ${field}`).join('\n'));
+    this.process.stdout.write(`${possibleFields.map((field) => `- ${field}`).join('\n')}\n`);
     return;
   }
 
@@ -65,11 +65,11 @@ export async function implementation(this: LocalContext, flags: Flags, ...args: 
 
   const value = branch[field as keyof typeof branch];
   if (!value) {
-    this.process.stdout.write('');
+    this.process.stdout.write('\n');
   } else if (typeof value === 'object') {
-    this.process.stdout.write(JSON.stringify(value, null, 2));
+    this.process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
   } else {
-    this.process.stdout.write(value);
+    this.process.stdout.write(`${value}\n`);
   }
 }
 

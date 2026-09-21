@@ -44,6 +44,6 @@ describe('project get command tests', () => {
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    expect(output).toStrictEqual(project.name);
+    expect(output).toStrictEqual(`${project.name}\n`);
   });
 });

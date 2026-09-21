@@ -76,7 +76,7 @@ describe('branch get command tests', () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe(branch.name);
+    expect(output).toBe(`${branch.name}\n`);
   });
 
   test('get branch id field', async () => {
@@ -98,7 +98,7 @@ describe('branch get command tests', () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe(branch.id);
+    expect(output).toBe(`${branch.id}\n`);
   });
 
   test('get object field returns JSON', async () => {
@@ -134,7 +134,7 @@ describe('branch get command tests', () => {
     });
   });
 
-  test('get empty field returns empty string', async () => {
+  test('get empty field returns an empty line', async () => {
     const context = await getTestContext();
     const stdoutWriteSpy = spyOn(context.process.stdout, 'write');
     const _exitSpy = spyOn(context.process, 'exit');
@@ -151,7 +151,7 @@ describe('branch get command tests', () => {
 
     expect(stdoutWriteSpy).toHaveBeenCalled();
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
-    expect(output).toBe('');
+    expect(output).toBe('\n');
   });
 
   test('get field with branch name argument - two args pattern', async () => {
@@ -174,7 +174,7 @@ describe('branch get command tests', () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe(branch.name);
+    expect(output).toBe(`${branch.name}\n`);
   });
 
   test('get field with branch name argument - different branch', async () => {
@@ -197,7 +197,7 @@ describe('branch get command tests', () => {
     const output = getNthArgOfNthCall(stdoutWriteSpy, 0, 0);
     expect(typeof output).toBe('string');
     expect(output.length).toBeGreaterThan(0);
-    expect(output).toBe(branch.id);
+    expect(output).toBe(`${branch.id}\n`);
   });
 
   test('no arguments shows catalog', async () => {
