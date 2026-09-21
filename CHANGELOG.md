@@ -1,5 +1,17 @@
 # xata-cli
 
+## 1.12.1
+
+### Patch Changes
+
+- [#3198](https://github.com/xataio/frontend/pull/3198) [`9285266`](https://github.com/xataio/frontend/commit/9285266d5e9d22b8351afa81ab81d4246f1aa7d6) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Skip the role prompt and reject `--role` when roles are not enabled for an organization
+
+  `invitations create` and `members invite` no longer ask for a role, or report one in `--json`, when
+  the organization has roles disabled, since the server records every invitee as an admin there.
+  Passing `--role` in that case fails before anything is sent, and `members set-role` fails before
+  asking for a member. `members list`, `invitations list` and `invitations get` show role names such
+  as `Admin` instead of raw ids; `--json` output keeps the ids.
+
 ## 1.12.0
 
 ### Minor Changes
