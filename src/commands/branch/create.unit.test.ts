@@ -4,12 +4,19 @@ import type { LocalContext } from '~/context';
 import { branchDescriptionMaxLength } from '@xata.io/utils';
 import { printDetails, printTable } from '~/lib/cli-utils';
 
+let inProjectFolder = false;
+
 mock.module('~/lib/project-config', () => {
   return {
     hasProjectContext: () => {
-      return false;
-    }
+      return inProjectFolder;
+    },
+    updateProjectConfig: async () => {}
   };
+});
+
+mock.module('~/lib/branch-config', () => {
+  return { updateBranchConfig: async () => {} };
 });
 
 const { implementation, getParentBranchId, promptForParentBranchId } = await import('./create');
@@ -136,6 +143,7 @@ function buildContext({
 
   return {
     context,
+    stdout,
     stderr,
     createBranch,
     listBranches,
@@ -534,5 +542,40 @@ describe('branch create storage', () => {
     await implementation.call(context, { ...BASE_FLAGS, 'no-parent': true, ...SIZING_FLAGS, storage: '20' });
 
     expect(createBranch.mock.calls[0]?.[0].body).toMatchObject({ configuration: { storage: 20 } });
+  });
+});
+
+describe('branch create output in a project folder', () => {
+  async function createInProjectFolder(outputJson: boolean) {
+    const built = buildContext();
+    Object.assign(built.context, {
+      outputJson,
+      getCheckedOutBranch: mock(async () => PARENT_ID),
+      getBranch: mock(async () => 'new-branch-id'),
+      getDatabase: mock(async () => 'xata')
+    });
+    built.describeBranch.mockImplementation(async ({ pathParams }) => ({ id: pathParams.branchID, name: 'my-branch' }));
+    inProjectFolder = true;
+    try {
+      await implementation.call(built.context, { ...BASE_FLAGS, 'parent-branch': PARENT_ID });
+    } finally {
+      inProjectFolder = false;
+    }
+    return built;
+  }
+
+  test('writes a single JSON document with --json', async () => {
+    const { stdout } = await createInProjectFolder(true);
+
+    expect(stdout).toHaveLength(1);
+    expect(JSON.parse(stdout[0] ?? '')).toMatchObject({ id: 'new-branch-id', name: 'my-branch', parentID: PARENT_ID });
+  });
+
+  test('still reports the checkout in human output', async () => {
+    const { stdout } = await createInProjectFolder(false);
+
+    expect(stdout).toHaveLength(2);
+    expect(stdout[0]).toContain('new-branch-id');
+    expect(stdout[1]).toContain('my-branch');
   });
 });

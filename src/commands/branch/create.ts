@@ -3,7 +3,8 @@ import { branchDescriptionError, instanceTypeUnavailableMessage, monthlyComputeC
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
-import { hasProjectContext } from '~/lib/project-config';
+import { hasProjectContext, updateProjectConfig } from '~/lib/project-config';
+import { updateBranchConfig } from '~/lib/branch-config';
 import { getBranchLimits, replicaChoicesFor, storageValidationError } from '~/lib/branch-limits';
 import { CLI_NAME, DEFAULT_API_BASE_URL } from '~/lib/constants';
 
@@ -13,7 +14,6 @@ import { createChildBranch, createRootBranch } from '~/lib/branch-actions';
 import type { BranchLookupOptions, ProjectOptions } from '~/lib/cli-utils';
 import { exitWithError, exitWithUnknownBranch, groupAndSortRegions, resolveBranchIdOrName } from '~/lib/cli-utils';
 import { config } from '~/lib/config';
-import { implementation as checkout } from './checkout';
 import { waitForBranchReady } from './wait-ready';
 
 // Storage is part of the cluster configuration a root branch is built from, and a fork inherits
@@ -405,7 +405,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
   ]);
 
   if (hasProjectContext()) {
-    await checkout.call(this, { ...flags, branch: '' }, branch.name);
+    const database = await this.getDatabase({});
+    await updateProjectConfig({ organizationId, projectId });
+    await updateBranchConfig({ branchId: branch.id, branchName: branch.name, databaseName: database });
+    if (!this.outputJson) {
+      this.printDetails(this, { id: branch.id, name: branch.name }, [['branch', branch.name]]);
+    }
 
     this.process.stderr.write(
       `Please run ${chalk.bold(`${CLI_NAME} branch wait-ready`)} to wait for this branch to be ready.\n`
