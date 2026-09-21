@@ -64,7 +64,8 @@ export async function implementation(this: LocalContext, { force, ...customFlags
     for await (const step of XataApi.deviceLogin(client)) {
       match(step)
         .with({ type: 'prompt' }, (step) => {
-          console.log(`Visit ${chalk.bold.underline(step.verifyUrl)} and enter the code: ${chalk.bold(step.userCode)}`);
+          console.log(`Open ${chalk.bold.underline(step.verifyUrl)} to authorize this CLI.`);
+          console.log(`Code: ${chalk.bold(step.userCode)} — enter it if prompted.`);
           console.log(
             chalk.gray(
               `Using profile ${chalk.bold(profile)}. To login with another profile use --profile <profile> flag.`
