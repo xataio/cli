@@ -4,11 +4,11 @@ import { checkBranchIsReachable } from '~/lib/binary/utils';
 import type { ContextFlags } from '~/lib/cli-utils';
 import { type CommandDetails, runPgRoll } from '~/lib/pgroll/commands';
 import {
-  convertGlobalFlagsToRuntimeFlags,
   getCommandFlags,
   getSubCommandDefinition,
   type GlobalFlags,
-  type SubcommandFlags
+  type SubcommandFlags,
+  toRuntimeFlags
 } from '~/lib/pgroll/roll-utils';
 import { debugDump } from '~/lib/debug';
 
@@ -30,11 +30,7 @@ export async function implementation(
   }
   const target = await checkBranchIsReachable(this, flags);
 
-  const runtimeFlags = convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
-
-  if (flags.local) {
-    runtimeFlags.push(`--local=${flags.local}`);
-  }
+  const runtimeFlags = toRuntimeFlags<CommandType>(COMMAND, flags, SUBCOMMAND);
 
   if (this.debug) {
     debugDump(`${COMMAND} ${SUBCOMMAND}`, { runtimeFlags });

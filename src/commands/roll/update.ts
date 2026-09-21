@@ -9,10 +9,10 @@ import { CLI_NAME, DEFAULT_MIGRATIONS_DIRECTORY } from '~/lib/constants';
 import { type CommandDetails, runPgRoll } from '~/lib/pgroll/commands';
 import {
   type CommandFlags,
-  convertGlobalFlagsToRuntimeFlags,
   getCommandDefinition,
   getCommandFlags,
-  type GlobalFlags
+  type GlobalFlags,
+  toRuntimeFlags
 } from '~/lib/pgroll/roll-utils';
 import { debugDump } from '~/lib/debug';
 
@@ -52,7 +52,7 @@ export async function implementation(
   checkMigrationsDirectory(this, targetDir);
   const target = await checkBranchIsReachable(this, flags);
 
-  const runtimeFlags = convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
+  const runtimeFlags = toRuntimeFlags<CommandType>(COMMAND, flags);
 
   if (this.debug) {
     debugDump(`${COMMAND}`, { runtimeFlags });

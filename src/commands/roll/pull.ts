@@ -7,10 +7,10 @@ import { DEFAULT_MIGRATIONS_DIRECTORY } from '~/lib/constants';
 import { type CommandDetails, runPgRoll } from '~/lib/pgroll/commands';
 import {
   type CommandFlags,
-  convertGlobalFlagsToRuntimeFlags,
   getCommandDefinition,
   getCommandFlags,
-  type GlobalFlags
+  type GlobalFlags,
+  toRuntimeFlags
 } from '~/lib/pgroll/roll-utils';
 import { debugDump } from '~/lib/debug';
 
@@ -34,11 +34,7 @@ export async function implementation(
   invariant(targetDir, 'Target directory is required');
   const target = await checkBranchIsReachable(this, flags);
 
-  const runtimeFlags = convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
-
-  if (flags.json) {
-    runtimeFlags.push('--json');
-  }
+  const runtimeFlags = toRuntimeFlags<CommandType>(COMMAND, flags);
   if (this.debug) {
     debugDump(`${COMMAND}`, { runtimeFlags });
   }

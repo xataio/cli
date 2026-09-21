@@ -1,10 +1,35 @@
-import { toBrief } from '~/lib/binary/utils';
 import { Definition } from '@xata.io/pgstream';
+import {
+  type BinaryFlagDefinition,
+  type BinaryFlagValues,
+  type CliFlag,
+  toBinaryArguments,
+  toCliFlag
+} from '~/lib/binary/flags';
 import type { PgStreamCommands, PgStreamOptions } from '~/lib/pgstream/commands';
 
-export type CommandFlags<CommandName extends PgStreamCommands> = {
-  [K in Extract<(typeof Definition.commands)[number], { name: CommandName }>['flags'][number]['name']]: boolean;
-};
+/**
+ * CLI name to pgstream name. The clone commands set connections and tables through the environment,
+ * so those flags stay out, and `profile` is renamed so it does not shadow the Xata profile flag.
+ */
+export const exposedFlags = {
+  snapshot: { 'debug-profile': 'profile', 'dump-file': 'dump-file' },
+  run: { 'debug-profile': 'profile', 'dump-file': 'dump-file' },
+  destroy: {
+    'migrations-only': 'migrations-only',
+    'replication-slot': 'replication-slot',
+    'slot-only': 'slot-only',
+    'with-injector': 'with-injector'
+  }
+} as const satisfies Partial<Record<PgStreamCommands, Readonly<Record<string, string>>>>;
+
+type ExposedCommand = keyof typeof exposedFlags;
+
+export type CommandFlags<CommandName extends PgStreamCommands> = BinaryFlagValues<
+  CommandName extends ExposedCommand ? keyof (typeof exposedFlags)[CommandName] & string : never
+>;
+
+export type GlobalFlags = BinaryFlagValues<(typeof Definition.flags)[number]['name']>;
 
 export function getCommandDefinition(command: PgStreamCommands) {
   const commandDefinition = Definition.commands.find((c) => c.name === command);
@@ -14,91 +39,36 @@ export function getCommandDefinition(command: PgStreamCommands) {
   return commandDefinition;
 }
 
-export type GlobalFlags = {
-  [K in (typeof Definition.flags)[number]['name']]: string;
-};
+/** The exposed flags of a command, each with the definition pgstream gives it. */
+function getExposedFlags(command: PgStreamCommands) {
+  const names: Readonly<Record<string, string>> = exposedFlags[command as ExposedCommand] ?? {};
+  const ownFlags: readonly BinaryFlagDefinition[] = getCommandDefinition(command).flags;
 
-export function getCommandFlags<CommandType extends PgStreamCommands>(command: PgStreamCommands) {
-  const globalFlags = getGlobalFlags();
-  const commandDefinition = getCommandDefinition(command);
+  return Object.entries(names).flatMap(([cliName, binaryName]) => {
+    const flag = ownFlags.find((own) => own.name === binaryName);
+    return flag ? [{ cliName, binaryName, flag }] : [];
+  });
+}
 
-  const commandFlags = {
-    ...globalFlags
-  } as Record<
-    keyof GlobalFlags | keyof CommandFlags<CommandType>,
-    {
-      kind: 'parsed';
-      parse: StringConstructor;
-      brief: string;
-      optional: true;
-    }
-  >;
-
-  for (const flag of commandDefinition.flags) {
-    // @ts-expect-error
-    commandFlags[flag.name] = {
-      kind: 'parsed',
-      parse: String,
-      brief: toBrief(flag.description),
-      /**
-       * Note: we don't need to provide the default value here.
-       * `pgroll` will automatically fall back to the default value
-       *
-       * If we provide a default value here, the `pgroll` binary will see it as
-       * if the user provided that value and the precedence of flag over env will take place.
-       *
-       * i.e. the `roll` command won't support pgroll env vars.
-       * Therefore, all pgroll flags are optional in the `roll` command
-       */
-      // default: flag.default
-      optional: true
-    };
-  }
-
-  return commandFlags;
+export function getCommandFlags(command: PgStreamCommands): Record<string, CliFlag> {
+  return {
+    ...getGlobalFlags(),
+    ...Object.fromEntries(getExposedFlags(command).map(({ cliName, flag }) => [cliName, toCliFlag(flag)]))
+  };
 }
 
 export function getGlobalFlags() {
-  const globalFlags = {} as Record<
-    keyof GlobalFlags,
-    {
-      kind: 'parsed';
-      parse: StringConstructor;
-      brief: string;
-      optional: true;
-    }
-  >;
-
-  for (const flag of Definition.flags) {
-    globalFlags[flag.name] = {
-      kind: 'parsed',
-      parse: String,
-      brief: toBrief(flag.description),
-      // Note: see comment in getCommandFlags regarding default values
-      // default: flag.default
-      optional: true
-    };
-  }
-  return globalFlags;
+  return Object.fromEntries(Definition.flags.map((flag) => [flag.name, toCliFlag(flag)]));
 }
 
-export function convertGlobalFlagsToRuntimeFlags<CommandType extends PgStreamCommands>(flags: GlobalFlags) {
-  const runtimeFlags: NonNullable<PgStreamOptions<CommandType>['flags']> = [];
-
-  type FlagHandlers = { [K in keyof GlobalFlags]: (value: string) => void };
-
-  const flagHandlers: FlagHandlers = {
-    config: (value) => runtimeFlags.push(`--config=${value}`),
-    'log-format': (value) => runtimeFlags.push(`--log-format=${value}`),
-    'log-level': (value) => runtimeFlags.push(`--log-level=${value}`),
-    'no-color': (value) => runtimeFlags.push(`--no-color=${value}`)
-  };
-
-  for (const [key, value] of Object.entries(flags)) {
-    if (value && typeof value === 'string' && key in flagHandlers) {
-      (flagHandlers as any)[key](value);
-    }
-  }
-
-  return runtimeFlags;
+/** The pgstream arguments for every global and exposed flag that was passed. */
+export function toRuntimeFlags<CommandType extends PgStreamCommands>(
+  command: CommandType,
+  flags: Record<string, unknown>
+) {
+  const names = [
+    ...Definition.flags.map((flag) => [flag.name, flag.name] as const),
+    ...getExposedFlags(command).map(({ cliName, binaryName }) => [cliName, binaryName] as const)
+  ];
+  return toBinaryArguments(flags, new Map(names)) as NonNullable<PgStreamOptions<CommandType>['flags']>;
 }

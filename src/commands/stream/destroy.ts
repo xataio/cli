@@ -1,13 +1,8 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 import { exitWithError } from '~/lib/cli-utils';
-import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream } from '~/lib/pgstream/commands';
-import {
-  type CommandFlags,
-  convertGlobalFlagsToRuntimeFlags,
-  getCommandFlags,
-  type GlobalFlags
-} from '~/lib/pgstream/stream-utils';
+import { type CommandDetails, type LogLevel, runPgStream } from '~/lib/pgstream/commands';
+import { type CommandFlags, getCommandFlags, type GlobalFlags, toRuntimeFlags } from '~/lib/pgstream/stream-utils';
 import { debugDump } from '~/lib/debug';
 
 const COMMAND = 'destroy';
@@ -15,8 +10,8 @@ type CommandType = 'destroy';
 const commandFlags = getCommandFlags(COMMAND);
 
 type Flags = {
-  'log-level'?: LogLevel;
-} & GlobalFlags &
+  'log-level': LogLevel;
+} & Omit<GlobalFlags, 'log-level'> &
   CommandFlags<CommandType> & {
     'source-url': string;
   };
@@ -43,8 +38,7 @@ export async function implementation(
     debugDump(`${COMMAND}`, { args, flags });
   }
 
-  const runtimeFlags: NonNullable<PgStreamOptions<CommandType>['flags']> =
-    convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
+  const runtimeFlags = toRuntimeFlags<CommandType>(COMMAND, flags);
   if (this.debug) {
     debugDump(`${COMMAND}`, { runtimeFlags });
   }

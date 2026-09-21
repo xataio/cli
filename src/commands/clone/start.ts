@@ -7,13 +7,8 @@ import { checkBranchIsReachable } from '~/lib/binary/utils';
 
 import { branchPathParams, type ContextFlags, contextFlags, exitWithError } from '~/lib/cli-utils';
 import { CLI_NAME, DEFAULT_CLONE_RULES_FILE } from '~/lib/constants';
-import { type CommandDetails, type LogLevel, type PgStreamOptions, runPgStream } from '~/lib/pgstream/commands';
-import {
-  type CommandFlags,
-  convertGlobalFlagsToRuntimeFlags,
-  getCommandFlags,
-  type GlobalFlags
-} from '~/lib/pgstream/stream-utils';
+import { type CommandDetails, type LogLevel, runPgStream } from '~/lib/pgstream/commands';
+import { type CommandFlags, getCommandFlags, type GlobalFlags, toRuntimeFlags } from '~/lib/pgstream/stream-utils';
 import { readConfigFile } from './clone-config-utils';
 import type { ValidationMode } from './config';
 import { getPgStreamStartEnv } from './env';
@@ -28,10 +23,10 @@ type Flags = ContextFlags & {
   'filter-tables': string;
   'validation-mode': ValidationMode | 'prompt';
   role?: string;
-  'log-level'?: LogLevel;
+  'log-level': LogLevel;
   'copy-roles': boolean;
   'tune-target': boolean;
-} & GlobalFlags &
+} & Omit<GlobalFlags, 'log-level'> &
   CommandFlags<CommandType> & {
     'source-url': string;
   };
@@ -116,8 +111,7 @@ export async function implementation(
     }
   }
 
-  const runtimeFlags: NonNullable<PgStreamOptions<CommandType>['flags']> =
-    convertGlobalFlagsToRuntimeFlags<CommandType>(flags);
+  const runtimeFlags = toRuntimeFlags<CommandType>(COMMAND, flags);
   if (this.debug) {
     debugDump(`${COMMAND}`, { runtimeFlags });
   }
