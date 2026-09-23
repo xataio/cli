@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import invariant from 'tiny-invariant';
 import { decodeJwt } from 'jose';
-import { ApiError } from '@xata.io/api';
+import { ApiError, type Types } from '@xata.io/api';
 import type { LocalContext } from '~/context';
 import { branchConfig, branchConfigFileDeclares, getBranchConfigPath } from './branch-config';
 import { config } from './config';
@@ -479,23 +479,19 @@ export function getUserInfo(profileFlag?: string): { name?: string; email?: stri
   }
 }
 
-type Region = {
-  id: string;
-  publicAccess: boolean;
-  backupsEnabled: boolean;
-  provider: 'aws' | 'gcp' | 'custom';
-  organizationId: string | null;
-};
+type Region = Types.ListRegions200['regions'][number];
 
 const regionProviderLabels = {
   aws: 'AWS',
   gcp: 'GCP',
+  azure: 'Azure',
   custom: 'Custom'
 } satisfies Record<Region['provider'], string>;
 
 const regionProviderColors = {
   aws: chalk.hex('#FF9900'),
   gcp: chalk.hex('#4285F4'),
+  azure: chalk.hex('#0078D4'),
   custom: chalk.gray
 } satisfies Record<Region['provider'], (text: string) => string>;
 

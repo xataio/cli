@@ -24,11 +24,11 @@ importers:
         specifier: 0.1.2
         version: 0.1.2
       '@xata.io/api':
-        specifier: 0.1.17
-        version: 0.1.17
+        specifier: 0.1.18
+        version: 0.1.18
       '@xata.io/config':
-        specifier: 0.0.18
-        version: 0.0.18
+        specifier: 0.0.19
+        version: 0.0.19
       '@xata.io/lang':
         specifier: 0.0.5
         version: 0.0.5
@@ -39,14 +39,14 @@ importers:
         specifier: 0.2.4
         version: 0.2.4
       '@xata.io/sql':
-        specifier: 0.2.13
-        version: 0.2.13
+        specifier: 0.2.14
+        version: 0.2.14
       '@xata.io/tsconfig':
         specifier: 0.0.2
         version: 0.0.2
       '@xata.io/utils':
-        specifier: 0.6.0
-        version: 0.6.0
+        specifier: 0.6.1
+        version: 0.6.1
       chalk:
         specifier: 6.0.0
         version: 6.0.0
@@ -127,8 +127,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@xata.io/test-utils':
-        specifier: 0.0.24
-        version: 0.0.24
+        specifier: 0.0.25
+        version: 0.0.25
 
 packages:
 
@@ -318,11 +318,11 @@ packages:
   '@xata.io/ai@0.1.2':
     resolution: {integrity: sha512-mj5+dgcADP6li/OLMZ2g2d6nRVrGaXf2CDKDJiI/3luEhq0DaZRs1oo4CsGuGoSkzMWi0ZTy6wS54m3mMYoQGg==}
 
-  '@xata.io/api@0.1.17':
-    resolution: {integrity: sha512-jsOuBsQ/V8EHFg9zabfludHbQYxtWuf4+kr4oUmSpnaL27hMtFejBqQkxoefW6qwmXCLKcIVka1fxkiQ1+deLw==}
+  '@xata.io/api@0.1.18':
+    resolution: {integrity: sha512-GtsVLo3bj15pag/PIe4NhZoLwJnHYBea9kDoy1uUBLsCOuNSMo7Y4ZFwcecKgshCjN6GBZ8HrjwEIGpUMW0hfw==}
 
-  '@xata.io/config@0.0.18':
-    resolution: {integrity: sha512-K/CFoAylgl7LybBZuO8XGqqzFCx/MRiTFYXsryrpw4PBqwESvxFadB7gZnzTiSevEVFyOkZ9l0KWe6AfVCogPQ==}
+  '@xata.io/config@0.0.19':
+    resolution: {integrity: sha512-J+pJwnZBVlVYRfwOD0HIWva8HbBdcTcItbZkRwEvj6BheoPs6OpfQPoVpWGGqxTpVtrZBRt1nB5jlPS1kdQM9w==}
 
   '@xata.io/lang@0.0.5':
     resolution: {integrity: sha512-8qjomPDDSyRkWYzzPpGyVnlk7V4RAQDICyN1rmeUDZ/sqOA71dxSwJ1qxiH24ozfhoe073L2xqqUc1UG1BarGg==}
@@ -336,17 +336,17 @@ packages:
   '@xata.io/pii@0.0.2':
     resolution: {integrity: sha512-gmdJt/wdMhQib/z2epjBTFXKu5ZfLzeIc2S5j6EBE12y6RnwR3f+byXySHkWyf1XatacJSZnXMKXOjv/fU+uzQ==}
 
-  '@xata.io/sql@0.2.13':
-    resolution: {integrity: sha512-FJ8gxyoG11460kbIzHrziJ5Q37LJJ9rhRrQ2i7C+pn3leoAaeKgbDnZgMDMk98Y9ZHNhSqNDIyyUxdUm3zEKKA==}
+  '@xata.io/sql@0.2.14':
+    resolution: {integrity: sha512-8r7lfCoP3vA+MfRCF7uS48agWZ/XiaMOoM/wG5llbnJM89wOjPFeuTN9Nt/Yy0YKCBIgFR62GWiZwNHgVXNg2Q==}
 
-  '@xata.io/test-utils@0.0.24':
-    resolution: {integrity: sha512-K7Jfhx7hbAt+DvibxFooXqL8w/St32zuXoyns9Se3S4QrLaBe2mLQwFjnuQ3qF6sCSOPMPb1ZyYDYMG6JK7O2Q==}
+  '@xata.io/test-utils@0.0.25':
+    resolution: {integrity: sha512-Qfk+6bVl+QH7HHzgsCoHlidkp7/ovXddnMb6SL7z87wiMbpvv+0YdDv0mYwD/0shQt54+u492sM13/50ixyfNA==}
 
   '@xata.io/tsconfig@0.0.2':
     resolution: {integrity: sha512-7uY1tUBZbA1g7PTSrJ+DWEo1qOxIpN3DU1W94ttWL7Ns76+DmL1JVYtXOw6i9Ta7SYeEii3pxQZnaOQRLe/EAw==}
 
-  '@xata.io/utils@0.6.0':
-    resolution: {integrity: sha512-gqRD4TKmOHtz4CJ5eE5Y3iMyeFSZR/5MivkxVnLkiXaaPLsItdvW7CWJagXIzFq65rDOBq3t0vygHcvODSaaYg==}
+  '@xata.io/utils@0.6.1':
+    resolution: {integrity: sha512-p4GsDDOJ89HNVEH6QfECgnCYHvkhXD8EH8z5hB7HyqtZQvWHu0qxuRIGUP6RhnPHF8sa8dgL4k4j8P8WUJo21Q==}
 
   ai@7.0.93:
     resolution: {integrity: sha512-CJss6zb9mlltk/mCr8qom20NBnqEQxVawkqwtT62tCwsxilZpXfHNRMRwcS3XRpzdP1kEluVuDBUayYWEEd95g==}
@@ -840,8 +840,8 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  slice-ansi@9.0.0:
-    resolution: {integrity: sha512-SO/3iYL5S3W57LLEniscOGPZgOqZUPCx6d3dB+52B80yJ0XstzsC/eV8gnA4tM3MHDrKz+OCFSLNjswdSC+/bA==}
+  slice-ansi@9.0.1:
+    resolution: {integrity: sha512-aBY19bn/XA+hKOKX0qL7Z0UfdBsbQvc9hn993U8ALUjzxCvDcuZqLoRXjGJrUARWAlwMnsRVD9sw2AFNOYvalA==}
     engines: {node: '>=22'}
 
   sprintf-js@1.1.3:
@@ -1321,16 +1321,16 @@ snapshots:
       ai: 7.0.93(zod@4.5.4)
       zod: 4.5.4
 
-  '@xata.io/api@0.1.17':
+  '@xata.io/api@0.1.18':
     dependencies:
       '@dotenvx/dotenvx': 2.28.0
       '@xata.io/lang': 0.0.5
       zod: 4.6.5
 
-  '@xata.io/config@0.0.18':
+  '@xata.io/config@0.0.19':
     dependencies:
       '@xata.io/pii': 0.0.2
-      '@xata.io/sql': 0.2.13
+      '@xata.io/sql': 0.2.14
 
   '@xata.io/lang@0.0.5':
     dependencies:
@@ -1348,29 +1348,29 @@ snapshots:
 
   '@xata.io/pii@0.0.2': {}
 
-  '@xata.io/sql@0.2.13':
+  '@xata.io/sql@0.2.14':
     dependencies:
       '@neondatabase/serverless': 1.1.0
       '@types/qs': 6.15.1
-      '@xata.io/api': 0.1.17
+      '@xata.io/api': 0.1.18
       '@xata.io/pgroll': 0.9.1
       kysely: 0.29.6
       qs: 6.16.0
       zod: 4.6.5
 
-  '@xata.io/test-utils@0.0.24':
+  '@xata.io/test-utils@0.0.25':
     dependencies:
       '@neondatabase/serverless': 1.1.0
-      '@xata.io/api': 0.1.17
+      '@xata.io/api': 0.1.18
       '@xata.io/lang': 0.0.5
-      '@xata.io/sql': 0.2.13
-      '@xata.io/utils': 0.6.0
+      '@xata.io/sql': 0.2.14
+      '@xata.io/utils': 0.6.1
 
   '@xata.io/tsconfig@0.0.2': {}
 
-  '@xata.io/utils@0.6.0':
+  '@xata.io/utils@0.6.1':
     dependencies:
-      '@xata.io/api': 0.1.17
+      '@xata.io/api': 0.1.18
       '@xata.io/lang': 0.0.5
       tiny-invariant: 1.3.3
       ua-parser-js: 2.0.10
@@ -1437,7 +1437,7 @@ snapshots:
 
   cli-truncate@6.1.1:
     dependencies:
-      slice-ansi: 9.0.0
+      slice-ansi: 9.0.1
       string-width: 8.2.2
 
   clipboard-image@0.1.0:
@@ -1637,7 +1637,7 @@ snapshots:
       react-reconciler: 0.33.0(react@19.3.0)
       scheduler: 0.27.0
       signal-exit: 3.0.7
-      slice-ansi: 9.0.0
+      slice-ansi: 9.0.1
       stack-utils: 2.0.6
       string-width: 8.2.2
       terminal-size: 4.0.1
@@ -1841,7 +1841,7 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  slice-ansi@9.0.0:
+  slice-ansi@9.0.1:
     dependencies:
       ansi-styles: 6.2.3
       is-fullwidth-code-point: 5.1.0
