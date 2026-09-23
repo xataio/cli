@@ -1,5 +1,19 @@
 # xata-cli
 
+## 1.12.2
+
+### Patch Changes
+
+- [#3222](https://github.com/xataio/frontend/pull/3222) [`7becb68`](https://github.com/xataio/frontend/commit/7becb68acaf7d3767e2beeb926ef979db49d49c9) Thanks [@divyenduz](https://github.com/divyenduz)! - Support Azure region providers in the API contract and CLI region choices, and give repeated Azure icons unique gradient IDs.
+
+- [#3227](https://github.com/xataio/frontend/pull/3227) [`cfc6352`](https://github.com/xataio/frontend/commit/cfc6352a736298420a605f492de42245733c4256) Thanks [@divyenduz](https://github.com/divyenduz)! - Show the `xata console` command in CLI help.
+- Updated dependencies [[`7becb68`](https://github.com/xataio/frontend/commit/7becb68acaf7d3767e2beeb926ef979db49d49c9)]:
+  - @xata.io/api@0.1.18
+  - @xata.io/sql@0.2.14
+  - @xata.io/utils@0.6.1
+  - @xata.io/ai@0.1.2
+  - @xata.io/config@0.0.19
+
 ## 1.12.1
 
 ### Patch Changes
