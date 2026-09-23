@@ -6,14 +6,13 @@ import { implementation } from './set-role';
 
 class ExitCalled extends Error {}
 
-const MEMBER = { id: 'usr_1', email: 'ada@example.com', name: 'Ada', role: 'admin' };
-
 type Options = {
   setRoleError?: ApiError;
   outputJson?: boolean;
   isInteractive?: boolean;
   promptedValue?: string;
   rolesEnabled?: boolean;
+  memberRole?: string;
 };
 
 function buildContext({
@@ -21,7 +20,8 @@ function buildContext({
   outputJson = true,
   isInteractive = false,
   promptedValue = '',
-  rolesEnabled = true
+  rolesEnabled = true,
+  memberRole = 'admin'
 }: Options = {}) {
   const stdout: string[] = [];
   const stderr: string[] = [];
@@ -34,9 +34,16 @@ function buildContext({
     if (!rolesEnabled) {
       throw new ApiError(404, {}, 'roles are not enabled for this organization');
     }
-    return { roles: [] };
+    return {
+      roles: [
+        { id: 'admin', name: 'Admin', description: 'Full access' },
+        { id: 'editor', name: 'Editor', description: 'Create and change projects' }
+      ]
+    };
   });
-  const listOrganizationMembers = mock(async () => ({ members: [MEMBER] }));
+  const listOrganizationMembers = mock(async () => ({
+    members: [{ id: 'usr_1', email: 'ada@example.com', name: 'Ada', role: memberRole }]
+  }));
   const selectPrompt = mock(
     async (_isInteractive: boolean, _message: string, _choices: unknown[], _options?: unknown) => promptedValue
   );
@@ -100,6 +107,21 @@ describe('organization members set-role', () => {
     await run(context, { 'user-id': 'usr_1' });
 
     expect(selectPrompt.mock.calls[0]?.[3]).toEqual({ initial: 0 });
+    expect(setOrganizationMemberRole.mock.calls[0]?.[0].body).toEqual({ role: 'editor' });
+  });
+
+  test('starts on Editor for a member holding a role that is not offered', async () => {
+    const { context, setOrganizationMemberRole, selectPrompt } = buildContext({
+      isInteractive: true,
+      outputJson: false,
+      promptedValue: 'editor',
+      memberRole: 'viewer'
+    });
+
+    await run(context, { 'user-id': 'usr_1' });
+
+    expect(selectPrompt.mock.calls[0]?.[2]).toHaveLength(2);
+    expect(selectPrompt.mock.calls[0]?.[3]).toEqual({ initial: 1 });
     expect(setOrganizationMemberRole.mock.calls[0]?.[0].body).toEqual({ role: 'editor' });
   });
 

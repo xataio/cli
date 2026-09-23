@@ -16,7 +16,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   const organizationId = await this.getOrganization(this, flags, {});
   const details = { organization: organizationId };
 
-  await ensureRolesEnabled(this, organizationId);
+  const roles = await ensureRolesEnabled(this, organizationId);
 
   const { members } = await this.api.organizations.listOrganizationMembers({
     pathParams: { organizationID: organizationId }
@@ -47,7 +47,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
   const memberName = member.name || member.email;
 
-  const role = flags.role ?? (await promptRole(this, `Select a role for ${memberName}`, member.role));
+  const role = flags.role ?? (await promptRole(this, `Select a role for ${memberName}`, member.role, roles));
 
   if (!role) {
     return exitWithErrorDetails(this, 'Role is required', { userId });

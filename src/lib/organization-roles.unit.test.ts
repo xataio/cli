@@ -21,7 +21,12 @@ function buildContext({ isInteractive = false, outputJson = false, promptedRole,
     if (rolesError) {
       throw rolesError;
     }
-    return { roles: [] };
+    return {
+      roles: [
+        { id: 'admin', name: 'Admin', description: 'Full access' },
+        { id: 'editor', name: 'Editor', description: 'Create and change projects' }
+      ]
+    };
   });
 
   const context = {
@@ -98,11 +103,14 @@ describe('resolveInvitationRole', () => {
     expect(selectPrompt).not.toHaveBeenCalled();
   });
 
-  test('prompts in a terminal, starting on Editor', async () => {
+  test('prompts in a terminal with Admin and Editor, starting on Editor', async () => {
     const { context, selectPrompt } = buildContext({ isInteractive: true, promptedRole: 'admin' });
 
     expect(await resolveInvitationRole(context, 'org-id', undefined)).toBe('admin');
-    expect(selectPrompt.mock.calls[0]?.[2]).toHaveLength(2);
+    expect(selectPrompt.mock.calls[0]?.[2]).toEqual([
+      { name: 'admin', message: expect.stringContaining('Admin') },
+      { name: 'editor', message: expect.stringContaining('Editor') }
+    ]);
     expect(selectPrompt.mock.calls[0]?.[3]).toEqual({ initial: 1 });
   });
 
