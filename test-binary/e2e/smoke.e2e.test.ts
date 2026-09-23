@@ -15,10 +15,10 @@ describe('CLI binary smoke tests', () => {
     expect(result.code).toBe(0);
     expect(result.stdout).toContain('xata');
     expect(result.stdout).toMatch(/branch|project|organization/i);
-    expect(result.stdout).not.toContain('console');
+    expect(result.stdout).toContain('console');
   });
 
-  test('hidden console command still exposes its help', async () => {
+  test('console command exposes its help', async () => {
     const result = await runCli(['console', '--help']);
 
     expect(result.code).toBe(0);

@@ -55,7 +55,6 @@ const routes = buildRouteMap({
     hideRoute: {
       onboard: true,
       ai: true,
-      console: true,
       stream: true
     }
   }
