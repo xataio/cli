@@ -1,6 +1,6 @@
-import { mkdirSync, renameSync } from 'node:fs';
+import { once } from 'node:events';
+import { createWriteStream, mkdirSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { createWriteStream } from 'node:fs';
 
 export type DownloadOptions = {
   label: string;
@@ -102,14 +102,7 @@ export async function downloadToFile(url: string, filePath: string, options: Dow
   mkdirSync(destDir, { recursive: true });
   const tempPath = join(destDir, `.xata-download-${process.pid}-${Date.now()}`);
   const fileStream = createWriteStream(tempPath);
-
-  await new Promise<void>((resolve, reject) => {
-    fileStream.write(buffer, (err) => {
-      if (err) return reject(err);
-      fileStream.end(() => {
-        renameSync(tempPath, filePath);
-        resolve();
-      });
-    });
-  });
+  fileStream.end(buffer);
+  await once(fileStream, 'close');
+  renameSync(tempPath, filePath);
 }
