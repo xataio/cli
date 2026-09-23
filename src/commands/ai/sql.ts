@@ -8,12 +8,14 @@ import {
   type Schema
 } from '@xata.io/sql';
 import type { LocalContext } from '~/context';
-import { exitWithError } from '~/lib/cli-utils';
+import { exitWithError, getErrorMessage } from '~/lib/cli-utils';
 import { CLI_NAME } from '~/lib/constants';
-import { env } from '~/lib/env';
-import postgres from 'postgres';
+import type postgres from 'postgres';
 import { formatSchemaForAI, generateSQL } from '@xata.io/ai';
-import { TerminalUI } from './terminal-ui.js';
+import { render } from 'ink';
+import { createElement } from 'react';
+import { AIApp } from '~/ai/app';
+import type { SQLResult } from '~/ai/sql-view';
 
 type Flags = {
   organization?: string;
@@ -24,29 +26,41 @@ type Flags = {
   yes: boolean;
 };
 
-async function getBranchSchema(connectionString: string): Promise<Schema[]> {
-  const sql = postgres(connectionString);
+async function getBranchSchema(context: LocalContext, connectionString: string): Promise<Schema[]> {
+  const sql = context.postgres(connectionString);
 
   try {
     const schemaResult = await sql.unsafe<Schema[]>(BUILD_SCHEMA_QUERY);
     return schemaResult;
   } finally {
-    await sql.end();
+    await sql.end({ timeout: 2 });
   }
 }
 
-async function executeSQL(sql: string, connectionString: string): Promise<any[]> {
-  const db = postgres(connectionString);
+type QueryRows = Record<string, unknown>[] & {
+  command: string | null;
+  count: number | null;
+  columns?: { name: string }[] | null;
+};
 
-  try {
-    const result = await db.unsafe(sql);
-    return Array.isArray(result) ? result : [result];
-  } finally {
-    await db.end();
-  }
-}
+export const normalizeResults = (result: QueryRows | QueryRows[]): SQLResult[] => {
+  const sets = 'command' in result ? [result] : result;
+  return sets.map((rows) => ({
+    command: rows.command ?? 'SQL',
+    count: rows.count,
+    columns: rows.columns?.map((column) => column.name) ?? [],
+    rows: Array.from(rows)
+  }));
+};
 
 export async function implementation(this: LocalContext, flags: Flags) {
+  if (!this.isInteractive || !this.process.stdin.isTTY || !this.process.stdout.isTTY) {
+    return exitWithError(this, '`xata ai sql` requires an interactive terminal.');
+  }
+  const apiKey = this.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return exitWithError(this, 'Set ANTHROPIC_API_KEY in the environment to generate SQL.');
+  let activeDatabase: postgres.Sql | undefined;
+  const controller = new AbortController();
   try {
     const organizationId = await this.getOrganization(this, flags, {});
     const projectId = await this.getProject(this, flags, { organizationId });
@@ -80,32 +94,53 @@ export async function implementation(this: LocalContext, flags: Flags) {
       database: databaseName
     });
 
-    const schema = await getBranchSchema(connectionString);
+    const schema = await getBranchSchema(this, connectionString);
     const formattedSchema = formatSchemaForAI(schema);
 
-    const handleExecuteSQL = async (sql: string): Promise<any[]> => {
-      return await executeSQL(sql, connectionString);
+    const handleExecuteSQL = async (sql: string): Promise<SQLResult[]> => {
+      const db = this.postgres(connectionString);
+      activeDatabase = db;
+      try {
+        return normalizeResults(await db.unsafe<Record<string, unknown>[]>(sql));
+      } finally {
+        await db.end({ timeout: 2 });
+        if (activeDatabase === db) activeDatabase = undefined;
+      }
     };
 
     const handleGenerateSQL = async (query: string, currentSQL: string): Promise<string> => {
-      if (!env.ANTHROPIC_API_KEY) {
-        return exitWithError(this, 'Set ANTHROPIC_API_KEY in the environment to generate SQL.');
-      }
-      return await generateSQL(env.ANTHROPIC_API_KEY, query, formattedSchema, currentSQL, { model: flags.model });
+      return await generateSQL(apiKey, query, formattedSchema, currentSQL, {
+        model: flags.model,
+        abortSignal: controller.signal
+      });
     };
 
-    const ui = new TerminalUI({
-      schema,
-      formattedSchema,
-      onExecuteSQL: handleExecuteSQL,
-      onGenerateSQL: handleGenerateSQL
-    });
+    const ui = render(
+      createElement(AIApp, {
+        target: `${organizationId} / ${projectId} / ${branch.name} · ${databaseName}`,
+        schemaCount: schema.length,
+        tableCount: schema.reduce((total, item) => total + Object.keys(item.tables).length, 0),
+        onExecuteSQL: handleExecuteSQL,
+        onGenerateSQL: handleGenerateSQL
+      }),
+      {
+        stdin: this.process.stdin,
+        stdout: this.process.stdout,
+        stderr: this.process.stderr
+      }
+    );
 
-    return ui.start();
+    try {
+      await ui.waitUntilExit();
+    } finally {
+      ui.unmount();
+    }
   } catch (error) {
-    console.error(chalk.red(`❌ Error: `));
-    console.log(error);
-    this.process.exit(1);
+    this.process.stderr.write(chalk.red(`${getErrorMessage(error)}\n`));
+    this.process.exitCode = 1;
+  } finally {
+    controller.abort();
+    await activeDatabase?.end({ timeout: 2 });
   }
 }
 
@@ -147,7 +182,7 @@ export const GenerateSQLCommand = buildCommand({
       },
       yes: {
         kind: 'boolean',
-        brief: 'Do not ask for confirmation, assume yes.',
+        brief: 'Skip setup confirmations. SQL execution always requires approval.',
         default: false
       }
     }

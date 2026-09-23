@@ -1,7 +1,7 @@
 {
   "name": "xata-cli",
   "description": "Xata CLI",
-  "version": "1.12.2",
+  "version": "1.13.0",
   "private": true,
   "module": "src/app.ts",
   "type": "module",
@@ -11,7 +11,7 @@
     "@types/node": "26.6.1",
     "@types/react": "19.3.0",
     "@types/treeify": "1.0.3",
-    "@xata.io/test-utils": "0.0.25"
+    "@xata.io/test-utils": "0.0.26"
   },
   "peerDependencies": {
     "typescript": "6.0.x"
@@ -21,15 +21,15 @@
     "@stricli/auto-complete": "1.3.0",
     "@stricli/core": "1.3.0",
     "@vercel/detect-agent": "1.2.5",
-    "@xata.io/ai": "0.1.2",
-    "@xata.io/api": "0.1.18",
-    "@xata.io/config": "0.0.19",
+    "@xata.io/ai": "0.1.3",
+    "@xata.io/api": "0.1.19",
+    "@xata.io/config": "0.0.20",
     "@xata.io/lang": "0.0.5",
     "@xata.io/pgroll": "0.9.1",
     "@xata.io/pgstream": "0.2.4",
-    "@xata.io/sql": "0.2.14",
+    "@xata.io/sql": "0.2.15",
     "@xata.io/tsconfig": "0.0.2",
-    "@xata.io/utils": "0.6.1",
+    "@xata.io/utils": "0.7.0",
     "chalk": "6.0.0",
     "chrono-node": "2.10.1",
     "ci-info": "4.4.0",
