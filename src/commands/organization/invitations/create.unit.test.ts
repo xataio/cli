@@ -45,7 +45,7 @@ function buildContext({ isInteractive = false, rolesEnabled = true }: Options = 
   return { context, stdout, stderr, createOrganizationInvitation, selectPrompt };
 }
 
-async function run(context: LocalContext, flags: { email?: string; role?: 'admin' | 'editor' | 'viewer' }) {
+async function run(context: LocalContext, flags: { email?: string; role?: 'admin' | 'editor' }) {
   try {
     await implementation.call(context, flags);
   } catch (error) {

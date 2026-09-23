@@ -46,7 +46,7 @@ function buildContext({ isInteractive = false, rolesEnabled = true, promptedRole
   return { context, stdout, stderr, createOrganizationInvitation, selectPrompt };
 }
 
-async function run(context: LocalContext, flags: { email?: string; role?: 'admin' | 'editor' | 'viewer' }) {
+async function run(context: LocalContext, flags: { email?: string; role?: 'admin' | 'editor' }) {
   try {
     await implementation.call(context, flags);
   } catch (error) {
@@ -91,7 +91,7 @@ describe('organization members invite', () => {
   test('refuses --role without sending the invitation when roles are disabled', async () => {
     const { context, stderr, createOrganizationInvitation } = buildContext({ rolesEnabled: false });
 
-    await run(context, { email: 'ada@example.com', role: 'viewer' });
+    await run(context, { email: 'ada@example.com', role: 'editor' });
 
     expect(context.process.exit).toHaveBeenCalledWith(1);
     expect(stderr.join('')).toContain('Roles are not enabled for this organization');

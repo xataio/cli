@@ -98,12 +98,12 @@ describe('resolveInvitationRole', () => {
     expect(selectPrompt).not.toHaveBeenCalled();
   });
 
-  test('prompts in a terminal, starting on Viewer', async () => {
+  test('prompts in a terminal, starting on Editor', async () => {
     const { context, selectPrompt } = buildContext({ isInteractive: true, promptedRole: 'admin' });
 
     expect(await resolveInvitationRole(context, 'org-id', undefined)).toBe('admin');
-    expect(selectPrompt.mock.calls[0]?.[2]).toHaveLength(3);
-    expect(selectPrompt.mock.calls[0]?.[3]).toEqual({ initial: 2 });
+    expect(selectPrompt.mock.calls[0]?.[2]).toHaveLength(2);
+    expect(selectPrompt.mock.calls[0]?.[3]).toEqual({ initial: 1 });
   });
 
   test('skips the prompt in a terminal when roles are disabled', async () => {

@@ -65,7 +65,7 @@ function buildContext({
   return { context, stdout, stderr, setOrganizationMemberRole, listOrganizationMembers, selectPrompt };
 }
 
-async function run(context: LocalContext, flags: { 'user-id'?: string; role?: 'admin' | 'editor' | 'viewer' }) {
+async function run(context: LocalContext, flags: { 'user-id'?: string; role?: 'admin' | 'editor' }) {
   try {
     await implementation.call(context, flags);
   } catch (error) {
@@ -79,13 +79,13 @@ describe('organization members set-role', () => {
   test('sets the role and reports it as JSON', async () => {
     const { context, stdout, setOrganizationMemberRole } = buildContext();
 
-    await run(context, { 'user-id': 'usr_1', role: 'viewer' });
+    await run(context, { 'user-id': 'usr_1', role: 'editor' });
 
-    expect(setOrganizationMemberRole.mock.calls[0]?.[0].body).toEqual({ role: 'viewer' });
+    expect(setOrganizationMemberRole.mock.calls[0]?.[0].body).toEqual({ role: 'editor' });
     expect(JSON.parse(stdout.join(''))).toEqual({
       success: true,
       userId: 'usr_1',
-      role: 'viewer',
+      role: 'editor',
       organization: 'org-id'
     });
   });
@@ -106,7 +106,7 @@ describe('organization members set-role', () => {
   test('requires a user ID when it cannot prompt', async () => {
     const { context, stderr, setOrganizationMemberRole } = buildContext();
 
-    await run(context, { role: 'viewer' });
+    await run(context, { role: 'editor' });
 
     expect(failure(stderr)).toEqual({ success: false, error: 'User ID is required', organization: 'org-id' });
     expect(setOrganizationMemberRole).not.toHaveBeenCalled();
@@ -126,14 +126,14 @@ describe('organization members set-role', () => {
       setRoleError: new ApiError(404, {}, 'roles are not enabled for this organization')
     });
 
-    await run(context, { 'user-id': 'usr_1', role: 'viewer' });
+    await run(context, { 'user-id': 'usr_1', role: 'editor' });
 
     expect(stdout).toEqual([]);
     expect(failure(stderr)).toEqual({
       success: false,
       error: 'Failed to set role: roles are not enabled for this organization',
       userId: 'usr_1',
-      role: 'viewer'
+      role: 'editor'
     });
   });
 
@@ -162,7 +162,7 @@ describe('organization members set-role', () => {
       outputJson: false
     });
 
-    await run(context, { 'user-id': 'usr_1', role: 'viewer' });
+    await run(context, { 'user-id': 'usr_1', role: 'editor' });
 
     expect(stripAnsi(stderr.join(''))).toBe('Failed to set role: Forbidden\n');
   });
