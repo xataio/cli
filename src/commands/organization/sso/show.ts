@@ -1,9 +1,8 @@
 import { buildCommand } from '@stricli/core';
-import { ApiError } from '@xata.io/api';
 import { ssoRedirectUri } from '@xata.io/utils';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
-import { exitWithError, printCustom } from '~/lib/cli-utils';
+import { printCustom } from '~/lib/cli-utils';
 import { renderTable } from '~/lib/table';
 
 type Flags = {
@@ -12,14 +11,7 @@ type Flags = {
 
 export async function implementation(this: LocalContext, flags: Flags) {
   const organizationID = await this.getOrganization(this, flags, {});
-  const sso = await this.api.organizations
-    .getOrganizationSSO({ pathParams: { organizationID } })
-    .catch((error: unknown) => {
-      if (error instanceof ApiError && error.status === 404) {
-        return exitWithError(this, 'Single sign-on is not available for this organization.');
-      }
-      throw error;
-    });
+  const sso = await this.api.organizations.getOrganizationSSO({ pathParams: { organizationID } });
 
   printCustom(this, sso, () => {
     if (sso.domains.length === 0) {
