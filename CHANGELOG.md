@@ -1,5 +1,38 @@
 # xata-cli
 
+## 1.13.0
+
+### Minor Changes
+
+- [#3231](https://github.com/xataio/frontend/pull/3231) [`02eb29c`](https://github.com/xataio/frontend/commit/02eb29c0840b0c2c3045a48d7bda550d4a57a9e1) Thanks [@divyenduz](https://github.com/divyenduz)! - Replace the AI SQL terminal with a React/Ink workspace matching Xata console. Add scrollable SQL and results, manual SQL editing, and explicit confirmation for retries and edited queries. Fix result handling for CREATE/INSERT/SELECT batches and support aborting SQL generation so pending requests are cleaned up when the workspace exits.
+
+### Patch Changes
+
+- [#3237](https://github.com/xataio/frontend/pull/3237) [`b2d8768`](https://github.com/xataio/frontend/commit/b2d8768c7a77ea7e9d68ca96c9369d8fe6c29d2b) Thanks [@kvch](https://github.com/kvch)! - Wait for a downloaded pgstream or pgroll binary to be fully closed before launching it. Launching right after the download could fail with ETXTBSY because the runtime was still releasing the file.
+
+- [#3230](https://github.com/xataio/frontend/pull/3230) [`8c3961f`](https://github.com/xataio/frontend/commit/8c3961f731dd60384f5c4809d6fcb701b862a0f8) Thanks [@xata-bot](https://github.com/xata-bot)! - [Generated] Update API handlers
+
+  `OrganizationRoleName` no longer offers `viewer`, so `ORGANIZATION_ROLES`, `ORGANIZATION_ROLE_IDS`
+  and `DEFAULT_INVITATION_ROLE` in `@xata.io/utils` cover Admin and Editor only. The dashboard role
+  pickers and the CLI `--role` flags read from those, so neither offers Viewer any more and a new
+  invitation starts on Editor.
+
+- [#3220](https://github.com/xataio/frontend/pull/3220) [`e0b208d`](https://github.com/xataio/frontend/commit/e0b208d1d75c3796baf5e5a87c3873752e404d4f) Thanks [@SferaDev](https://github.com/SferaDev)! - [Roles]: Hide the Viewer role until read-only access is enforced
+
+  `members invite`, `invitations create` and `members set-role` accept only `admin` and `editor` for
+  `--role`, and the role prompt offers Admin and Editor, starting on Editor for new invitations and for
+  a member who holds Viewer. A member who already holds Viewer is still shown as `Viewer`. In
+  `@xata.io/utils`, `ORGANIZATION_ROLES` and `ORGANIZATION_ROLE_IDS` no longer include `viewer`,
+  `DEFAULT_INVITATION_ROLE` is `editor`, and `organizationRoleLabel` takes the new
+  `LegacyOrganizationRoleName`, which keeps `viewer`.
+
+- Updated dependencies [[`8c3961f`](https://github.com/xataio/frontend/commit/8c3961f731dd60384f5c4809d6fcb701b862a0f8), [`e0b208d`](https://github.com/xataio/frontend/commit/e0b208d1d75c3796baf5e5a87c3873752e404d4f), [`02eb29c`](https://github.com/xataio/frontend/commit/02eb29c0840b0c2c3045a48d7bda550d4a57a9e1), [`e0b208d`](https://github.com/xataio/frontend/commit/e0b208d1d75c3796baf5e5a87c3873752e404d4f)]:
+  - @xata.io/api@0.1.19
+  - @xata.io/utils@0.7.0
+  - @xata.io/ai@0.1.3
+  - @xata.io/sql@0.2.15
+  - @xata.io/config@0.0.20
+
 ## 1.12.2
 
 ### Patch Changes
