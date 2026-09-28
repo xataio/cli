@@ -1,9 +1,8 @@
 import { buildCommand } from '@stricli/core';
-import chalk from 'chalk';
+import { Schemas } from '@xata.io/api';
 import invariant from 'tiny-invariant';
 import type { LocalContext } from '~/context';
-import { getErrorMessage } from '~/lib/cli-utils';
-import { CLI_NAME } from '~/lib/constants';
+import { exitWithError, getErrorMessage, printField } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
@@ -38,8 +37,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...args: 
   try {
     ({ organizationName, field } = parseArguments(args));
   } catch (error) {
-    this.process.stderr.write(chalk.red(getErrorMessage(error)));
-    this.process.exit(1);
+    exitWithError(this, getErrorMessage(error));
   }
 
   const organizationId = await this.getOrganization(this, flags, { organizationName });
@@ -48,27 +46,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...args: 
     pathParams: { organizationID: organizationId }
   });
 
-  const possibleFields = Object.keys(organization);
-  if (field === '.catalog') {
-    this.process.stdout.write(`Usage ${chalk.bold.italic(`${CLI_NAME} organization get <field>`)}\n\n`);
-    this.process.stdout.write(`The following fields are available:\n\n`);
-    this.process.stdout.write(`${possibleFields.map((field) => `- ${field}`).join('\n')}\n`);
-    return;
-  }
-
-  if (!possibleFields.includes(field)) {
-    this.process.stderr.write(chalk.red(`Invalid field: ${field}`));
-    this.process.exit(1);
-  }
-
-  const value = organization[field as keyof typeof organization];
-  if (!value) {
-    this.process.stdout.write('\n');
-  } else if (typeof value === 'object') {
-    this.process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-  } else {
-    this.process.stdout.write(`${value}\n`);
-  }
+  printField(this, 'organization', Object.keys(Schemas.organizationSchema.shape), organization, field);
 }
 
 export const OrganizationGetCommand = buildCommand({

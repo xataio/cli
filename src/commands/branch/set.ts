@@ -64,8 +64,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
   }
 
   if (!validFields.includes(field)) {
-    this.process.stderr.write(chalk.red(`Invalid field: ${field}. Valid fields are: ${validFields.join(', ')}`));
-    this.process.exit(1);
+    exitWithError(this, `Invalid field: ${field}. Valid fields are: ${validFields.join(', ')}`);
   }
 
   const branch = await this.api.branches.describeBranch({
@@ -101,8 +100,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
   if (field === 'postgres-version') {
     const currentImage = branch.configuration.image;
     if (!currentImage) {
-      this.process.stderr.write(chalk.red('Cannot determine current PostgreSQL version for this branch.\n'));
-      this.process.exit(1);
+      exitWithError(this, 'Cannot determine current PostgreSQL version for this branch.');
     }
 
     const images = await this.api.projects.listImages({
@@ -113,10 +111,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
     const upgradeable = sortPostgresImagesDesc(filterUpgradeablePostgresImages(images.images ?? [], currentImage));
 
     if (upgradeable.length === 0) {
-      this.process.stderr.write(
-        chalk.red(`No new compatible PostgreSQL version available for current image ${currentImage}.\n`)
-      );
-      this.process.exit(1);
+      exitWithError(this, `No new compatible PostgreSQL version available for current image ${currentImage}.`);
     }
 
     upgradeableImageChoices = upgradeable.map((image) => ({

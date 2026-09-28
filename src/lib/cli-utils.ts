@@ -81,6 +81,36 @@ type OrganizationOptions = BaseOptions & {
   organizationName?: string;
 };
 
+// Reads one field of a record for a `get` command. The fields come from the schema rather than the
+// record because the API omits unset optional fields.
+export const printField = (
+  context: LocalContext,
+  command: string,
+  fields: string[],
+  record: Record<string, unknown>,
+  field: string
+) => {
+  if (field === '.catalog') {
+    context.process.stdout.write(`Usage ${chalk.bold.italic(`${CLI_NAME} ${command} get <field>`)}\n\n`);
+    context.process.stdout.write(`The following fields are available:\n\n`);
+    context.process.stdout.write(`${fields.map((field) => `- ${field}`).join('\n')}\n`);
+    return;
+  }
+
+  if (!fields.includes(field)) {
+    exitWithError(context, `Invalid field: ${field}`);
+  }
+
+  const value = record[field];
+  if (value === undefined || value === null) {
+    context.process.stdout.write('\n');
+  } else if (typeof value === 'object') {
+    context.process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
+  } else {
+    context.process.stdout.write(`${value}\n`);
+  }
+};
+
 export const getOrganization = async (
   context: LocalContext,
   flags: { organization?: string },

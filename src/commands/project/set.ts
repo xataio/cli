@@ -4,7 +4,7 @@ import { match } from 'ts-pattern';
 import { CLI_NAME } from '~/lib/constants';
 import { scaleToZeroChoices, timeChoices, validScaleToZeroValues, validInactivityPeriodValues } from '~/lib/config';
 import type { LocalContext } from '~/context';
-import { printCustom } from '~/lib/cli-utils';
+import { exitWithError, printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
@@ -47,8 +47,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
   }
 
   if (!validFields.includes(field)) {
-    this.process.stderr.write(chalk.red(`Invalid field: ${field}. Valid fields are: ${validFields.join(', ')}`));
-    this.process.exit(1);
+    exitWithError(this, `Invalid field: ${field}. Valid fields are: ${validFields.join(', ')}`);
   }
 
   const project = await this.api.projects.getProject({
@@ -102,55 +101,45 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
   }
 
   if (!value) {
-    this.process.stderr.write(chalk.red(`Expected value for field ${field}`));
-    this.process.exit(1);
+    exitWithError(this, `Expected value for field ${field}`);
   }
 
   match(field)
     .with('name', () => {
       if (!value.trim()) {
-        this.process.stderr.write(chalk.red('Project name cannot be empty'));
-        this.process.exit(1);
+        exitWithError(this, 'Project name cannot be empty');
       }
     })
     .with('scale-to-zero-base', () => {
       if (!validScaleToZeroValues.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(
-            `Invalid scale to zero base value: ${value}. Valid values are: ${validScaleToZeroValues.join(', ')}`
-          )
+        exitWithError(
+          this,
+          `Invalid scale to zero base value: ${value}. Valid values are: ${validScaleToZeroValues.join(', ')}`
         );
-        this.process.exit(1);
       }
     })
     .with('scale-to-zero-child', () => {
       if (!validScaleToZeroValues.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(
-            `Invalid scale to zero child value: ${value}. Valid values are: ${validScaleToZeroValues.join(', ')}`
-          )
+        exitWithError(
+          this,
+          `Invalid scale to zero child value: ${value}. Valid values are: ${validScaleToZeroValues.join(', ')}`
         );
-        this.process.exit(1);
       }
     })
     .with('inactivity-period-base', () => {
       if (!validInactivityPeriodValues.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(
-            `Invalid inactivity period base value: ${value}. Valid values are: ${validInactivityPeriodValues.join(', ')}`
-          )
+        exitWithError(
+          this,
+          `Invalid inactivity period base value: ${value}. Valid values are: ${validInactivityPeriodValues.join(', ')}`
         );
-        this.process.exit(1);
       }
     })
     .with('inactivity-period-child', () => {
       if (!validInactivityPeriodValues.includes(value)) {
-        this.process.stderr.write(
-          chalk.red(
-            `Invalid inactivity period child value: ${value}. Valid values are: ${validInactivityPeriodValues.join(', ')}`
-          )
+        exitWithError(
+          this,
+          `Invalid inactivity period child value: ${value}. Valid values are: ${validInactivityPeriodValues.join(', ')}`
         );
-        this.process.exit(1);
       }
     })
     .exhaustive();
