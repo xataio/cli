@@ -1,5 +1,24 @@
 # xata-cli
 
+## 1.14.2
+
+### Patch Changes
+
+- [#3197](https://github.com/xataio/frontend/pull/3197) [`740cef4`](https://github.com/xataio/frontend/commit/740cef48ea991fc742855bb8b8ebcd1e2e2fa72d) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Accept unset fields in `get` and print `false` values
+
+  `branch get`, `organization get` and `project get` took the valid field names from the response,
+  which omits unset optional fields, so `branch get description` on a branch without one failed with
+  `Invalid field`. The field list now comes from the API schema, so an unset field prints an empty line
+  and the catalog always lists the same fields. `false` and `0` now print as values instead of an empty
+  line, and the errors that `get` and `set` write to stderr end with a newline.
+
+- Updated dependencies [[`950eb2c`](https://github.com/xataio/frontend/commit/950eb2cb2541c88373426d7294d5f564e3ba6cb3)]:
+  - @xata.io/api@0.1.22
+  - @xata.io/sql@0.2.18
+  - @xata.io/utils@0.8.2
+  - @xata.io/ai@0.1.3
+  - @xata.io/config@0.0.23
+
 ## 1.14.1
 
 ### Patch Changes
