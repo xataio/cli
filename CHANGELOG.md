@@ -1,5 +1,20 @@
 # xata-cli
 
+## 1.14.0
+
+### Minor Changes
+
+- [#3258](https://github.com/xataio/frontend/pull/3258) [`89d8444`](https://github.com/xataio/frontend/commit/89d844493de11b9233c25d212d1f356f41b91ff7) Thanks [@SferaDev](https://github.com/SferaDev)! - [SSO]: Show the `xata organization sso` commands in help. When an organization does not have the single sign-on add-on, the commands print the API's explanation.
+
+### Patch Changes
+
+- Updated dependencies [[`1948aa0`](https://github.com/xataio/frontend/commit/1948aa0ca0cf9f09a3699af363ed7ef6a7aada69), [`434c9e8`](https://github.com/xataio/frontend/commit/434c9e81f8744e676ff21b6b1b8e5ae3b722d6de), [`42fb53b`](https://github.com/xataio/frontend/commit/42fb53bcd5ef3a328f9209664cd4630e25383d3b)]:
+  - @xata.io/api@0.1.20
+  - @xata.io/utils@0.8.0
+  - @xata.io/sql@0.2.16
+  - @xata.io/ai@0.1.3
+  - @xata.io/config@0.0.21
+
 ## 1.13.0
 
 ### Minor Changes
