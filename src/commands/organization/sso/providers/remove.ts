@@ -18,9 +18,13 @@ export async function implementation(this: LocalContext, flags: Flags, aliasArg?
   }
 
   if (!flags.yes) {
+    const { providers } = await this.api.organizations.getOrganizationSSO({ pathParams: { organizationID } });
+    const enforced = providers.find((provider) => provider.alias === providerAlias)?.enforced;
     const confirmed = await this.enquirer.confirmPrompt(
       this.isInteractive,
-      `Disconnect ${providerAlias}? Members on its domain will be able to sign in with a password again.`
+      enforced
+        ? `Disconnect ${providerAlias}? SSO is required on its domain, so members there go back to their other sign-in methods, or reset a password if they have none.`
+        : `Disconnect ${providerAlias}? Members on its domain can no longer sign in through it.`
     );
     if (!confirmed) {
       return new Error('Aborted as there was no confirmation. Identity provider not disconnected.');

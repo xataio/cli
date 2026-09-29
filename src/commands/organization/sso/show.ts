@@ -24,11 +24,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
     const domainRows = sso.domains.map((domain) => [
       domain.domain,
       domain.verified ? 'yes' : 'no',
+      domain.verification?.record_name ?? '-',
       domain.verification?.record_value ?? '-',
       ssoRedirectUri(this.apiIssuer, domain.provider_alias)
     ]);
     this.process.stdout.write(
-      `${chalk.bold('Domains')}\n${renderTable(['domain', 'verified', 'txt_value', 'redirect_uri'], domainRows)}\n`
+      `${chalk.bold('Domains')}\n${renderTable(['domain', 'verified', 'txt_name', 'txt_value', 'redirect_uri'], domainRows)}\n`
     );
 
     if (sso.providers.length === 0) {

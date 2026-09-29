@@ -23,6 +23,19 @@ export async function inputPrompt<T = string>(
   return inputPrompt.input;
 }
 
+export async function passwordPrompt(isInteractive: boolean, message: string) {
+  if (!isInteractive) {
+    return '';
+  }
+
+  const passwordPrompt = await enquirer.prompt<{ password: string }>({
+    type: 'password',
+    name: 'password',
+    message
+  });
+  return passwordPrompt.password;
+}
+
 export async function confirmPrompt(isInteractive: boolean, message: string) {
   if (!isInteractive) {
     return '';

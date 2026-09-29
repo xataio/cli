@@ -18,7 +18,14 @@ import {
   printDetails,
   printTable
 } from './lib/cli-utils';
-import { confirmPrompt, datePrompt, inputPrompt, multiselectPrompt, selectPrompt } from './lib/enquirer';
+import {
+  confirmPrompt,
+  datePrompt,
+  inputPrompt,
+  multiselectPrompt,
+  passwordPrompt,
+  selectPrompt
+} from './lib/enquirer';
 import { env } from './lib/env';
 import { getActiveProfile } from './lib/profile';
 
@@ -60,6 +67,7 @@ export interface LocalContext extends CommandContext, StricliAutoCompleteContext
     confirmPrompt: typeof confirmPrompt;
     selectPrompt: typeof selectPrompt;
     inputPrompt: typeof inputPrompt;
+    passwordPrompt: typeof passwordPrompt;
     multiselectPrompt: typeof multiselectPrompt;
     datePrompt: typeof datePrompt;
   };
@@ -119,6 +127,7 @@ export async function buildContext(
       confirmPrompt,
       selectPrompt,
       inputPrompt,
+      passwordPrompt,
       multiselectPrompt,
       datePrompt
     },

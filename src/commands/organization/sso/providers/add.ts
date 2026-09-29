@@ -7,16 +7,32 @@ import { exitWithError, printCustom } from '~/lib/cli-utils';
 
 type Flags = {
   organization?: string;
-  type: Types.OrganizationSSOProviderType;
+  type?: Types.OrganizationSSOProviderType;
   domain?: string;
   'issuer-url'?: string;
   'client-id'?: string;
   'client-secret'?: string;
 };
 
+async function promptType(context: LocalContext) {
+  const selected = await context.enquirer.selectPrompt(
+    context.isInteractive,
+    'Identity provider',
+    SSO_PROVIDER_TYPES.map((type) => ({ name: type, message: SSO_PROVIDER_PRESETS[type].label }))
+  );
+  return SSO_PROVIDER_TYPES.find((type) => type === selected);
+}
+
 export async function implementation(this: LocalContext, flags: Flags) {
   const organizationID = await this.getOrganization(this, flags, {});
-  const preset = SSO_PROVIDER_PRESETS[flags.type];
+  const type = flags.type ?? (await promptType(this));
+  if (!type) {
+    return exitWithError(
+      this,
+      `A provider type is required. Pass --type <${SSO_PROVIDER_TYPES.join('|')}> in a non-interactive shell.`
+    );
+  }
+  const preset = SSO_PROVIDER_PRESETS[type];
 
   const domain = await this.enquirer.inputPrompt(this.isInteractive, 'Verified domain to connect', {
     flag: flags.domain
@@ -30,7 +46,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   const clientSecret =
     flags['client-secret'] ??
     this.env.XATA_SSO_CLIENT_SECRET ??
-    (await this.enquirer.inputPrompt(this.isInteractive, 'Client secret'));
+    (await this.enquirer.passwordPrompt(this.isInteractive, 'Client secret'));
 
   if (!domain || !clientId || !clientSecret) {
     return exitWithError(
@@ -39,15 +55,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
     );
   }
   if (issuer !== undefined && !ssoIssuerSchema.safeParse(issuer).success) {
-    return exitWithError(
-      this,
-      `An https:// issuer URL is required for --type ${flags.type}. Pass it with --issuer-url.`
-    );
+    return exitWithError(this, `An https:// issuer URL is required for --type ${type}. Pass it with --issuer-url.`);
   }
 
   const provider = await this.api.organizations.createOrganizationSSOProvider({
     pathParams: { organizationID },
-    body: { type: flags.type, domain, client_id: clientId, client_secret: clientSecret, ...(issuer ? { issuer } : {}) }
+    body: { type, domain, client_id: clientId, client_secret: clientSecret, ...(issuer ? { issuer } : {}) }
   });
 
   printCustom(this, provider, () => {
@@ -74,7 +87,7 @@ export const OrganizationSsoProvidersAddCommand = buildCommand({
         kind: 'enum',
         brief: 'Provider type',
         values: SSO_PROVIDER_TYPES,
-        default: 'google'
+        optional: true
       },
       domain: {
         kind: 'parsed',

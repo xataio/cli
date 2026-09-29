@@ -7,7 +7,7 @@ export const OrganizationSsoRoute = buildRouteMap({
   docs: {
     brief: 'Configure single sign-on for an organization',
     fullDescription:
-      'Claim an email domain, prove you own it with a DNS record, connect the identity provider its members sign in through, and then require it. Each verified domain has its own provider, so an organization can have several.'
+      'Claim an email domain, prove you own it with a DNS record, connect the identity provider its members sign in through, and then require it. Each verified domain has its own provider, so an organization can have several. See https://xata.io/docs/platform/sso.'
   },
   routes: {
     show: OrganizationSsoShowCommand,
