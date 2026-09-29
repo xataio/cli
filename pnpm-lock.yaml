@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@dotenvx/dotenvx':
-        specifier: 2.30.0
-        version: 2.30.0
+        specifier: 2.31.1
+        version: 2.31.1
       '@stricli/auto-complete':
         specifier: 1.3.0
         version: 1.3.0
@@ -21,14 +21,14 @@ importers:
         specifier: 1.2.5
         version: 1.2.5
       '@xata.io/ai':
-        specifier: 0.1.3
-        version: 0.1.3
+        specifier: 0.3.0
+        version: 0.3.0
       '@xata.io/api':
-        specifier: 0.1.22
-        version: 0.1.22
+        specifier: 0.1.23
+        version: 0.1.23
       '@xata.io/config':
-        specifier: 0.0.23
-        version: 0.0.23
+        specifier: 0.0.24
+        version: 0.0.24
       '@xata.io/lang':
         specifier: 0.0.5
         version: 0.0.5
@@ -39,14 +39,14 @@ importers:
         specifier: 0.2.4
         version: 0.2.4
       '@xata.io/sql':
-        specifier: 0.2.18
-        version: 0.2.18
+        specifier: 0.2.19
+        version: 0.2.19
       '@xata.io/tsconfig':
         specifier: 0.0.2
         version: 0.0.2
       '@xata.io/utils':
-        specifier: 0.8.2
-        version: 0.8.2
+        specifier: 0.9.0
+        version: 0.9.0
       chalk:
         specifier: 6.0.0
         version: 6.0.0
@@ -112,14 +112,14 @@ importers:
         version: 1.4.0(yaml@2.9.1)(zod@4.6.5)
     devDependencies:
       '@aws-sdk/client-s3':
-        specifier: 3.1140.0
-        version: 3.1140.0
+        specifier: 3.1141.0
+        version: 3.1141.0
       '@types/bun':
         specifier: 1.4.2
         version: 1.4.2
       '@types/node':
-        specifier: 26.6.2
-        version: 26.6.2
+        specifier: 26.6.3
+        version: 26.6.3
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
@@ -127,31 +127,25 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@xata.io/test-utils':
-        specifier: 0.0.29
-        version: 0.0.29
+        specifier: 0.0.31
+        version: 0.0.31
 
 packages:
 
-  '@ai-sdk/anthropic@4.0.58':
-    resolution: {integrity: sha512-vhXKBz7jnIhBlOoj2d0joyHicWISuIxDNha65SLrAnagAkVgulLoZBRLZRazstxlO/BtXU+cDERe1opVKte2OQ==}
+  '@ai-sdk/gateway@4.0.100':
+    resolution: {integrity: sha512-diJXVW2D1/NUW2JSg99b8yTpN8eW9AK5ntXSW4B7NrsW5STqwcGJAAOFlfOrQBzYHJlWReyy11WefWetdx4Qsw==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/gateway@4.0.87':
-    resolution: {integrity: sha512-6wJmX/D5OO7tvDJbtFdXdBuRt8AkCnW+FLK+W35UHe/tHgolAa4hclXtJcMSYnlTDy/t5DNRgdesVaoMXtwzow==}
+  '@ai-sdk/provider-utils@5.0.51':
+    resolution: {integrity: sha512-z0IsEsDx+dxlZqyCtDjMbBj16NGmxFVTgQcP3+n3EFm9ttNU6wjOgL/kgvaPwtmZM6F7JbtRuLyzr6WOfo5DMw==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@5.0.45':
-    resolution: {integrity: sha512-gLuaCups8OCIRz3eO6WWz5op7VLYNNtFzyH0sWUr0FE9v7cTxR0qxDpQdrKnGcql+9WWttobjnZsJVsuEbsPQQ==}
-    engines: {node: '>=22'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/provider@4.0.17':
-    resolution: {integrity: sha512-VYMBxIQdcHqbIf1j+YZlI9Ati6LZ4wJe0GGd4z4a5H/KxTggjeOiyaVYTnfF7LHZK5jMQ+rofmzz4QPqf++NUw==}
+  '@ai-sdk/provider@4.0.19':
+    resolution: {integrity: sha512-ryVZSSfmpEsr4bM8rbt9cSBWal+KGYRrm57C+k/hiPQHMiMahaqg2bPF0MpxSUWY8mGpt7s/ajM6PAqNTMKqPQ==}
     engines: {node: '>=22'}
 
   '@alcalzone/ansi-tokenize@0.3.1':
@@ -162,8 +156,8 @@ packages:
     resolution: {integrity: sha512-x12Q17KYlJAd3nKf8LV5LV0vt8sh8/6YfQLGPtrGnQf/tW4jqxPGq5GPpuVitpQYM3eUR4XB7CbxZf751NMbLw==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1140.0':
-    resolution: {integrity: sha512-7cf3xOyX6L5fyWZgPkVIrbsf/7cmKccKdRa3mkF467qchzgIiqAl/meG/SYdMdoY8JZYWGh0RobzoXiyKuGneA==}
+  '@aws-sdk/client-s3@3.1141.0':
+    resolution: {integrity: sha512-uOVH37xGLenAdJkCPCin/JJG2PgWrFcSsDnQ9+C9Zq8N9Oalo5ol4xmn5fG28iWAlA/b/9boQZgHbMh+UsIhcg==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.978.1':
@@ -234,8 +228,8 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
 
-  '@dotenvx/dotenvx@2.30.0':
-    resolution: {integrity: sha512-+Rk8UhaD3WIREKJBPmH9HHUvKO+ggb4tJhzAoXiZNBjQv6nAiJmI953MQ6sC7msHjAvhRIFlyZT7Oe6bQPslAA==}
+  '@dotenvx/dotenvx@2.31.1':
+    resolution: {integrity: sha512-Sen23BJL57MID4y7ATSHKokTYbJjsTqDWXOjDGBxydRddc2MEknaYMRz90LC7iTO9VXS5HyYBnA5N8oOKdUhug==}
     hasBin: true
 
   '@dotenvx/primitives@3.0.3':
@@ -271,8 +265,8 @@ packages:
     resolution: {integrity: sha512-ThMkboGeONWXAelq9FvGsuJC4rOi+qyC4/zhUF58xYpxUg5sQKx2VXZYJmtNjr4dSuBJ1HeJXETQILCz3wOHvw==}
     engines: {node: '>=18.0.0'}
 
-  '@smithy/signature-v4@5.7.3':
-    resolution: {integrity: sha512-7ImGm+FkHRLcBaRttIAMZ6bzJZWb2cJGoYjq46F2UjycujWzrL9GEN9h4w7eQyXJYnltrUhxbbieBAIRrdqpow==}
+  '@smithy/signature-v4@5.7.4':
+    resolution: {integrity: sha512-tHy0K0VtqNd5Y7Y41h0a0Lhh0L1GzC08dTWg0F7vRJWFtTENg7IZikf3wQkanYIRdb7ngoIPMTmqgUi401fEeQ==}
     engines: {node: '>=18.0.0'}
 
   '@smithy/types@4.19.0':
@@ -292,8 +286,8 @@ packages:
   '@types/bun@1.4.2':
     resolution: {integrity: sha512-GimotNn7+ZV0uVArItBbriZsR1oNf0+WTzPkdcFrzShI7k2norL0uzEaJT8T33dWr7O/c9ZDuAFQrctKCi72oQ==}
 
-  '@types/node@26.6.2':
-    resolution: {integrity: sha512-X1P21scMv4zGKLYqjdGjaKa7COa0RKVYYZZN/NfvLQ1JegxFhdhpZG/Lyn8AXx6CDUavKAd11v6BvfpkDByK8g==}
+  '@types/node@26.6.3':
+    resolution: {integrity: sha512-dsqMQQoeTLqu9wynDD00q573mNzso3IdQOAfHRJqLCcmCFPoGo9A1bDpUcv/9tnKpErQWv9uKeGfl37EIS02Yg==}
 
   '@types/qs@6.15.1':
     resolution: {integrity: sha512-GZHUBZR9hckSUhrxmp1nG6NwdpM9fCunJwyThLW1X3AyHgd9IlHb6VANpQQqDr2o/qQp6McZ3y/IA2rVzKzSbw==}
@@ -315,14 +309,14 @@ packages:
   '@workflow/serde@4.1.0':
     resolution: {integrity: sha512-pav4F2BoirECWR7Nf1TKt+2eETcBj7jj4cBefQ8VXQCA6NPkaKeLfj/zMgi+3zYV5ZIBT4GuUiphsj0/b9hPQQ==}
 
-  '@xata.io/ai@0.1.3':
-    resolution: {integrity: sha512-pZJqcX2BUZsbwr6pr0ce7lm8ncawq5a7RBRodxk2RY7uyfBJlbEN1eUmD0oZ+fW39/LxJqX9w96JlaXw2cvH7Q==}
+  '@xata.io/ai@0.3.0':
+    resolution: {integrity: sha512-c95Aetgcw/kKZ4XT72QbNYPy2Zyled6RBJpIKZQc8KWN8E+aSAXLLPNdwPgK5Z+7BxzoCLmXbA9OuRDNWDy6gw==}
 
-  '@xata.io/api@0.1.22':
-    resolution: {integrity: sha512-s/y18Fi38CsTjjaj+FCQgFRD74XS5chQ9ZVJxMNK6EO4mQdPxdU9INYPwc2xknujXbexq+Wvz0KXZaV/FVTv8w==}
+  '@xata.io/api@0.1.23':
+    resolution: {integrity: sha512-hsd2pOeL04fqMzidWyxQoWNyBKAWfPXbFMU9YtlXB7DTYiIVCMdQVxKh0cqZafT4o6Y02mKaf1OopLdVwRyjnw==}
 
-  '@xata.io/config@0.0.23':
-    resolution: {integrity: sha512-k4+5whG9AX4uEKHgl0HuBDLAi4kcfvty7s1rIXcW0TBtUblEYvImO6PaGnur3n+OUqMxrxEP4XSroly3fgSx4g==}
+  '@xata.io/config@0.0.24':
+    resolution: {integrity: sha512-/oAHdzRdgnKLvwGLhSWIamr5Bn9oBTIZkU/ltaazeguCXyUEXzEl4zrV0VWCG1PKgV/tjfPdeHTGjrEn3i33bw==}
 
   '@xata.io/lang@0.0.5':
     resolution: {integrity: sha512-8qjomPDDSyRkWYzzPpGyVnlk7V4RAQDICyN1rmeUDZ/sqOA71dxSwJ1qxiH24ozfhoe073L2xqqUc1UG1BarGg==}
@@ -336,20 +330,20 @@ packages:
   '@xata.io/pii@0.0.2':
     resolution: {integrity: sha512-gmdJt/wdMhQib/z2epjBTFXKu5ZfLzeIc2S5j6EBE12y6RnwR3f+byXySHkWyf1XatacJSZnXMKXOjv/fU+uzQ==}
 
-  '@xata.io/sql@0.2.18':
-    resolution: {integrity: sha512-mgkDTMdk5vw8XfT6wmUCD6HVYFBMV6pj0+GPjCewaa9Wno7y/B8hPMi6IkuR1UQxcOkwrABKcOayxrKbRXmT8A==}
+  '@xata.io/sql@0.2.19':
+    resolution: {integrity: sha512-WuJ4lrgLmsDBD/UItv9CRlW68M6rciMQZIzl90n3gCvqNlowWqbxsNohHDD86IOICe8g808kWM8C/zdWCDkCdw==}
 
-  '@xata.io/test-utils@0.0.29':
-    resolution: {integrity: sha512-VAPvOiA9XlnnerfWrMagZjMGKuctUmpYaGrmHdlVYaURxVl71s28UOufVnVld+cWMvQFSxBb/ieTWYdSIFz2vA==}
+  '@xata.io/test-utils@0.0.31':
+    resolution: {integrity: sha512-xloqYNf5mhSQoJpZTQev9FLihszs/2x81fs9uhexi8xsLlRRkkkVQkpfzBWN3c6FrisnK6l42le3pTTmP6mekA==}
 
   '@xata.io/tsconfig@0.0.2':
     resolution: {integrity: sha512-7uY1tUBZbA1g7PTSrJ+DWEo1qOxIpN3DU1W94ttWL7Ns76+DmL1JVYtXOw6i9Ta7SYeEii3pxQZnaOQRLe/EAw==}
 
-  '@xata.io/utils@0.8.2':
-    resolution: {integrity: sha512-pw+wsnzI+83YTpkCLKShXPUACQ+vXvDh+3NmMmAFNVK/UK49Q+h7uXhOlkqlfra9VQq7NCGxKxtXqVFmD47tKQ==}
+  '@xata.io/utils@0.9.0':
+    resolution: {integrity: sha512-rRqG4JuOkpK0dBJhQkO/HLrblFFua2drDQZvF2Ouxn5fiVACP77ZLI0VS1g7rGIZwP0Q7g79I0D52Zikld/p0Q==}
 
-  ai@7.0.107:
-    resolution: {integrity: sha512-PVYQ3W9kR8oYiGQxbg4aFIlhQzKskZm8UV+4E0zB2uKOzFr8ju3bXQncOOZtLsOgJY8vdpgyu3cXtomsfcdQYg==}
+  ai@7.0.122:
+    resolution: {integrity: sha512-Un4yVROG+BMd6Q62xUxb9yV+wlTrUGeXhRtg5ltEFDV0p3lOYQaQHK9ozB6rdPdqlH3LyaszfbFdUkZ1p00nIQ==}
     engines: {node: '>=22'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -366,8 +360,8 @@ packages:
     resolution: {integrity: sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==}
     engines: {node: '>=8'}
 
-  ansi-regex@6.3.0:
-    resolution: {integrity: sha512-WpDfL7NO6j7tH88IDBNVdUJxDh9nmCteAVW9dsep846XdwF4naCBK+/tGLX3KJgcpgMRXCFlTM2hKGoK9FsdrQ==}
+  ansi-regex@6.4.0:
+    resolution: {integrity: sha512-KzTVk2tCWAHtYrvvvaP8bJKJq2pVinhLcGEQdtLIYPbmNGNyYe8QwNaTUYQp2J7/vIsUKt5QCqAfUkYyG9DkOw==}
     engines: {node: '>=12'}
 
   ansi-styles@6.2.3:
@@ -963,8 +957,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.21.3:
-    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
+  ws@8.22.0:
+    resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -1018,29 +1012,23 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/anthropic@4.0.58(zod@4.6.5)':
+  '@ai-sdk/gateway@4.0.100(zod@4.6.5)':
     dependencies:
-      '@ai-sdk/provider': 4.0.17
-      '@ai-sdk/provider-utils': 5.0.45(zod@4.6.5)
-      zod: 4.6.5
-
-  '@ai-sdk/gateway@4.0.87(zod@4.6.5)':
-    dependencies:
-      '@ai-sdk/provider': 4.0.17
-      '@ai-sdk/provider-utils': 5.0.45(zod@4.6.5)
+      '@ai-sdk/provider': 4.0.19
+      '@ai-sdk/provider-utils': 5.0.51(zod@4.6.5)
       '@vercel/oidc': 3.2.0
       zod: 4.6.5
 
-  '@ai-sdk/provider-utils@5.0.45(zod@4.6.5)':
+  '@ai-sdk/provider-utils@5.0.51(zod@4.6.5)':
     dependencies:
-      '@ai-sdk/provider': 4.0.17
+      '@ai-sdk/provider': 4.0.19
       '@standard-schema/spec': 1.1.0
       '@workflow/serde': 4.1.0
       eventsource-parser: 3.1.1
       undici: 7.30.0
       zod: 4.6.5
 
-  '@ai-sdk/provider@4.0.17':
+  '@ai-sdk/provider@4.0.19':
     dependencies:
       json-schema: 0.4.0
 
@@ -1057,7 +1045,7 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-s3@3.1140.0':
+  '@aws-sdk/client-s3@3.1141.0':
     dependencies:
       '@aws-sdk/checksums': 3.1001.1
       '@aws-sdk/core': 3.978.1
@@ -1077,7 +1065,7 @@ snapshots:
       '@aws-sdk/xml-builder': 3.972.41
       '@aws/lambda-invoke-store': 0.3.0
       '@smithy/core': 3.35.0
-      '@smithy/signature-v4': 5.7.3
+      '@smithy/signature-v4': 5.7.4
       '@smithy/types': 4.19.0
       bowser: 2.14.1
       tslib: 2.8.1
@@ -1189,7 +1177,7 @@ snapshots:
   '@aws-sdk/signature-v4-multi-region@3.996.47':
     dependencies:
       '@aws-sdk/types': 3.974.6
-      '@smithy/signature-v4': 5.7.3
+      '@smithy/signature-v4': 5.7.4
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
@@ -1217,7 +1205,7 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@dotenvx/dotenvx@2.30.0':
+  '@dotenvx/dotenvx@2.31.1':
     dependencies:
       '@dotenvx/primitives': 3.0.3
       '@dotenvx/tooling': 1.0.3
@@ -1259,7 +1247,7 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
-  '@smithy/signature-v4@5.7.3':
+  '@smithy/signature-v4@5.7.4':
     dependencies:
       '@smithy/core': 3.35.0
       '@smithy/types': 4.19.0
@@ -1281,7 +1269,7 @@ snapshots:
     dependencies:
       bun-types: 1.4.2
 
-  '@types/node@26.6.2':
+  '@types/node@26.6.3':
     dependencies:
       undici-types: 8.9.0
 
@@ -1299,22 +1287,21 @@ snapshots:
 
   '@workflow/serde@4.1.0': {}
 
-  '@xata.io/ai@0.1.3':
+  '@xata.io/ai@0.3.0':
     dependencies:
-      '@ai-sdk/anthropic': 4.0.58(zod@4.6.5)
-      ai: 7.0.107(zod@4.6.5)
+      ai: 7.0.122(zod@4.6.5)
       zod: 4.6.5
 
-  '@xata.io/api@0.1.22':
+  '@xata.io/api@0.1.23':
     dependencies:
-      '@dotenvx/dotenvx': 2.30.0
+      '@dotenvx/dotenvx': 2.31.1
       '@xata.io/lang': 0.0.5
       zod: 4.6.5
 
-  '@xata.io/config@0.0.23':
+  '@xata.io/config@0.0.24':
     dependencies:
       '@xata.io/pii': 0.0.2
-      '@xata.io/sql': 0.2.18
+      '@xata.io/sql': 0.2.19
 
   '@xata.io/lang@0.0.5':
     dependencies:
@@ -1332,38 +1319,38 @@ snapshots:
 
   '@xata.io/pii@0.0.2': {}
 
-  '@xata.io/sql@0.2.18':
+  '@xata.io/sql@0.2.19':
     dependencies:
       '@neondatabase/serverless': 1.1.0
       '@types/qs': 6.15.1
-      '@xata.io/api': 0.1.22
+      '@xata.io/api': 0.1.23
       '@xata.io/pgroll': 0.9.1
       kysely: 0.29.6
       qs: 6.16.0
       zod: 4.6.5
 
-  '@xata.io/test-utils@0.0.29':
+  '@xata.io/test-utils@0.0.31':
     dependencies:
       '@neondatabase/serverless': 1.1.0
-      '@xata.io/api': 0.1.22
+      '@xata.io/api': 0.1.23
       '@xata.io/lang': 0.0.5
-      '@xata.io/sql': 0.2.18
-      '@xata.io/utils': 0.8.2
+      '@xata.io/sql': 0.2.19
+      '@xata.io/utils': 0.9.0
 
   '@xata.io/tsconfig@0.0.2': {}
 
-  '@xata.io/utils@0.8.2':
+  '@xata.io/utils@0.9.0':
     dependencies:
-      '@xata.io/api': 0.1.22
+      '@xata.io/api': 0.1.23
       '@xata.io/lang': 0.0.5
       tiny-invariant: 1.3.3
       zod: 4.6.5
 
-  ai@7.0.107(zod@4.6.5):
+  ai@7.0.122(zod@4.6.5):
     dependencies:
-      '@ai-sdk/gateway': 4.0.87(zod@4.6.5)
-      '@ai-sdk/provider': 4.0.17
-      '@ai-sdk/provider-utils': 5.0.45(zod@4.6.5)
+      '@ai-sdk/gateway': 4.0.100(zod@4.6.5)
+      '@ai-sdk/provider': 4.0.19
+      '@ai-sdk/provider-utils': 5.0.51(zod@4.6.5)
       zod: 4.6.5
 
   ansi-colors@4.1.3: {}
@@ -1374,7 +1361,7 @@ snapshots:
 
   ansi-regex@5.0.1: {}
 
-  ansi-regex@6.3.0: {}
+  ansi-regex@6.4.0: {}
 
   ansi-styles@6.2.3: {}
 
@@ -1386,7 +1373,7 @@ snapshots:
 
   bun-types@1.4.2:
     dependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -1625,7 +1612,7 @@ snapshots:
       type-fest: 5.10.0
       widest-line: 6.0.0
       wrap-ansi: 10.0.2
-      ws: 8.21.3
+      ws: 8.22.0
       yoga-layout: 3.2.1
     optionalDependencies:
       '@types/react': 19.3.0
@@ -1848,7 +1835,7 @@ snapshots:
 
   strip-ansi@7.2.0:
     dependencies:
-      ansi-regex: 6.3.0
+      ansi-regex: 6.4.0
 
   strip-final-newline@2.0.0: {}
 
@@ -1912,7 +1899,7 @@ snapshots:
 
   ws@7.5.13: {}
 
-  ws@8.21.3: {}
+  ws@8.22.0: {}
 
   yaml@2.9.1: {}
 
