@@ -1,3 +1,5 @@
+import type { CloneTransformer } from '@xata.io/ai';
+import type { Schema } from '@xata.io/sql';
 import invariant from 'tiny-invariant';
 import { Document, isScalar, parse } from 'yaml';
 import type { LocalContext } from '~/context';
@@ -21,6 +23,7 @@ export interface TableTransformer {
 
 export interface ColumnTransformers {
   name: string;
+  parameters?: Record<string, unknown>;
 }
 
 export const EMPTY_CLONE_CONFIG_JSON = {
@@ -29,6 +32,14 @@ export const EMPTY_CLONE_CONFIG_JSON = {
     table_transformers: []
   }
 };
+
+export function parseExistingConfig(yaml: string | undefined): CloneConfigJson | undefined {
+  try {
+    return yaml ? parse(yaml) : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export function readConfigFile(context: LocalContext): CloneConfigJson {
   const cloneConfig = context.fs.readFileSync(DEFAULT_CLONE_RULES_FILE, 'utf-8');
@@ -185,6 +196,43 @@ type SortableCloneConfig = {
     table_transformers?: SortableTableTransformer[];
   };
 };
+
+// Every schema column is covered: the AI's choice first, then the existing config's, then noop.
+export function buildCloneConfig(
+  schemas: Schema[],
+  transformers: CloneTransformer[],
+  validationMode: string,
+  existing?: CloneConfigJson
+) {
+  const key = (schema: string, table: string, column: string) => JSON.stringify([schema, table, column]);
+  const chosen = new Map<string, ColumnTransformers>();
+  const existingTables = existing?.transformations?.table_transformers;
+  for (const { schema, table, column_transformers } of Array.isArray(existingTables) ? existingTables : []) {
+    for (const [column, transformer] of Object.entries(column_transformers ?? {})) {
+      if (transformer && typeof transformer === 'object') chosen.set(key(schema, table, column), transformer);
+    }
+  }
+  for (const { schema, table, column, ...transformer } of transformers) {
+    chosen.set(key(schema, table, column), transformer);
+  }
+  return {
+    transformations: {
+      validation_mode: validationMode,
+      table_transformers: schemas.flatMap((schema) =>
+        Object.entries(schema.tables).map(([table, { columns }]) => ({
+          schema: schema.name,
+          table,
+          column_transformers: Object.fromEntries(
+            Object.keys(columns).map((column) => [
+              column,
+              chosen.get(key(schema.name, table, column)) ?? { name: 'noop' }
+            ])
+          )
+        }))
+      )
+    }
+  };
+}
 
 export function stringifyCloneConfig(config: SortableCloneConfig): string {
   const sorted = sortCloneConfigForOutput(config);

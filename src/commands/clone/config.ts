@@ -16,6 +16,8 @@ import {
   EMPTY_CLONE_CONFIG_JSON,
   readConfigFile,
   stringifyCloneConfig,
+  buildCloneConfig,
+  parseExistingConfig,
   writeConfigFile
 } from './clone-config-utils';
 import { getSelectedColumnsViaPrompt } from './mode/prompts';
@@ -141,9 +143,9 @@ export async function implementation(this: LocalContext, flags: Flags) {
       const feedback = formatValidationErrorsForPrompt(lastErrors);
       const effectivePrompt = feedback.length > 0 ? `${basePrompt}\n\n${feedback}` : basePrompt;
 
-      let aiConfigJson;
+      let aiTransformers;
       try {
-        aiConfigJson = await generateCloneConfigWithXata(this, organizationId, {
+        aiTransformers = await generateCloneConfigWithXata(this, organizationId, {
           prompt: effectivePrompt,
           formattedSchema,
           currentConfig: previousConfigYaml,
@@ -155,9 +157,10 @@ export async function implementation(this: LocalContext, flags: Flags) {
         );
         this.process.exit(1);
       }
-      aiConfigJson.transformations.validation_mode = validationMode;
-
-      writeSortedCloneConfig(this, aiConfigJson);
+      writeSortedCloneConfig(
+        this,
+        buildCloneConfig(fullSchemaJson, aiTransformers, validationMode, parseExistingConfig(previousConfigYaml))
+      );
 
       if (this.debug) {
         this.process.stdout.write(

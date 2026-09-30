@@ -1,3 +1,5 @@
+import type { CloneTransformer } from '@xata.io/ai';
+import type { Schema } from '@xata.io/sql';
 import { describe, expect, it } from 'bun:test';
 import dedent from 'dedent';
 import { parse } from 'yaml';
@@ -11,7 +13,9 @@ import {
   getPreSelectedColumns,
   getPreSelectedSchemas,
   sortCloneConfigForOutput,
-  stringifyCloneConfig
+  stringifyCloneConfig,
+  buildCloneConfig,
+  parseExistingConfig
 } from './clone-config-utils';
 
 it('preserves pgstream string dates, float bounds and integer parameters in YAML', () => {
@@ -37,6 +41,98 @@ it('preserves pgstream string dates, float bounds and integer parameters in YAML
   expect(yaml).toContain('max_value: 150000.0');
   expect(yaml).toContain('min_value: 18\n');
   expect(parse(yaml, { version: '1.1' })).toEqual(config);
+});
+
+describe('buildCloneConfig', () => {
+  const schemas = [
+    {
+      name: 'public',
+      tables: {
+        users: { columns: { id: {}, email: {}, 'Full.Name': {} } },
+        teams: { columns: { id: {}, email: {} } },
+        empty: { columns: {} }
+      }
+    },
+    { name: 'a.b', tables: { c: { columns: { d: {} } } } },
+    { name: 'a', tables: { 'b.c': { columns: { d: {} } } } }
+  ] as unknown as Schema[];
+  const tables = (transformers: CloneTransformer[], existing?: CloneConfigJson) =>
+    buildCloneConfig(schemas, transformers, 'strict', existing).transformations.table_transformers;
+
+  it('fills every schema column with noop when the AI transforms nothing', () => {
+    expect(tables([])).toEqual([
+      {
+        schema: 'public',
+        table: 'users',
+        column_transformers: { id: { name: 'noop' }, email: { name: 'noop' }, 'Full.Name': { name: 'noop' } }
+      },
+      { schema: 'public', table: 'teams', column_transformers: { id: { name: 'noop' }, email: { name: 'noop' } } },
+      { schema: 'public', table: 'empty', column_transformers: {} },
+      { schema: 'a.b', table: 'c', column_transformers: { d: { name: 'noop' } } },
+      { schema: 'a', table: 'b.c', column_transformers: { d: { name: 'noop' } } }
+    ]);
+    expect(buildCloneConfig(schemas, [], 'relaxed').transformations.validation_mode).toBe('relaxed');
+  });
+
+  it('keeps parameters, matches exact identifiers and drops invented tables and columns', () => {
+    const [users, teams, , dotted, other] = tables([
+      { schema: 'public', table: 'users', column: 'email', name: 'neosync_email', parameters: { seed: 99 } },
+      { schema: 'public', table: 'users', column: 'Full.Name', name: 'neosync_fullname' },
+      { schema: 'public', table: 'users', column: 'invented', name: 'masking' },
+      { schema: 'public', table: 'invented', column: 'id', name: 'masking' },
+      { schema: 'a.b', table: 'c', column: 'd', name: 'masking' }
+    ]);
+    expect(users?.column_transformers).toEqual({
+      id: { name: 'noop' },
+      email: { name: 'neosync_email', parameters: { seed: 99 } },
+      'Full.Name': { name: 'neosync_fullname' }
+    });
+    expect(teams?.column_transformers.email).toEqual({ name: 'noop' });
+    expect(dotted?.column_transformers.d).toEqual({ name: 'masking' });
+    expect(other?.column_transformers.d).toEqual({ name: 'noop' });
+  });
+
+  it('lets the last duplicate win', () => {
+    const [users] = tables([
+      { schema: 'public', table: 'users', column: 'email', name: 'masking' },
+      { schema: 'public', table: 'users', column: 'email', name: 'neosync_email' }
+    ]);
+    expect(users?.column_transformers.email).toEqual({ name: 'neosync_email' });
+  });
+
+  it('keeps existing transformers the AI left out and lets the AI change or remove them', () => {
+    const existing: CloneConfigJson = {
+      transformations: {
+        validation_mode: 'strict',
+        table_transformers: [
+          {
+            schema: 'public',
+            table: 'users',
+            column_transformers: { id: { name: 'greenmask_uuid' }, email: { name: 'masking' }, 'Full.Name': null }
+          },
+          { schema: 'public', table: 'teams', column_transformers: { email: { name: 'masking' } } }
+        ]
+      }
+    };
+    const [users, teams] = tables(
+      [
+        { schema: 'public', table: 'users', column: 'email', name: 'neosync_email' },
+        { schema: 'public', table: 'teams', column: 'email', name: 'noop' }
+      ],
+      existing
+    );
+    expect(users?.column_transformers).toEqual({
+      id: { name: 'greenmask_uuid' },
+      email: { name: 'neosync_email' },
+      'Full.Name': { name: 'noop' }
+    });
+    expect(teams?.column_transformers.email).toEqual({ name: 'noop' });
+  });
+
+  it('ignores an existing config that is not a clone config', () => {
+    expect(parseExistingConfig('transformations: [')).toBeUndefined();
+    expect(tables([], parseExistingConfig('just text'))[0]?.column_transformers.id).toEqual({ name: 'noop' });
+  });
 });
 
 const baseCloneConfig = dedent(`

@@ -66,7 +66,7 @@ describe('Xata AI client', () => {
   });
 
   test('sends clone validation feedback and the prior config to the explicit endpoint', async () => {
-    const config = { transformations: { validation_mode: 'strict' as const, table_transformers: [] } };
+    const config = { transformers: [] };
     const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse(config));
     const context = {
       ...createContext(),
@@ -78,7 +78,7 @@ describe('Xata AI client', () => {
       currentConfig: 'transformations: {}',
       model: 'claude-haiku-4-5-20251001' as const
     };
-    expect(await generateCloneConfigWithXata(context, 'org-b', body)).toEqual(config);
+    expect(await generateCloneConfigWithXata(context, 'org-b', body)).toEqual([]);
     expect(fetch.mock.calls[0]?.[0]).toBe('https://console.staging.example/api/ai/org-b/language-model');
     const sent = JSON.parse(fetch.mock.calls[0]?.[1]?.body as string);
     expect(sent.maxOutputTokens).toBe(8192);
@@ -88,21 +88,21 @@ describe('Xata AI client', () => {
   });
 
   test('defaults clone config generation to Gemini', async () => {
-    const config = { transformations: { validation_mode: 'strict' as const, table_transformers: [] } };
+    const config = { transformers: [] };
     const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse(config));
     await generateCloneConfigWithXata(createContext(), 'org-a', input);
     expect(fetch.mock.calls[0]?.[1]?.headers).toMatchObject({ 'ai-language-model-id': 'google/gemini-2.5-flash' });
   });
 
   test('accepts inputs at the size limits and rejects anything larger before sending a request', async () => {
-    const config = { transformations: { validation_mode: 'strict' as const, table_transformers: [] } };
+    const config = { transformers: [] };
     const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse(config));
     const largest = {
       prompt: 'p'.repeat(8_000),
       formattedSchema: 's'.repeat(100_000),
       currentConfig: 'c'.repeat(100_000)
     };
-    expect(await generateCloneConfigWithXata(createContext(), 'org-a', largest)).toEqual(config);
+    expect(await generateCloneConfigWithXata(createContext(), 'org-a', largest)).toEqual([]);
     for (const field of ['prompt', 'formattedSchema', 'currentConfig'] as const) {
       await expect(
         generateCloneConfigWithXata(createContext(), 'org-a', { ...largest, [field]: `${largest[field]}x` })

@@ -71,7 +71,6 @@ export const generateCloneConfigWithXata = async (
   const model = await createXataModel(
     context,
     organizationId,
-    // Gemini populated clone column maps in Gateway smoke tests; Claude returned empty maps. Revisit after investigation.
     input.model ?? 'gemini-2.5-flash',
     'cli-clone-config',
     abortSignal
