@@ -4,18 +4,18 @@ import type { LocalContext } from '~/context';
 import { exitWithError, getErrorMessage } from '~/lib/cli-utils';
 
 import { BUILD_SCHEMA_QUERY, type Schema } from '@xata.io/sql';
-import { formatSchemaForAI, generateCloneConfig } from '@xata.io/ai';
+import { formatSchemaForAI } from '@xata.io/ai';
 
 import chalk from 'chalk';
-import { env } from '~/lib/env';
-import { stringify } from 'yaml';
+import { AI_MODEL_NAMES, generateCloneConfigWithXata } from '~/lib/ai';
+import type { AIGatewayModel } from '@xata.io/ai/gateway';
 import { checkBranchIsReachable } from '~/lib/binary/utils';
 import { DEFAULT_CLONE_RULES_FILE } from '~/lib/constants';
 import {
   type CloneConfigJson,
   EMPTY_CLONE_CONFIG_JSON,
   readConfigFile,
-  sortCloneConfigForOutput,
+  stringifyCloneConfig,
   writeConfigFile
 } from './clone-config-utils';
 import { getSelectedColumnsViaPrompt } from './mode/prompts';
@@ -25,10 +25,8 @@ import { validateCloneRulesWithPgstream, formatValidationErrorsForPrompt } from 
 import { buildConnectionString } from '@xata.io/sql';
 import { debugDump } from '~/lib/debug';
 
-function writeSortedCloneConfig(context: LocalContext, config: Parameters<typeof sortCloneConfigForOutput>[0]) {
-  const sorted = sortCloneConfigForOutput(config);
-  const yaml = stringify(sorted);
-  writeConfigFile(context, yaml);
+function writeSortedCloneConfig(context: LocalContext, config: Parameters<typeof stringifyCloneConfig>[0]) {
+  writeConfigFile(context, stringifyCloneConfig(config));
 }
 
 /**
@@ -61,7 +59,7 @@ type Flags = {
   project?: string;
   branch?: string;
   prompt?: string;
-  model?: string;
+  model?: AIGatewayModel;
 };
 
 export async function implementation(this: LocalContext, flags: Flags) {
@@ -119,10 +117,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
 
   if (flags.mode === 'ai') {
-    if (!env.ANTHROPIC_API_KEY) {
-      return exitWithError(this, 'Set ANTHROPIC_API_KEY in the environment to use --mode ai.');
-    }
-    this.process.stdout.write(chalk.blue('Using AI to generate clone config...\n'));
+    const organizationId = await this.getOrganization(this, flags, {});
+    this.process.stdout.write(chalk.blue('Using Xata AI to generate clone config...\n'));
 
     const formattedSchema = formatSchemaForAI(fullSchemaJson);
     const basePrompt =
@@ -147,13 +143,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
       let aiConfigJson;
       try {
-        aiConfigJson = await generateCloneConfig(
-          env.ANTHROPIC_API_KEY,
-          effectivePrompt,
+        aiConfigJson = await generateCloneConfigWithXata(this, organizationId, {
+          prompt: effectivePrompt,
           formattedSchema,
-          previousConfigYaml,
-          { model: flags.model }
-        );
+          currentConfig: previousConfigYaml,
+          model: flags.model
+        });
       } catch (err) {
         this.process.stderr.write(
           chalk.red(`Failed to generate config with AI: ${err instanceof Error ? err.message : String(err)}\n`)
@@ -274,9 +269,9 @@ export const CloneConfigCommand = buildCommand({
         optional: true
       },
       model: {
-        kind: 'parsed',
-        brief: 'Anthropic model override for AI mode',
-        parse: String,
+        kind: 'enum',
+        values: AI_MODEL_NAMES,
+        brief: 'AI model, gemini-2.5-flash by default',
         optional: true
       }
     }

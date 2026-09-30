@@ -10,8 +10,10 @@ import {
 import type { LocalContext } from '~/context';
 import { exitWithError, getErrorMessage } from '~/lib/cli-utils';
 import { CLI_NAME } from '~/lib/constants';
+import { AI_MODEL_NAMES, generateSQLWithXata } from '~/lib/ai';
+import type { AIGatewayModel } from '@xata.io/ai/gateway';
 import type postgres from 'postgres';
-import { formatSchemaForAI, generateSQL } from '@xata.io/ai';
+import { formatSchemaForAI } from '@xata.io/ai';
 import { render } from 'ink';
 import { createElement } from 'react';
 import { AIApp } from '~/ai/app';
@@ -22,7 +24,7 @@ type Flags = {
   project?: string;
   branch?: string;
   database?: string;
-  model?: string;
+  model?: AIGatewayModel;
   yes: boolean;
 };
 
@@ -57,8 +59,6 @@ export async function implementation(this: LocalContext, flags: Flags) {
   if (!this.isInteractive || !this.process.stdin.isTTY || !this.process.stdout.isTTY) {
     return exitWithError(this, '`xata ai sql` requires an interactive terminal.');
   }
-  const apiKey = this.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return exitWithError(this, 'Set ANTHROPIC_API_KEY in the environment to generate SQL.');
   let activeDatabase: postgres.Sql | undefined;
   const controller = new AbortController();
   try {
@@ -109,10 +109,12 @@ export async function implementation(this: LocalContext, flags: Flags) {
     };
 
     const handleGenerateSQL = async (query: string, currentSQL: string): Promise<string> => {
-      return await generateSQL(apiKey, query, formattedSchema, currentSQL, {
-        model: flags.model,
-        abortSignal: controller.signal
-      });
+      return await generateSQLWithXata(
+        this,
+        organizationId,
+        { prompt: query, formattedSchema, currentSql: currentSQL, model: flags.model },
+        controller.signal
+      );
     };
 
     const ui = render(
@@ -175,9 +177,9 @@ export const GenerateSQLCommand = buildCommand({
         optional: true
       },
       model: {
-        kind: 'parsed',
-        brief: 'Anthropic model override for AI SQL generation',
-        parse: String,
+        kind: 'enum',
+        values: AI_MODEL_NAMES,
+        brief: 'AI model, claude-sonnet-4-6 by default',
         optional: true
       },
       yes: {

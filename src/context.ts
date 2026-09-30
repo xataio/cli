@@ -1,6 +1,6 @@
 import type { StricliAutoCompleteContext } from '@stricli/auto-complete';
 import type { CommandContext } from '@stricli/core';
-import type { ApiClient } from '@xata.io/api';
+import type { ApiClient, XataApi } from '@xata.io/api';
 import { determineAgent } from '@vercel/detect-agent';
 import * as ciInfo from 'ci-info';
 import fs from 'node:fs';
@@ -31,8 +31,9 @@ import { getActiveProfile } from './lib/profile';
 
 export interface LocalContext extends CommandContext, StricliAutoCompleteContext {
   readonly api: ApiClient;
+  readonly apiBaseUrl: string;
   readonly apiIssuer: string;
-  readonly refreshToken: () => Promise<string>;
+  readonly refreshToken: XataApi['refreshToken'];
   readonly env: typeof env;
   readonly process: NodeJS.Process;
   readonly fs: typeof import('node:fs');
@@ -101,6 +102,7 @@ export async function buildContext(
 
   return {
     api: xata.api,
+    apiBaseUrl: xata.baseUrl,
     apiIssuer: getIssuer(options),
     refreshToken: xata.refreshToken.bind(xata),
     env,

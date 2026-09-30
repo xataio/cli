@@ -10,8 +10,34 @@ import {
   getInitialColumns,
   getPreSelectedColumns,
   getPreSelectedSchemas,
-  sortCloneConfigForOutput
+  sortCloneConfigForOutput,
+  stringifyCloneConfig
 } from './clone-config-utils';
+
+it('preserves pgstream string dates, float bounds and integer parameters in YAML', () => {
+  const config = {
+    transformations: {
+      validation_mode: 'strict',
+      table_transformers: [
+        {
+          schema: 'public',
+          table: 'employees',
+          column_transformers: {
+            salary: { name: 'greenmask_float', parameters: { min_value: -30000, max_value: 150000 } },
+            age: { name: 'greenmask_integer', parameters: { min_value: 18, max_value: 99 } },
+            created_at: { name: 'greenmask_utc_timestamp', parameters: { min_timestamp: '2020-01-01T00:00:00Z' } },
+            hire_date: { name: 'greenmask_date', parameters: { min_value: '2000-01-01' } }
+          }
+        }
+      ]
+    }
+  };
+  const yaml = stringifyCloneConfig(config);
+  expect(yaml).toContain('min_value: -30000.0');
+  expect(yaml).toContain('max_value: 150000.0');
+  expect(yaml).toContain('min_value: 18\n');
+  expect(parse(yaml, { version: '1.1' })).toEqual(config);
+});
 
 const baseCloneConfig = dedent(`
     transformations:

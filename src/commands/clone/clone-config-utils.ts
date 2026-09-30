@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant';
-import { parse } from 'yaml';
+import { Document, isScalar, parse } from 'yaml';
 import type { LocalContext } from '~/context';
 import { DEFAULT_CLONE_RULES_FILE } from '~/lib/constants';
 import { getDynamicPIIFunctions } from './utils';
@@ -185,6 +185,22 @@ type SortableCloneConfig = {
     table_transformers?: SortableTableTransformer[];
   };
 };
+
+export function stringifyCloneConfig(config: SortableCloneConfig): string {
+  const sorted = sortCloneConfigForOutput(config);
+  const document = new Document(sorted, { version: '1.1' });
+  for (const [index, table] of (sorted.transformations.table_transformers ?? []).entries()) {
+    for (const column of Object.keys(table.column_transformers)) {
+      const path = ['transformations', 'table_transformers', index, 'column_transformers', column];
+      if (document.getIn([...path, 'name']) !== 'greenmask_float') continue;
+      for (const parameter of ['min_value', 'max_value']) {
+        const node = document.getIn([...path, 'parameters', parameter], true);
+        if (isScalar(node) && typeof node.value === 'number') node.minFractionDigits = 1;
+      }
+    }
+  }
+  return document.toString();
+}
 
 function sortTableTransformer<T extends SortableTableTransformer>(tt: T): T {
   const sortedColumnTransformers = Object.fromEntries(
