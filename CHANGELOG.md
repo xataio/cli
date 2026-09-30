@@ -1,5 +1,30 @@
 # xata-cli
 
+## 1.15.0
+
+### Minor Changes
+
+- [#3311](https://github.com/xataio/frontend/pull/3311) [`359746a`](https://github.com/xataio/frontend/commit/359746aa0e8b4fe34f357428eb1eca33a0700d71) Thanks [@SferaDev](https://github.com/SferaDev)! - `organization sso providers add` reads the client secret without echoing it and asks for the provider type in a terminal instead of assuming google, and requires `--type` in a non-interactive shell; `providers remove` only warns about other sign-in methods when SSO is required; `sso show` prints the TXT record name; `organization sso` links to the docs
+
+### Patch Changes
+
+- [#3320](https://github.com/xataio/frontend/pull/3320) [`490daaa`](https://github.com/xataio/frontend/commit/490daaad3e77b5e0270ecde5a4f269104cf60f95) Thanks [@SferaDev](https://github.com/SferaDev)! - Store the console URL for AI features in the profile with `xata auth login --console-url`, with `XATA_CONSOLE_URL` as an override. Production profiles keep using the production console.
+
+- [#3312](https://github.com/xataio/frontend/pull/3312) [`4a14d45`](https://github.com/xataio/frontend/commit/4a14d45762715dc0928783f70a3ed8778621c462) Thanks [@divyenduz](https://github.com/divyenduz)! - Move the organization-scoped AI Gateway proxy and its client into `@xata.io/ai/gateway`. Clients send a protocol version so the proxy can ask outdated ones to upgrade.
+
+- [#3312](https://github.com/xataio/frontend/pull/3312) [`4a14d45`](https://github.com/xataio/frontend/commit/4a14d45762715dc0928783f70a3ed8778621c462) Thanks [@divyenduz](https://github.com/divyenduz)! - Route CLI AI generation through an organization-authenticated Xata Gateway proxy. Preserve date strings and float transformer bounds in generated clone configuration YAML.
+
+  AI generation helpers now require AI SDK model objects instead of Anthropic API keys. Remove the Anthropic model registry and support Gateway model IDs.
+
+  Allow token refresh requests to accept an AbortSignal so AI cancellation and deadlines also stop pending authentication requests.
+
+- Updated dependencies [[`4a14d45`](https://github.com/xataio/frontend/commit/4a14d45762715dc0928783f70a3ed8778621c462), [`bc3631d`](https://github.com/xataio/frontend/commit/bc3631de2104811cb7ac11782baa0169c3993466), [`359746a`](https://github.com/xataio/frontend/commit/359746aa0e8b4fe34f357428eb1eca33a0700d71), [`4a14d45`](https://github.com/xataio/frontend/commit/4a14d45762715dc0928783f70a3ed8778621c462)]:
+  - @xata.io/ai@0.2.0
+  - @xata.io/api@0.1.23
+  - @xata.io/utils@0.8.3
+  - @xata.io/sql@0.2.19
+  - @xata.io/config@0.0.24
+
 ## 1.14.2
 
 ### Patch Changes
