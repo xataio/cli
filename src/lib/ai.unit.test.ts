@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import { XataApi } from '@xata.io/api';
 import { generateCloneConfigWithXata, generateSQLWithXata } from './ai';
-import { DEFAULT_API_BASE_URL, DEFAULT_API_ISSUER } from './constants';
 
 const input = { prompt: 'Count orders', formattedSchema: 'CREATE TABLE orders (id integer);' };
 const modelResponse = (output: unknown) =>
@@ -12,9 +11,7 @@ const modelResponse = (output: unknown) =>
     warnings: []
   });
 const createContext = () => ({
-  env: { XATA_WEBAPP_URL: undefined },
-  apiBaseUrl: DEFAULT_API_BASE_URL,
-  apiIssuer: DEFAULT_API_ISSUER,
+  env: { XATA_CONSOLE_URL: undefined },
   refreshToken: mock(async () => 'refreshed-xata-token')
 });
 
@@ -50,23 +47,30 @@ describe('Xata AI client', () => {
     expect(body.prompt[1].content[0].text).toContain(input.prompt);
   });
 
-  test.each([{ apiBaseUrl: 'https://api.staging.example' }, { apiIssuer: 'https://auth.staging.example' }])(
-    'does not send custom-backend credentials to the production console (%j)',
-    async (custom) => {
-      const fetch = spyOn(globalThis, 'fetch');
-      const context = { ...createContext(), ...custom };
-      await expect(generateSQLWithXata(context, 'org-a', input)).rejects.toThrow('XATA_WEBAPP_URL');
-      expect(context.refreshToken).not.toHaveBeenCalled();
-      expect(fetch).not.toHaveBeenCalled();
-    }
-  );
+  test('uses the console URL stored in the profile', async () => {
+    const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ sql: 'SELECT 1;' }));
+    const context = {
+      ...createContext(),
+      customConfig: { apiBaseUrl: 'https://api.staging.example', consoleUrl: 'https://app.staging.example' }
+    };
+    await generateSQLWithXata(context, 'org-a', input);
+    expect(fetch.mock.calls[0]?.[0]).toBe('https://app.staging.example/api/ai/org-a/language-model');
+  });
+
+  test('sends no token when a custom API has no console URL', async () => {
+    const fetch = spyOn(globalThis, 'fetch');
+    const context = { ...createContext(), customConfig: { apiBaseUrl: 'http://localhost:8080' } };
+    await expect(generateSQLWithXata(context, 'org-a', input)).rejects.toThrow('--console-url');
+    expect(context.refreshToken).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
 
   test('sends clone validation feedback and the prior config to the explicit endpoint', async () => {
     const config = { transformations: { validation_mode: 'strict' as const, table_transformers: [] } };
     const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse(config));
     const context = {
       ...createContext(),
-      env: { XATA_WEBAPP_URL: 'https://console.staging.example/' }
+      env: { XATA_CONSOLE_URL: 'https://console.staging.example/' }
     };
     const body = {
       ...input,

@@ -4,6 +4,7 @@ import { DEFAULT_DATABASE_NAME } from './constants';
 const CustomConfigSchema = z.object({
   issuer: z.string().optional(),
   apiBaseUrl: z.string().optional(),
+  consoleUrl: z.string().optional(),
   clientSecret: z.string().optional(),
   clientId: z.string().optional()
 });

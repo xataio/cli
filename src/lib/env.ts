@@ -6,7 +6,7 @@ import dotenv from '@dotenvx/dotenvx';
 import path from 'node:path';
 dotenv.config({
   debug: Boolean(Bun.env.DEBUG),
-  path: [path.join(__dirname, '../../', '.env.local'), path.join(__dirname, '../../', '.env')],
+  path: path.join(__dirname, '../../', '.env.local'),
   quiet: true,
   ignore: ['MISSING_ENV_FILE']
 });
@@ -33,16 +33,7 @@ const schema = z.object({
   XATA_CLI_SOURCE_POSTGRES_URL: z.string().optional(),
   XATA_PRIVATE_BRANCH_TIMEOUT: z.string().default('1000'),
 
-  XATA_WEBAPP_URL: z
-    .url()
-    .refine((value) => {
-      const url = new URL(value);
-      return (
-        url.protocol === 'https:' ||
-        (url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname))
-      );
-    }, 'XATA_WEBAPP_URL must use HTTPS (or HTTP on localhost).')
-    .optional()
+  XATA_CONSOLE_URL: z.string().optional()
 });
 
 export const env = schema.parse(process.env);

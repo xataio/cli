@@ -135,6 +135,70 @@ describe('auth login --api-key', () => {
     });
   });
 
+  test('stores --console-url with the custom deployment and keeps it on the next login', async () => {
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(
+        { ...context, profile: 'default' },
+        {
+          force: false,
+          'api-key': 'xau_custom',
+          'api-url': 'https://api.staging.xata.tech',
+          'console-url': 'https://app.staging.xata.tech/'
+        }
+      );
+      await implementation.call({ ...context, profile: 'default' }, { force: true, 'api-key': 'xau_next' });
+    } finally {
+      restore();
+    }
+
+    expect(configState.profiles.default).toMatchObject({
+      apiKey: 'xau_next',
+      customConfig: { apiBaseUrl: 'https://api.staging.xata.tech', consoleUrl: 'https://app.staging.xata.tech' }
+    });
+  });
+
+  test('drops the stored console URL when --api-url moves the profile to another deployment', async () => {
+    configState.profiles = {
+      default: {
+        type: 'apiKey',
+        apiKey: 'existing',
+        customConfig: { apiBaseUrl: 'https://api.staging.xata.tech', consoleUrl: 'https://app.staging.xata.tech' }
+      }
+    };
+    const { context, restore } = buildContext();
+
+    try {
+      await implementation.call(
+        { ...context, profile: 'default' },
+        { force: true, 'api-key': 'xau_prod', 'api-url': 'https://api.xata.tech' }
+      );
+    } finally {
+      restore();
+    }
+
+    expect(configState.profiles.default?.customConfig).toEqual({ apiBaseUrl: 'https://api.xata.tech' });
+  });
+
+  test('rejects an insecure --console-url before contacting the API', async () => {
+    const { context, stderr, exit, restore } = buildContext();
+
+    try {
+      await implementation.call(
+        { ...context, profile: 'default' },
+        { force: false, 'api-key': 'xau_custom', 'console-url': 'http://example.com' }
+      );
+    } finally {
+      restore();
+    }
+
+    expect(stderr.join('')).toContain('--console-url must use HTTPS (or HTTP on localhost).');
+    expect(exit).toHaveBeenCalledWith(1);
+    expect(getOrganizationsList).not.toHaveBeenCalled();
+    expect(updateConfig).not.toHaveBeenCalled();
+  });
+
   test('does not store the profile when the key is invalid', async () => {
     getOrganizationsList.mockImplementationOnce(async () => {
       throw new Error('401 Unauthorized');

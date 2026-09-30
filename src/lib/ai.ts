@@ -3,13 +3,13 @@ import type { XataApi } from '@xata.io/api';
 import { generateSQL, generateCloneConfig } from '@xata.io/ai';
 import { AI_GATEWAY_MODELS, type AIGatewayModel } from '@xata.io/ai/gateway';
 import { createAIGatewayModel } from '@xata.io/ai/gateway/client';
-import { DEFAULT_API_BASE_URL, DEFAULT_API_ISSUER } from './constants';
+import { resolveConsoleUrl } from './console-url';
+import type { CustomConfig } from './schemas';
 
 type AIContext = {
   refreshToken: XataApi['refreshToken'];
-  env: { XATA_WEBAPP_URL?: string };
-  apiBaseUrl: string;
-  apiIssuer: string;
+  env: { XATA_CONSOLE_URL?: string };
+  customConfig?: CustomConfig;
 };
 
 export const AI_MODEL_NAMES = Object.keys(AI_GATEWAY_MODELS) as AIGatewayModel[];
@@ -34,14 +34,8 @@ const createXataModel = async (
   feature: 'cli-sql' | 'cli-clone-config',
   signal: AbortSignal
 ) => {
-  if (
-    !context.env.XATA_WEBAPP_URL &&
-    (context.apiBaseUrl !== DEFAULT_API_BASE_URL || context.apiIssuer !== DEFAULT_API_ISSUER)
-  ) {
-    throw new Error('Set XATA_WEBAPP_URL to your matching webapp deployment when using a custom Xata backend.');
-  }
+  const consoleUrl = resolveConsoleUrl(context.env.XATA_CONSOLE_URL, context.customConfig);
   const token = await context.refreshToken({ signal });
-  const consoleUrl = context.env.XATA_WEBAPP_URL ?? 'https://console.xata.io';
   return createAIGatewayModel({ consoleUrl, organizationId, token, model, feature, signal });
 };
 

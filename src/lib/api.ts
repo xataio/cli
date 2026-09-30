@@ -57,6 +57,10 @@ export function getIssuer({ profile: profileFlag }: ApiOptionsFromCommand = {}):
   }
 }
 
+export function getCustomConfig({ profile: profileFlag }: ApiOptionsFromCommand = {}) {
+  return config?.profiles?.[getProfile({ profileFlag })]?.customConfig;
+}
+
 // We should inject the environment secrets during the build process
 export function getAuthConfig(customConfig?: CustomConfig) {
   return {

@@ -5,6 +5,7 @@ import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
 import { getAuthConfig } from '~/lib/api';
 import { config, updateConfig } from '~/lib/config';
+import { parseConsoleUrl } from '~/lib/console-url';
 import { CLI_NAME, PRODUCT_NAME } from '~/lib/constants';
 import { DEFAULT_PROFILE } from '~/lib/profile';
 import { isSessionValid, revokeSession } from '~/lib/session';
@@ -16,9 +17,16 @@ type Flags = {
   'api-url'?: string;
   'client-id'?: string;
   'client-secret'?: string;
+  'console-url'?: string;
 };
 
 export async function implementation(this: LocalContext, { force, ...customFlags }: Flags) {
+  const consoleUrlFlag = customFlags['console-url'] && parseConsoleUrl(customFlags['console-url']);
+  if (customFlags['console-url'] && !consoleUrlFlag) {
+    this.process.stderr.write('--console-url must use HTTPS (or HTTP on localhost).\n');
+    this.process.exit(1);
+    return;
+  }
   // Logging in names the profile it creates, so an absent --profile means `default`, not the active one.
   const profile = this.profile ?? DEFAULT_PROFILE;
   const profiles = config?.profiles || {};
@@ -43,11 +51,13 @@ export async function implementation(this: LocalContext, { force, ...customFlags
     issuer: customFlags.issuer ?? storedConfig?.issuer,
     apiBaseUrl: customFlags['api-url'] ?? storedConfig?.apiBaseUrl
   });
+  // A console URL belongs to the deployment it was given for, so moving to another API drops it.
+  const consoleUrl = consoleUrlFlag ?? (baseUrl === storedConfig?.apiBaseUrl ? storedConfig?.consoleUrl : undefined);
 
   // Passing --api-key is a non-interactive alternative to the device OAuth flow below.
   const apiKey = customFlags['api-key'];
   if (apiKey) {
-    await loginWithApiKey.call(this, { profile, apiKey, baseUrl, revokesPrevious });
+    await loginWithApiKey.call(this, { profile, apiKey, baseUrl, consoleUrl, revokesPrevious });
     return;
   }
 
@@ -101,7 +111,8 @@ export async function implementation(this: LocalContext, { force, ...customFlags
           expiresAt: token.expiresAt,
           customConfig: {
             ...client,
-            apiBaseUrl: baseUrl
+            apiBaseUrl: baseUrl,
+            consoleUrl
           }
         }
       }
@@ -139,8 +150,9 @@ async function loginWithApiKey(
     profile,
     apiKey,
     baseUrl,
+    consoleUrl,
     revokesPrevious
-  }: { profile: string; apiKey: string; baseUrl: string; revokesPrevious: boolean }
+  }: { profile: string; apiKey: string; baseUrl: string; consoleUrl?: string; revokesPrevious: boolean }
 ) {
   // Validate the API key before persisting it so we don't store an invalid one.
   try {
@@ -165,7 +177,7 @@ async function loginWithApiKey(
       [profile]: {
         type: 'apiKey',
         apiKey,
-        customConfig: { apiBaseUrl: baseUrl }
+        customConfig: { apiBaseUrl: baseUrl, consoleUrl }
       }
     }
   });
@@ -177,7 +189,7 @@ export const AuthLoginCommand = buildCommand({
   docs: {
     brief: `Log in to a ${PRODUCT_NAME} account`,
     fullDescription:
-      'Prints a URL and a code to authorize this machine, or stores an API key with `--api-key` for non-interactive use. The issuer, API URL and client flags log in against a deployment other than production, which is how Enterprise customers connect the CLI to a custom deployment in their own cloud. Omit them and the CLI uses the default production values.',
+      'Prints a URL and a code to authorize this machine, or stores an API key with `--api-key` for non-interactive use. The issuer, API URL, console URL and client flags log in against a deployment other than production, which is how Enterprise customers connect the CLI to a custom deployment in their own cloud. Omit them and the CLI uses the default production values.',
     customUsage: [
       { input: '--api-key xau_...', brief: 'Log in from a script or CI' },
       { input: '--profile staging', brief: 'Log in as another profile' },
@@ -219,6 +231,12 @@ export const AuthLoginCommand = buildCommand({
         kind: 'parsed',
         parse: String,
         brief: 'Client secret for custom environment',
+        optional: true
+      },
+      'console-url': {
+        kind: 'parsed',
+        parse: String,
+        brief: 'Console URL for custom environment, used by AI features',
         optional: true
       }
     },

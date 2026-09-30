@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import postgres from 'postgres';
-import { type ApiOptionsFromCommand, getApi, getIssuer } from './lib/api';
+import { type ApiOptionsFromCommand, getApi, getCustomConfig, getIssuer } from './lib/api';
 import {
   getBranch,
   getCheckedOutBranch,
@@ -28,10 +28,11 @@ import {
 } from './lib/enquirer';
 import { env } from './lib/env';
 import { getActiveProfile } from './lib/profile';
+import type { CustomConfig } from './lib/schemas';
 
 export interface LocalContext extends CommandContext, StricliAutoCompleteContext {
   readonly api: ApiClient;
-  readonly apiBaseUrl: string;
+  readonly customConfig?: CustomConfig;
   readonly apiIssuer: string;
   readonly refreshToken: XataApi['refreshToken'];
   readonly env: typeof env;
@@ -102,7 +103,7 @@ export async function buildContext(
 
   return {
     api: xata.api,
-    apiBaseUrl: xata.baseUrl,
+    customConfig: getCustomConfig(options),
     apiIssuer: getIssuer(options),
     refreshToken: xata.refreshToken.bind(xata),
     env,
