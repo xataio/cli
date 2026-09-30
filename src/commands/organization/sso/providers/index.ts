@@ -2,6 +2,7 @@ import { buildRouteMap } from '@stricli/core';
 import { OrganizationSsoProvidersAddCommand } from './add';
 import { OrganizationSsoProvidersEnforceCommand } from './enforce';
 import { OrganizationSsoProvidersRemoveCommand } from './remove';
+import { OrganizationSsoProvidersTestCommand } from './test';
 
 export const OrganizationSsoProvidersRoute = buildRouteMap({
   docs: {
@@ -10,7 +11,8 @@ export const OrganizationSsoProvidersRoute = buildRouteMap({
   routes: {
     add: OrganizationSsoProvidersAddCommand,
     remove: OrganizationSsoProvidersRemoveCommand,
-    enforce: OrganizationSsoProvidersEnforceCommand
+    enforce: OrganizationSsoProvidersEnforceCommand,
+    test: OrganizationSsoProvidersTestCommand
   },
   aliases: {
     connect: 'add',

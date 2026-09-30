@@ -47,7 +47,7 @@ export const OrganizationSsoProvidersEnforceCommand = buildCommand({
   docs: {
     brief: 'Require members on a domain to sign in through its identity provider',
     fullDescription:
-      'Members on the domain lose the password form and the shared Google and GitHub buttons, so check the provider works before requiring it. Pass --disable to lift the requirement.'
+      'Members on the domain lose the password form and the shared Google and GitHub buttons, so check the provider works with `xata organization sso providers test` before requiring it. Pass --disable to lift the requirement.'
   },
   parameters: {
     flags: {

@@ -65,7 +65,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   printCustom(this, provider, () => {
     this.process.stdout.write(
-      `${chalk.green(`✓ Connected ${provider.display_name} for ${provider.domain}`)}\n\nRedirect URI to register in ${preset.consoleName}:\n\n  ${ssoRedirectUri(this.apiIssuer, provider.alias)}\n\nRequire it with ${chalk.bold.italic(`xata organization sso providers enforce ${provider.alias}`)}\n`
+      `${chalk.green(`✓ Connected ${provider.display_name} for ${provider.domain}`)}\n\nRedirect URI to register in ${preset.consoleName}:\n\n  ${ssoRedirectUri(this.apiIssuer, provider.alias)}\n\nTest it with ${chalk.bold.italic(`xata organization sso providers test ${provider.alias}`)}, then require it with ${chalk.bold.italic(`xata organization sso providers enforce ${provider.alias}`)}\n`
     );
   });
 }
