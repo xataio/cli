@@ -15,5 +15,4 @@ minimumReleaseAgeExclude:
   - "@better-auth/*"
   - "@better-fetch/fetch"
   - better-call
-  - "@dotenvx/dotenvx"
   - "@xata.io/*"
