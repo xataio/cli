@@ -57,7 +57,7 @@ These targets cover the local skill-capable harnesses in the [MCP setup guide](h
 
 The command prints exact destinations and copies each complete skill directory once per distinct destination. Copies can be edited independently; other agents may also discover skills in shared directories. Each copy includes `.xata-skill.json` recording its source commit. Reload or restart your agent after installation.
 
-Identical installations are left unchanged. Differing installations, including local edits and extra files, require confirmation or `--force`. Review local changes before replacing them. Destination symlinks are refused, even with `--force`. Installation does not configure the registry's MCP server or plugins, or migrate skills installed by the older `xata ai download claude-skill` command.
+Identical installations are left unchanged. Differing installations, including local edits and extra files, require confirmation or `--force`. Review local changes before replacing them. Destination symlinks are refused, even with `--force`. Installation does not configure the registry's MCP server or plugins.
 
 ### Documentation
 
