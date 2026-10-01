@@ -17,6 +17,8 @@ const schema = z.object({
   XDG_CONFIG_HOME: z.string().optional(),
   HOME: z.string().optional(),
   APPDATA: z.string().optional(),
+  CLAUDE_CONFIG_DIR: z.string().optional(),
+  CODEX_HOME: z.string().optional(),
 
   // Xata environment variables
   XATA_CONFIG_DIR: z.string().optional(),

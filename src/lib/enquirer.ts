@@ -79,14 +79,22 @@ export async function selectPrompt<T extends Choice>(
   return selectPrompt.value;
 }
 
-export async function multiselectPrompt(isInteractive: boolean, message: string, choices: Choice[], initial: string[]) {
+export async function multiselectPrompt(
+  isInteractive: boolean,
+  message: string,
+  choices: Choice[],
+  initial: string[],
+  { searchable = false }: { searchable?: boolean } = {}
+) {
   if (!isInteractive) {
     return [];
   }
 
   const multiselectPrompt = await enquirer.prompt<{ value: string[] }>({
     name: 'value',
-    type: 'multiselect',
+    type: searchable ? 'autocomplete' : 'multiselect',
+    multiple: true,
+    ...(searchable ? { hint: 'Type to filter, Space to toggle, Enter to confirm' } : {}),
     message,
     //@ts-expect-error fix types
     choices,
