@@ -51,21 +51,23 @@ export async function implementation(this: LocalContext) {
   const status = {
     organization: organization.name,
     project: `${project.name} (${project.id})`,
-    branch: `${branch.name} (${branch.id})`
+    branch: `${branch.name} (${branch.id})`,
+    database: branchConfig.databaseName
   };
 
   this.printDetails(this, status, [
     ['organization', status.organization],
     ['project', status.project],
-    ['branch', status.branch]
+    ['branch', status.branch],
+    ['database', status.database]
   ]);
 }
 
 export const StatusCommand = buildCommand({
   docs: {
-    brief: 'Show the organization, project, and branch this folder uses',
+    brief: 'Show the organization, project, branch, and database this folder uses',
     fullDescription:
-      'Reads the context from the `XATA_*` variables and the local config, so it is the quickest way to see which branch the commands run here will act on.'
+      'Reads the context from the `XATA_*` variables and the local config, so it is the quickest way to see which branch and database the commands run here will act on.'
   },
   parameters: {
     flags: {}
