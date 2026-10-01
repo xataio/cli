@@ -1,5 +1,26 @@
 # xata-cli
 
+## 1.16.0
+
+### Minor Changes
+
+- [#3340](https://github.com/xataio/frontend/pull/3340) [`4168259`](https://github.com/xataio/frontend/commit/416825976c7be9e9c4dfbde49660cb31690c75a5) Thanks [@divyenduz](https://github.com/divyenduz)! - Add `xata skill list` and `xata skill install` to discover and install agent skills from `xataio/skills`. Searchable prompts select skills and agents, with support for ten agent harnesses, project or global installation, and explicit flags for automation. Installations preserve local edits unless replacement is confirmed or forced.
+
+- [#3345](https://github.com/xataio/frontend/pull/3345) [`1faaff7`](https://github.com/xataio/frontend/commit/1faaff773ac87f45992c5c965580fa35eb41b188) Thanks [@divyenduz](https://github.com/divyenduz)! - Remove `xata ai download claude-skill`. Use `xata skill install branching-postgresql-for-agents --agent claude-code` instead. The replacement skill is hosted in `xataio/skills` and supports other agent harnesses through `--agent`.
+
+  Existing installations are left untouched. After verifying the replacement and preserving local edits, move the old `.claude/skills/xata` directory (or a custom download directory) outside agent skill discovery paths. Do not rerun the removed command with an older CLI: it deletes the target directory before fetching the retired website endpoints.
+
+- [#3336](https://github.com/xataio/frontend/pull/3336) [`cd47605`](https://github.com/xataio/frontend/commit/cd47605d895b004e42d51679cf106600b43d89ed) Thanks [@SferaDev](https://github.com/SferaDev)! - `organization sso providers test` prints a link that signs in through an identity provider, so you can check it works before requiring SSO. `@xata.io/utils` exports `ssoTestSignInUrl`.
+
+### Patch Changes
+
+- [#3323](https://github.com/xataio/frontend/pull/3323) [`b2af498`](https://github.com/xataio/frontend/commit/b2af49829c7cb6dc69d01bb8390483d3de1d646b) Thanks [@SferaDev](https://github.com/SferaDev)! - `generateCloneConfig` returns a flat list of column transformers (`CloneTransformer[]`) instead of a nested `CloneConfig`, and the CLI builds the clone config from it and the database schema. AI clone configs now work with Claude models and with large schemas, and an existing config's transformers stay unless the AI changes them.
+
+- [#3339](https://github.com/xataio/frontend/pull/3339) [`c3a4597`](https://github.com/xataio/frontend/commit/c3a45977547ca45ad9d5a009024176f03cdf7764) Thanks [@divyenduz](https://github.com/divyenduz)! - Show the configured database name in human-readable and JSON output from `xata status`.
+- Updated dependencies [[`b2af498`](https://github.com/xataio/frontend/commit/b2af49829c7cb6dc69d01bb8390483d3de1d646b), [`f6d8bac`](https://github.com/xataio/frontend/commit/f6d8bac8baa898da58042ba004480b322055fac2), [`cd47605`](https://github.com/xataio/frontend/commit/cd47605d895b004e42d51679cf106600b43d89ed)]:
+  - @xata.io/ai@0.3.0
+  - @xata.io/utils@0.9.0
+
 ## 1.15.0
 
 ### Minor Changes
