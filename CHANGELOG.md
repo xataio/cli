@@ -1,5 +1,21 @@
 # xata-cli
 
+## 1.16.1
+
+### Patch Changes
+
+- [#3361](https://github.com/xataio/frontend/pull/3361) [`b35cdd4`](https://github.com/xataio/frontend/commit/b35cdd45ddfcea5a9e59d43ce4a5188904388d0d) Thanks [@SferaDev](https://github.com/SferaDev)! - Organization roles are always on, since the API no longer gates them behind a flag.
+
+  - `@xata.io/tracking` drops the `organizationRoles` feature flag.
+  - `xata org members invite`, `xata org invitations create` and `xata org members set-role` no longer treat a 404 from the roles endpoint as roles being disabled, and `--role` no longer lists the roles first.
+
+- Updated dependencies [[`7e95583`](https://github.com/xataio/frontend/commit/7e955834d9397a4f931c2d4e615126ad9cc7a006), [`41b3563`](https://github.com/xataio/frontend/commit/41b356319b7aa2d73b521aa75ae745ec2113b5ca), [`0dbb989`](https://github.com/xataio/frontend/commit/0dbb989030c80da9d18148d52152cbf5ac0ef45f)]:
+  - @xata.io/api@0.1.24
+  - @xata.io/sql@0.2.20
+  - @xata.io/utils@0.9.1
+  - @xata.io/ai@0.3.0
+  - @xata.io/config@0.0.25
+
 ## 1.16.0
 
 ### Minor Changes
