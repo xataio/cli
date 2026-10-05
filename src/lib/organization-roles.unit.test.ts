@@ -1,91 +1,50 @@
 import { describe, expect, mock, test } from 'bun:test';
-import { ApiError } from '@xata.io/api';
 import type { LocalContext } from '~/context';
-import { areRolesEnabled, resolveInvitationRole } from './organization-roles';
-
-class ExitCalled extends Error {}
+import { listRoles, resolveInvitationRole } from './organization-roles';
 
 type Options = {
   isInteractive?: boolean;
   outputJson?: boolean;
   promptedRole?: string;
-  rolesError?: ApiError;
 };
 
-function buildContext({ isInteractive = false, outputJson = false, promptedRole, rolesError }: Options = {}) {
-  const stderr: string[] = [];
+function buildContext({ isInteractive = false, outputJson = false, promptedRole }: Options = {}) {
   const selectPrompt = mock(
     async (_isInteractive: boolean, _message: string, _choices: unknown[], _options?: unknown) => promptedRole ?? ''
   );
-  const listOrganizationRoles = mock(async () => {
-    if (rolesError) {
-      throw rolesError;
-    }
-    return {
-      roles: [
-        { id: 'admin', name: 'Admin', description: 'Full access' },
-        { id: 'editor', name: 'Editor', description: 'Create and change projects' }
-      ]
-    };
-  });
+  const listOrganizationRoles = mock(async () => ({
+    roles: [
+      { id: 'admin', name: 'Admin', description: 'Full access' },
+      { id: 'editor', name: 'Editor', description: 'Create and change projects' }
+    ]
+  }));
 
   const context = {
     api: { organizations: { listOrganizationRoles } },
-    process: {
-      stdout: { write: () => true },
-      stderr: { write: (value: string) => stderr.push(value) },
-      exit: mock(() => {
-        throw new ExitCalled();
-      })
-    },
     isInteractive,
     outputJson,
     enquirer: { selectPrompt }
   } as unknown as LocalContext;
 
-  return { context, selectPrompt, listOrganizationRoles, stderr };
+  return { context, selectPrompt, listOrganizationRoles };
 }
 
-const rolesDisabled = () => new ApiError(404, {}, 'roles are not enabled for this organization');
-
-describe('areRolesEnabled', () => {
-  test('is true when the organization lists its roles', async () => {
+describe('listRoles', () => {
+  test('returns the roles the organization offers', async () => {
     const { context, listOrganizationRoles } = buildContext();
 
-    expect(await areRolesEnabled(context, 'org-id')).toBe(true);
+    expect(await listRoles(context, 'org-id')).toHaveLength(2);
     expect(listOrganizationRoles).toHaveBeenCalledWith({ pathParams: { organizationID: 'org-id' } });
-  });
-
-  test('is false when listing roles returns 404', async () => {
-    const { context } = buildContext({ rolesError: rolesDisabled() });
-
-    expect(await areRolesEnabled(context, 'org-id')).toBe(false);
-  });
-
-  test('rethrows other errors', async () => {
-    const { context } = buildContext({ rolesError: new ApiError(403, {}, 'Forbidden') });
-
-    await expect(areRolesEnabled(context, 'org-id')).rejects.toThrow('Forbidden');
   });
 });
 
 describe('resolveInvitationRole', () => {
   test('returns the role given with --role', async () => {
-    const { context, selectPrompt } = buildContext({ isInteractive: true });
+    const { context, selectPrompt, listOrganizationRoles } = buildContext({ isInteractive: true });
 
     expect(await resolveInvitationRole(context, 'org-id', 'editor')).toBe('editor');
     expect(selectPrompt).not.toHaveBeenCalled();
-  });
-
-  test('rejects --role when roles are disabled', async () => {
-    const { context, stderr } = buildContext({ outputJson: true, rolesError: rolesDisabled() });
-
-    await expect(resolveInvitationRole(context, 'org-id', 'editor')).rejects.toBeInstanceOf(ExitCalled);
-    expect(JSON.parse(stderr.join(''))).toEqual({
-      success: false,
-      error: 'Roles are not enabled for this organization',
-      organization: 'org-id'
-    });
+    expect(listOrganizationRoles).not.toHaveBeenCalled();
   });
 
   test('omits the role when it cannot prompt, without checking roles', async () => {
@@ -112,12 +71,5 @@ describe('resolveInvitationRole', () => {
       { name: 'editor', message: expect.stringContaining('Editor') }
     ]);
     expect(selectPrompt.mock.calls[0]?.[3]).toEqual({ initial: 1 });
-  });
-
-  test('skips the prompt in a terminal when roles are disabled', async () => {
-    const { context, selectPrompt } = buildContext({ isInteractive: true, rolesError: rolesDisabled() });
-
-    expect(await resolveInvitationRole(context, 'org-id', undefined)).toBeUndefined();
-    expect(selectPrompt).not.toHaveBeenCalled();
   });
 });

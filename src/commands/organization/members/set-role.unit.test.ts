@@ -11,7 +11,6 @@ type Options = {
   outputJson?: boolean;
   isInteractive?: boolean;
   promptedValue?: string;
-  rolesEnabled?: boolean;
   memberRole?: string;
 };
 
@@ -20,7 +19,6 @@ function buildContext({
   outputJson = true,
   isInteractive = false,
   promptedValue = '',
-  rolesEnabled = true,
   memberRole = 'admin'
 }: Options = {}) {
   const stdout: string[] = [];
@@ -30,17 +28,12 @@ function buildContext({
       throw setRoleError;
     }
   });
-  const listOrganizationRoles = mock(async () => {
-    if (!rolesEnabled) {
-      throw new ApiError(404, {}, 'roles are not enabled for this organization');
-    }
-    return {
-      roles: [
-        { id: 'admin', name: 'Admin', description: 'Full access' },
-        { id: 'editor', name: 'Editor', description: 'Create and change projects' }
-      ]
-    };
-  });
+  const listOrganizationRoles = mock(async () => ({
+    roles: [
+      { id: 'admin', name: 'Admin', description: 'Full access' },
+      { id: 'editor', name: 'Editor', description: 'Create and change projects' }
+    ]
+  }));
   const listOrganizationMembers = mock(async () => ({
     members: [{ id: 'usr_1', email: 'ada@example.com', name: 'Ada', role: memberRole }]
   }));
@@ -145,7 +138,7 @@ describe('organization members set-role', () => {
 
   test('reports the API refusing the change as JSON', async () => {
     const { context, stdout, stderr } = buildContext({
-      setRoleError: new ApiError(404, {}, 'roles are not enabled for this organization')
+      setRoleError: new ApiError(409, {}, 'an organization must always have at least one Admin')
     });
 
     await run(context, { 'user-id': 'usr_1', role: 'editor' });
@@ -153,28 +146,9 @@ describe('organization members set-role', () => {
     expect(stdout).toEqual([]);
     expect(failure(stderr)).toEqual({
       success: false,
-      error: 'Failed to set role: roles are not enabled for this organization',
+      error: 'Failed to set role: an organization must always have at least one Admin',
       userId: 'usr_1',
       role: 'editor'
-    });
-  });
-
-  test('fails before listing members or prompting when roles are disabled', async () => {
-    const { context, stdout, stderr, setOrganizationMemberRole, listOrganizationMembers, selectPrompt } = buildContext({
-      isInteractive: true,
-      rolesEnabled: false
-    });
-
-    await run(context, {});
-
-    expect(listOrganizationMembers).not.toHaveBeenCalled();
-    expect(selectPrompt).not.toHaveBeenCalled();
-    expect(setOrganizationMemberRole).not.toHaveBeenCalled();
-    expect(stdout).toEqual([]);
-    expect(failure(stderr)).toEqual({
-      success: false,
-      error: 'Roles are not enabled for this organization',
-      organization: 'org-id'
     });
   });
 

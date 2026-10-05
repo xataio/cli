@@ -4,7 +4,7 @@ import { ORGANIZATION_ROLE_IDS, organizationRoleLabel } from '@xata.io/utils';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { exitWithErrorDetails, getErrorMessage, printCustom } from '~/lib/cli-utils';
-import { ensureRolesEnabled, promptRole } from '~/lib/organization-roles';
+import { listRoles, promptRole } from '~/lib/organization-roles';
 
 type Flags = {
   organization?: string;
@@ -16,8 +16,6 @@ export async function implementation(this: LocalContext, flags: Flags) {
   const organizationId = await this.getOrganization(this, flags, {});
   const details = { organization: organizationId };
 
-  const roles = await ensureRolesEnabled(this, organizationId);
-
   const { members } = await this.api.organizations.listOrganizationMembers({
     pathParams: { organizationID: organizationId }
   });
@@ -26,16 +24,17 @@ export async function implementation(this: LocalContext, flags: Flags) {
     return exitWithErrorDetails(this, 'No members found in this organization', details);
   }
 
-  const userId =
-    flags['user-id'] ??
-    (await this.enquirer.selectPrompt(
+  let userId = flags['user-id'];
+  if (!userId) {
+    userId = await this.enquirer.selectPrompt(
       this.isInteractive,
       'Select a member',
       members.map((member) => ({
         name: member.id,
         message: `${member.name || '-'} (${member.email}): ${organizationRoleLabel(member.role)}`
       }))
-    ));
+    );
+  }
 
   if (!userId) {
     return exitWithErrorDetails(this, 'User ID is required', details);
@@ -47,7 +46,11 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
   const memberName = member.name || member.email;
 
-  const role = flags.role ?? (await promptRole(this, `Select a role for ${memberName}`, member.role, roles));
+  let role = flags.role;
+  if (!role) {
+    const roles = await listRoles(this, organizationId);
+    role = await promptRole(this, `Select a role for ${memberName}`, member.role, roles);
+  }
 
   if (!role) {
     return exitWithErrorDetails(this, 'Role is required', { userId });
