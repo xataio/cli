@@ -15,6 +15,7 @@ import { StatusCommand } from './commands/status';
 import { StreamRoute } from './commands/stream';
 import { UpgradeCommand } from './commands/upgrade';
 import { VersionCommand } from './commands/version';
+import { LicensesCommand } from './commands/licenses';
 import { OnboardCommand } from './commands/onboard';
 import { ScratchCommand } from './commands/scratch';
 import { CLI_NAME } from './lib/constants';
@@ -41,6 +42,7 @@ const routes = buildRouteMap({
 
     status: StatusCommand,
     version: VersionCommand,
+    licenses: LicensesCommand,
     checkout: BranchCheckoutCommand,
     scratch: ScratchCommand,
     console: ConsoleCommand,

@@ -1,0 +1,90 @@
+Xata CLI (xata-cli)
+Copyright (c) Xata, Inc.
+
+The Xata CLI is licensed under the Apache License, Version 2.0. See the LICENSE
+file for the full text.
+
+The Xata CLI is distributed as standalone, single-file executables built with
+`bun build --compile` (see scripts/build.ts) for the following targets:
+darwin-arm64, darwin-x64, linux-arm64, linux-x64, windows-x64. It is not
+published to the npm registry. Those compiled executables EMBED the Bun runtime
+and its bundled components, as well as the CLI's own (permissively licensed)
+npm dependencies. Each embedded component is distributed under its own license;
+this NOTICE does not alter those licenses.
+
+You can print this NOTICE from the CLI itself by running `xata licenses`.
+
+--------------------------------------------------------------------------------
+Copyleft (LGPL) components embedded in the compiled binaries via the Bun runtime
+--------------------------------------------------------------------------------
+
+The Bun runtime (MIT, https://github.com/oven-sh/bun) statically links several
+components that are covered by copyleft licenses. Because the Xata CLI embeds the
+Bun runtime, these components are present in the Xata CLI executables.
+
+JavaScriptCore / WebKit (and WebCore)
+  License:  LGPL-2.1 (with portions under BSD-2-Clause / BSD-3-Clause)
+  How it is included:  Bun uses JavaScriptCore as its JavaScript engine and
+    STATICALLY LINKS it (and WebCore). When the Xata CLI is compiled with
+    `bun build --compile`, the resulting executable contains the Bun runtime
+    and, with it, JavaScriptCore/WebKit. No Xata proprietary code is linked into
+    JavaScriptCore; it is combined only as part of the Bun runtime, unmodified.
+  Corresponding source:  Bun builds against its own WebKit fork, which is the
+    corresponding source for the version shipped:
+      https://github.com/oven-sh/webkit
+    Bun pins the exact WebKit revision it builds against for each Bun release;
+    the Bun version embedded in a given Xata CLI release is recorded in that
+    release (see `xata version` and the release manifest). Upstream WebKit is at
+    https://webkit.org and https://github.com/WebKit/WebKit.
+
+tinycc (TinyCC)
+  License:  LGPL-2.1
+  How it is included:  Statically linked by the Bun runtime.
+  Source:  https://github.com/oven-sh/tinycc (Bun fork) / https://repo.or.cz/tinycc.git
+
+A copy of the GNU Lesser General Public License, Version 2.1 is included
+alongside this NOTICE at licenses/LGPL-2.1.txt and is embedded in the compiled
+binaries (printed via `xata licenses --full`).
+
+LGPL compliance for the compiled binaries:
+  - This NOTICE provides the required attribution, identifies each LGPL
+    component and its license, and ships a copy of the LGPL-2.1 license text.
+  - The complete corresponding source code for each LGPL component, at the
+    version shipped by the embedded Bun runtime, is available from the URLs
+    listed above (Bun's WebKit/tinycc forks track the exact revisions it builds
+    against).
+  - Relinking / replacement: because these components are statically linked into
+    the Bun runtime, a user who wishes to run the Xata CLI against a modified
+    version of an LGPL component may do so by (a) building a modified Bun runtime
+    per Bun's instructions (https://bun.com/docs/project/licensing) using the
+    corresponding source above, and (b) rebuilding the Xata CLI from source
+    (this repository, Apache-2.0) with that modified Bun runtime
+    (`bun install && bun run build`). This produces a functionally equivalent
+    Xata CLI executable linked against the user's modified library.
+  - Written offer: for three (3) years from the date you received a Xata CLI
+    binary, Xata will, on request, provide the information needed to obtain the
+    complete corresponding source for any LGPL component in that binary, at the
+    version shipped. Contact: legal@xata.io (or open an issue in this
+    repository).
+
+--------------------------------------------------------------------------------
+Other notable bundled software (via the Bun runtime)
+--------------------------------------------------------------------------------
+
+  - Bun runtime -- MIT -- https://github.com/oven-sh/bun
+  - zstd -- dual-licensed BSD-3-Clause OR GPL-2.0 (Xata relies on the BSD-3-Clause option)
+  - Additional libraries bundled by Bun (e.g. libarchive, BoringSSL, ICU, c-ares,
+    lol-html, Mimalloc, zlib) are distributed under their own permissive or
+    dual licenses. See Bun's license documentation for the authoritative, per-
+    version list: https://bun.com/docs/project/licensing
+
+--------------------------------------------------------------------------------
+The CLI's own dependencies
+--------------------------------------------------------------------------------
+
+  - The CLI's own npm dependencies (see package.json / pnpm-lock.yaml) are
+    bundled into the compiled binaries and are permissively licensed
+    (MIT / Apache-2.0 / ISC / BSD). The CLI has no GPL- or AGPL-licensed npm
+    dependencies.
+  - The Xata CLI source in this repository does not modify or patch any of the
+    components listed above.

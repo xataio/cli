@@ -49,6 +49,26 @@ function generateChecksum(filePath: string) {
   return execSync(`shasum -a 256 "${filePath}"`).toString().split(' ')[0];
 }
 
+// Legal/attribution files that must accompany the distributed binaries
+// (LGPL-2.1 notice + license for the statically linked JavaScriptCore/WebKit
+// and tinycc components embedded via the Bun runtime). These are also embedded
+// inside each binary and printable via `xata licenses`, but we publish them
+// next to the artifacts as well so they are available without running the CLI.
+const LEGAL_FILES = ['NOTICE', 'LICENSE', 'licenses/LGPL-2.1.txt'];
+
+async function uploadLegalFiles(version: string, channel: string | undefined): Promise<Record<string, string>> {
+  const uploaded: Record<string, string> = {};
+  for (const file of LEGAL_FILES) {
+    if (!fs.existsSync(file)) {
+      throw new Error(`Required legal file is missing: ${file}`);
+    }
+    const key = `versions/${version}-${channel}/${file}`;
+    await uploadFile(file, key);
+    uploaded[file] = `https://${BUCKET_NAME}.s3.amazonaws.com/${key}`;
+  }
+  return uploaded;
+}
+
 async function createManifest() {
   const files = fs.readdirSync(DIST_FOLDER);
   const targets: Record<string, any> = {};
@@ -76,10 +96,20 @@ async function createManifest() {
       ? `https://github.com/${process.env.GITHUB_REPOSITORY}/pull/${process.env.GITHUB_REF_NAME}`
       : '';
 
+  const notices = await uploadLegalFiles(version, channel);
+
+  // The binaries are built with `bun build --compile` by this same Bun, so this
+  // is the Bun runtime version embedded in them — and therefore the exact
+  // JavaScriptCore/WebKit (LGPL) revision shipped. Recorded for LGPL
+  // corresponding-source traceability (see NOTICE).
+  const bunVersion = Bun.version;
+
   const manifest = {
     version,
     channels: [channel],
     targets,
+    notices,
+    bunVersion,
     gitSha,
     prLink
   };

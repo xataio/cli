@@ -24,11 +24,17 @@ export async function implementation(this: LocalContext, { 'skip-download': skip
   const pgrollVersion = await getCurrentVersion('pgroll');
   const pgstreamVersion = await getCurrentVersion('pgstream');
   const CLIVersion = getCLIVersion();
+  // The compiled CLI *is* the Bun runtime, so `Bun.version` is the exact version
+  // of the statically linked JavaScriptCore/WebKit (and tinycc) embedded in this
+  // binary. Surfaced here so the LGPL corresponding-source revision is
+  // unambiguous (see the NOTICE / `xata licenses`).
+  const bunVersion = Bun.version;
 
-  this.printDetails(this, { CLIVersion, pgrollVersion, pgstreamVersion }, [
+  this.printDetails(this, { CLIVersion, pgrollVersion, pgstreamVersion, bunVersion }, [
     [CLI_NAME, CLIVersion],
     ['pgroll', pgrollVersion ?? 'unknown'],
-    ['pgstream', pgstreamVersion ?? 'unknown']
+    ['pgstream', pgstreamVersion ?? 'unknown'],
+    ['bun runtime', bunVersion]
   ]);
 }
 
