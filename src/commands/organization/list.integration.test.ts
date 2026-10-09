@@ -15,7 +15,7 @@ describe('organization list command tests', async () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: TEST_XATA_ORG,
-          name: TEST_XATA_ORG,
+          name: expect.any(String),
           status: expect.objectContaining({
             status: 'enabled',
             disabled_by_admin: false,

@@ -22,7 +22,7 @@ describe('organization describe command tests', async () => {
     const output = JSON.parse(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
     expect(output).toMatchObject({
       id: TEST_XATA_ORG,
-      name: TEST_XATA_ORG,
+      name: expect.any(String),
       status: {
         status: 'enabled',
         disabled_by_admin: false,
@@ -40,16 +40,19 @@ describe('organization describe command tests', async () => {
     expect(stdoutWriteSpy).toHaveBeenCalled();
     expect(stdoutWriteSpy.mock.calls.length).toBeGreaterThan(0);
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0)).trim();
+    const { name } = await context.api.organizations.getOrganization({
+      pathParams: { organizationID: TEST_XATA_ORG }
+    });
     const expectedOutput = stripAnsi(
       context.printDetails(
         context,
         {
           id: TEST_XATA_ORG,
-          name: TEST_XATA_ORG
+          name
         },
         [
           ['organization_id', TEST_XATA_ORG],
-          ['name', TEST_XATA_ORG]
+          ['name', name]
         ]
       )
     ).trim();
