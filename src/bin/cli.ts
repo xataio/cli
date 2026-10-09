@@ -1,19 +1,14 @@
 #!/usr/bin/env node
 import { run } from '@stricli/core';
-import dotenv from '@dotenvx/dotenvx';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { buildContext } from '~/context';
 import { getCanonicalCommandId } from '~/lib/canonical-command-id';
 import { getDebugFlag, getJsonFlag } from '~/lib/global-flags';
+import { loadEnvFile } from '~/lib/load-env-file';
 import { getProfileFlag } from '~/lib/profile';
 import { app } from '../app';
-dotenv.config({
-  debug: Boolean(Bun.env.DEBUG),
-  path: path.join(__dirname, '../../', '.env.local'),
-  quiet: true,
-  ignore: ['MISSING_ENV_FILE']
-});
+loadEnvFile(path.join(__dirname, '../../', '.env.local'));
 
 const cliInvocationId = randomUUID();
 

@@ -1,5 +1,4 @@
 import chalk from 'chalk';
-import dotenv from '@dotenvx/dotenvx';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -8,16 +7,12 @@ import { getApi } from './api';
 import { getBranch, getDatabase, getOrganization, getProject, printDetails, printTable } from './cli-utils';
 import { confirmPrompt, datePrompt, inputPrompt, multiselectPrompt, passwordPrompt, selectPrompt } from './enquirer';
 import { env } from './env';
+import { loadEnvFile } from './load-env-file';
 import { getActiveProfile } from './profile';
 
 const testEnvPath = path.join(__dirname, '../../', '.env.local');
 
-dotenv.config({
-  debug: Boolean(Bun.env.DEBUG),
-  path: testEnvPath,
-  quiet: true,
-  ignore: ['MISSING_ENV_FILE']
-});
+loadEnvFile(testEnvPath);
 
 const missingEnvVars = ['XATA_API_KEY', 'XATA_TEST_ORGANIZATION_ID'].filter((key) => !Bun.env[key]);
 

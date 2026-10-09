@@ -1,14 +1,9 @@
-import dotenv from '@dotenvx/dotenvx';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { loadEnvFile } from '~/lib/load-env-file';
 
-dotenv.config({
-  debug: Boolean(Bun.env.DEBUG),
-  path: path.resolve(import.meta.dir, '../../', '.env.local'),
-  quiet: true,
-  ignore: ['MISSING_ENV_FILE']
-});
+loadEnvFile(path.resolve(import.meta.dir, '../../', '.env.local'));
 
 type RunResult = {
   code: number;

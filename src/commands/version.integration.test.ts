@@ -14,6 +14,7 @@ describe('version command tests', async () => {
     expect(output).toHaveProperty('CLIVersion');
     expect(output).toHaveProperty('pgrollVersion');
     expect(typeof output.CLIVersion).toBe('string');
+    expect(output.bunVersion).toBe(Bun.version);
   });
 
   test('version command with table output', async () => {
@@ -25,5 +26,6 @@ describe('version command tests', async () => {
     const output = stripAnsi(getNthArgOfNthCall(stdoutWriteSpy, 0, 0));
     expect(output).toContain('xata');
     expect(output).toContain('pgroll');
+    expect(output).toContain('bun runtime');
   });
 });

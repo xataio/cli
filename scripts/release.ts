@@ -49,8 +49,25 @@ function generateChecksum(filePath: string) {
   return execSync(`shasum -a 256 "${filePath}"`).toString().split(' ')[0];
 }
 
+const LEGAL_FILES = ['NOTICE', 'LICENSE', 'licenses/LGPL-2.0.txt', 'licenses/LGPL-2.1.txt', 'licenses/GPL-2.0.txt'];
+
+async function uploadLegalFiles() {
+  const uploaded: Record<string, string> = {};
+  for (const file of LEGAL_FILES) {
+    if (!fs.existsSync(file)) {
+      throw new Error(`Required legal file is missing: ${file}`);
+    }
+    const key = `versions/${version}-${channel}/${file}`;
+    await uploadFile(file, key);
+    uploaded[file] = `https://${BUCKET_NAME}.s3.amazonaws.com/${key}`;
+    fs.copyFileSync(file, path.join(DIST_FOLDER, path.basename(file)));
+  }
+  return uploaded;
+}
+
 async function createManifest() {
-  const files = fs.readdirSync(DIST_FOLDER);
+  const legalFileNames = LEGAL_FILES.map((file) => path.basename(file));
+  const files = fs.readdirSync(DIST_FOLDER).filter((file) => !legalFileNames.includes(file));
   const targets: Record<string, any> = {};
 
   for (const file of files) {
@@ -76,10 +93,14 @@ async function createManifest() {
       ? `https://github.com/${process.env.GITHUB_REPOSITORY}/pull/${process.env.GITHUB_REF_NAME}`
       : '';
 
+  const notices = await uploadLegalFiles();
+
   const manifest = {
     version,
     channels: [channel],
     targets,
+    notices,
+    bunVersion: Bun.version,
     gitSha,
     prLink
   };

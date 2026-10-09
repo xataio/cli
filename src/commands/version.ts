@@ -24,11 +24,13 @@ export async function implementation(this: LocalContext, { 'skip-download': skip
   const pgrollVersion = await getCurrentVersion('pgroll');
   const pgstreamVersion = await getCurrentVersion('pgstream');
   const CLIVersion = getCLIVersion();
+  const bunVersion = Bun.version;
 
-  this.printDetails(this, { CLIVersion, pgrollVersion, pgstreamVersion }, [
+  this.printDetails(this, { CLIVersion, pgrollVersion, pgstreamVersion, bunVersion }, [
     [CLI_NAME, CLIVersion],
     ['pgroll', pgrollVersion ?? 'unknown'],
-    ['pgstream', pgstreamVersion ?? 'unknown']
+    ['pgstream', pgstreamVersion ?? 'unknown'],
+    ['bun runtime', bunVersion]
   ]);
 }
 

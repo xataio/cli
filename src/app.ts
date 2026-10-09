@@ -7,6 +7,7 @@ import { CloneRoute } from './commands/clone';
 import { CompletionsRoute } from './commands/completions';
 import { ConsoleCommand } from './commands/console';
 import { KeysRoute } from './commands/keys';
+import { LicensesCommand } from './commands/licenses';
 import { OrganizationRoute } from './commands/organization';
 import { ProjectRoute } from './commands/project';
 import { ProjectInitCommand } from './commands/project/init';
@@ -41,6 +42,7 @@ const routes = buildRouteMap({
 
     status: StatusCommand,
     version: VersionCommand,
+    licenses: LicensesCommand,
     checkout: BranchCheckoutCommand,
     scratch: ScratchCommand,
     console: ConsoleCommand,

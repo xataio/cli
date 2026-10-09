@@ -2,14 +2,9 @@
 
 import { z } from 'zod';
 
-import dotenv from '@dotenvx/dotenvx';
 import path from 'node:path';
-dotenv.config({
-  debug: Boolean(Bun.env.DEBUG),
-  path: path.join(__dirname, '../../', '.env.local'),
-  quiet: true,
-  ignore: ['MISSING_ENV_FILE']
-});
+import { loadEnvFile } from './load-env-file';
+loadEnvFile(path.join(__dirname, '../../', '.env.local'));
 
 const schema = z.object({
   // System environment variables
