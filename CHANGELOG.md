@@ -1,5 +1,21 @@
 # xata-cli
 
+## 1.17.0
+
+### Minor Changes
+
+- [#3383](https://github.com/xataio/frontend/pull/3383) [`ef6cd3d`](https://github.com/xataio/frontend/commit/ef6cd3d03df2ebe0414db05ccda9497afd6da9e6) Thanks [@SferaDev](https://github.com/SferaDev)! - Add `xata licenses` to print the bundled third-party notices, show the embedded Bun version in `xata version`, and stop bundling `@dotenvx/dotenvx` (and its `node-forge` dependency) into the CLI and `@xata.io/api`.
+
+### Patch Changes
+
+- [#3384](https://github.com/xataio/frontend/pull/3384) [`23e14df`](https://github.com/xataio/frontend/commit/23e14df8b4db115c025a82b59aac7fee8c18cbb0) Thanks [@SferaDev](https://github.com/SferaDev)! - [CLI]: Assert organization id only in integration tests ([#3384](https://github.com/xataio/frontend/issues/3384))
+- Updated dependencies [[`ef6cd3d`](https://github.com/xataio/frontend/commit/ef6cd3d03df2ebe0414db05ccda9497afd6da9e6), [`db6d0ac`](https://github.com/xataio/frontend/commit/db6d0ac37b7221c8d9d1467fe9804d31b3978f85)]:
+  - @xata.io/api@0.1.25
+  - @xata.io/sql@0.2.21
+  - @xata.io/utils@0.9.2
+  - @xata.io/ai@0.3.0
+  - @xata.io/config@0.0.26
+
 ## 1.16.1
 
 ### Patch Changes
