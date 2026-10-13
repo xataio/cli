@@ -5,7 +5,9 @@ export type TerminalSize = {
   rows: number;
 };
 
-export function useTerminalSize(stdout: NodeJS.WriteStream): TerminalSize {
+type ResizableStdout = NodeJS.WritableStream & { columns?: number; rows?: number };
+
+export function useTerminalSize(stdout: ResizableStdout): TerminalSize {
   const [size, setSize] = useState<TerminalSize>(() => readTerminalSize(stdout));
 
   useEffect(() => {
@@ -19,6 +21,6 @@ export function useTerminalSize(stdout: NodeJS.WriteStream): TerminalSize {
   return size;
 }
 
-function readTerminalSize(stdout: NodeJS.WriteStream): TerminalSize {
+function readTerminalSize(stdout: ResizableStdout): TerminalSize {
   return { columns: stdout.columns || 80, rows: stdout.rows || 24 };
 }
