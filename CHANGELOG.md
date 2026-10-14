@@ -1,5 +1,20 @@
 # xata-cli
 
+## 1.17.1
+
+### Patch Changes
+
+- [#3385](https://github.com/xataio/frontend/pull/3385) [`d1186f3`](https://github.com/xataio/frontend/commit/d1186f3f1f95ffe6b2d5368684d1ddb7e0364321) Thanks [@xata-bot](https://github.com/xata-bot)! - Update ink to 8.0.0
+
+- [#3391](https://github.com/xataio/frontend/pull/3391) [`76bc57a`](https://github.com/xataio/frontend/commit/76bc57a10d72ec06de623150cef575327cd03957) Thanks [@divyenduz](https://github.com/divyenduz)! - Remove the hidden `xata ai` command group to free up the namespace. AI-assisted clone configuration (`xata clone config --mode ai`) remains available.
+- Updated dependencies [[`7adf123`](https://github.com/xataio/frontend/commit/7adf123fce0c81a83c8bd453aca54cd622622afb), [`12ec13a`](https://github.com/xataio/frontend/commit/12ec13a1649b5410573071927bf20d758f983f4f)]:
+  - @xata.io/api@0.1.26
+  - @xata.io/lang@0.0.6
+  - @xata.io/sql@0.2.22
+  - @xata.io/utils@0.9.3
+  - @xata.io/ai@0.3.0
+  - @xata.io/config@0.0.27
+
 ## 1.17.0
 
 ### Minor Changes
