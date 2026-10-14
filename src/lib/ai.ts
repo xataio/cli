@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { XataApi } from '@xata.io/api';
-import { generateSQL, generateCloneConfig } from '@xata.io/ai';
+import { generateCloneConfig } from '@xata.io/ai';
 import { AI_GATEWAY_MODELS, type AIGatewayModel } from '@xata.io/ai/gateway';
 import { createAIGatewayModel } from '@xata.io/ai/gateway/client';
 import { resolveConsoleUrl } from './console-url';
@@ -14,16 +14,9 @@ type AIContext = {
 
 export const AI_MODEL_NAMES = Object.keys(AI_GATEWAY_MODELS) as AIGatewayModel[];
 
-const generationFields = {
-  prompt: z.string().max(8_000),
-  formattedSchema: z.string().min(1).max(100_000)
-};
-const sqlInputSchema = z.object({
-  ...generationFields,
-  currentSql: z.string().max(50_000).optional()
-});
 const cloneInputSchema = z.object({
-  ...generationFields,
+  prompt: z.string().max(8_000),
+  formattedSchema: z.string().min(1).max(100_000),
   currentConfig: z.string().max(100_000).optional()
 });
 
@@ -31,34 +24,12 @@ const createXataModel = async (
   context: AIContext,
   organizationId: string,
   model: AIGatewayModel,
-  feature: 'cli-sql' | 'cli-clone-config',
+  feature: 'cli-clone-config',
   signal: AbortSignal
 ) => {
   const consoleUrl = resolveConsoleUrl(context.env.XATA_CONSOLE_URL, context.customConfig);
   const token = await context.refreshToken({ signal });
   return createAIGatewayModel({ consoleUrl, organizationId, token, model, feature, signal });
-};
-
-export const generateSQLWithXata = async (
-  context: AIContext,
-  organizationId: string,
-  input: { prompt: string; formattedSchema: string; currentSql?: string; model?: AIGatewayModel },
-  signal?: AbortSignal
-) => {
-  const body = sqlInputSchema.parse(input);
-  const abortSignal = AbortSignal.any([AbortSignal.timeout(120_000), ...(signal ? [signal] : [])]);
-  const model = await createXataModel(
-    context,
-    organizationId,
-    input.model ?? 'claude-sonnet-4-6',
-    'cli-sql',
-    abortSignal
-  );
-  return generateSQL(model, body.prompt, body.formattedSchema, body.currentSql, {
-    maxOutputTokens: 4_096,
-    maxRetries: 0,
-    abortSignal
-  });
 };
 
 export const generateCloneConfigWithXata = async (

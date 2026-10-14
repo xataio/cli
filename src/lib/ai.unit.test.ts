@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import { XataApi } from '@xata.io/api';
-import { generateCloneConfigWithXata, generateSQLWithXata } from './ai';
+import { generateCloneConfigWithXata } from './ai';
 
-const input = { prompt: 'Count orders', formattedSchema: 'CREATE TABLE orders (id integer);' };
+const input = { prompt: 'Anonymize orders', formattedSchema: 'CREATE TABLE orders (id integer);' };
 const modelResponse = (output: unknown) =>
   Response.json({
     content: [{ type: 'text', text: JSON.stringify(output) }],
@@ -18,13 +18,13 @@ const createContext = () => ({
 afterEach(() => mock.restore());
 
 describe('Xata AI client', () => {
-  test('uses refreshed Xata credentials and validates the SQL response without BYOK', async () => {
-    const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ sql: 'SELECT count(*) FROM orders;' }));
+  test('uses refreshed Xata credentials and defaults clone config generation to Gemini without BYOK', async () => {
+    const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ transformers: [] }));
     const context = createContext();
 
-    expect(await generateSQLWithXata(context, 'org-a', { ...input, currentSql: 'SELECT id FROM orders;' })).toBe(
-      'SELECT count(*) FROM orders;'
-    );
+    expect(
+      await generateCloneConfigWithXata(context, 'org-a', { ...input, currentConfig: 'transformations: {}' })
+    ).toEqual([]);
     expect(context.refreshToken).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledTimes(1);
     const [url, options] = fetch.mock.calls[0] ?? [];
@@ -34,33 +34,34 @@ describe('Xata AI client', () => {
       redirect: 'error',
       headers: {
         authorization: 'Bearer refreshed-xata-token',
-        'ai-language-model-id': 'anthropic/claude-sonnet-4.6',
-        'x-xata-ai-protocol': '1'
+        'ai-language-model-id': 'google/gemini-2.5-flash',
+        'x-xata-ai-protocol': '1',
+        'x-xata-ai-feature': 'cli-clone-config'
       }
     });
     expect(context.refreshToken).toHaveBeenCalledWith({ signal: expect.any(AbortSignal) });
     const body = JSON.parse(options?.body as string);
-    expect(body.maxOutputTokens).toBe(4096);
+    expect(body.maxOutputTokens).toBe(8192);
     expect(body.responseFormat.type).toBe('json');
-    expect(body.prompt[0].content).toContain(input.formattedSchema);
-    expect(body.prompt[1].content[0].text).toContain('SELECT id FROM orders;');
+    expect(body.prompt[1].content[0].text).toContain(input.formattedSchema);
+    expect(body.prompt[1].content[0].text).toContain('transformations: {}');
     expect(body.prompt[1].content[0].text).toContain(input.prompt);
   });
 
   test('uses the console URL stored in the profile', async () => {
-    const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ sql: 'SELECT 1;' }));
+    const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ transformers: [] }));
     const context = {
       ...createContext(),
       customConfig: { apiBaseUrl: 'https://api.staging.example', consoleUrl: 'https://app.staging.example' }
     };
-    await generateSQLWithXata(context, 'org-a', input);
+    await generateCloneConfigWithXata(context, 'org-a', input);
     expect(fetch.mock.calls[0]?.[0]).toBe('https://app.staging.example/api/ai/org-a/language-model');
   });
 
   test('sends no token when a custom API has no console URL', async () => {
     const fetch = spyOn(globalThis, 'fetch');
     const context = { ...createContext(), customConfig: { apiBaseUrl: 'http://localhost:8080' } };
-    await expect(generateSQLWithXata(context, 'org-a', input)).rejects.toThrow('--console-url');
+    await expect(generateCloneConfigWithXata(context, 'org-a', input)).rejects.toThrow('--console-url');
     expect(context.refreshToken).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -87,13 +88,6 @@ describe('Xata AI client', () => {
     expect(fetch.mock.calls[0]?.[1]?.headers).toMatchObject({ 'ai-language-model-id': 'anthropic/claude-haiku-4.5' });
   });
 
-  test('defaults clone config generation to Gemini', async () => {
-    const config = { transformers: [] };
-    const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse(config));
-    await generateCloneConfigWithXata(createContext(), 'org-a', input);
-    expect(fetch.mock.calls[0]?.[1]?.headers).toMatchObject({ 'ai-language-model-id': 'google/gemini-2.5-flash' });
-  });
-
   test('accepts inputs at the size limits and rejects anything larger before sending a request', async () => {
     const config = { transformers: [] };
     const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse(config));
@@ -111,68 +105,50 @@ describe('Xata AI client', () => {
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
-  test.each(['sql-cancel', 'sql-timeout', 'clone-timeout'] as const)(
-    'aborts a stalled token refresh without sending a proxy request: %s',
-    async (scenario) => {
-      const requested: string[] = [];
-      const fetched = Promise.withResolvers<void>();
-      const proxyFetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ sql: 'SELECT 1;' }));
-      const authFetch = (url: string, init?: { signal?: AbortSignal }) =>
-        new Promise<Response>((_, reject) => {
-          requested.push(url);
-          fetched.resolve();
-          if (!init?.signal) return reject(new Error('Token refresh sent without an abort signal'));
-          init.signal.addEventListener('abort', () => reject(init.signal?.reason));
-        });
-      const controller = new AbortController();
-      const timeout = spyOn(AbortSignal, 'timeout');
-      if (scenario !== 'sql-cancel') timeout.mockReturnValue(controller.signal);
-      const onTokenRefresh = mock();
-      const api = new XataApi({
-        token: {
-          type: 'oidc',
-          client: { issuer: 'https://auth.example', clientId: 'cli', clientSecret: 'fixture-secret' },
-          accessToken: 'expired-access',
-          refreshToken: 'fixture-refresh',
-          expiresAt: new Date(0)
-        },
-        callbacks: { onTokenRefresh },
-        fetch: authFetch
+  test('aborts a stalled token refresh without sending a proxy request', async () => {
+    const requested: string[] = [];
+    const fetched = Promise.withResolvers<void>();
+    const proxyFetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ transformers: [] }));
+    const authFetch = (url: string, init?: { signal?: AbortSignal }) =>
+      new Promise<Response>((_, reject) => {
+        requested.push(url);
+        fetched.resolve();
+        if (!init?.signal) return reject(new Error('Token refresh sent without an abort signal'));
+        init.signal.addEventListener('abort', () => reject(init.signal?.reason));
       });
-      const context = { ...createContext(), refreshToken: api.refreshToken.bind(api) };
-      const reason = new DOMException('Generation stopped', scenario === 'sql-cancel' ? 'AbortError' : 'TimeoutError');
-      const pending =
-        scenario === 'clone-timeout'
-          ? generateCloneConfigWithXata(context, 'org-a', input)
-          : generateSQLWithXata(context, 'org-a', input, scenario === 'sql-cancel' ? controller.signal : undefined);
-      await fetched.promise;
-      expect(requested).toEqual(['https://auth.example/protocol/openid-connect/token']);
-      controller.abort(reason);
-      await expect(pending).rejects.toMatchObject({ name: reason.name });
-      expect(requested).toHaveLength(1);
-      expect(proxyFetch).not.toHaveBeenCalled();
-      expect(onTokenRefresh).not.toHaveBeenCalled();
-      expect(api.token).toMatchObject({ accessToken: 'expired-access', refreshToken: 'fixture-refresh' });
-      if (scenario !== 'sql-cancel') expect(timeout).toHaveBeenCalledWith(120_000);
-    }
-  );
-
-  test('forwards cancellation from the TUI to the HTTP request', async () => {
-    const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(modelResponse({ sql: 'SELECT 1;' }));
     const controller = new AbortController();
-    await generateSQLWithXata(createContext(), 'org-a', input, controller.signal);
-    const signal = fetch.mock.calls[0]?.[1]?.signal;
-    expect(signal?.aborted).toBe(false);
-    controller.abort();
-    expect(signal?.aborted).toBe(true);
-    expect(signal?.reason).toBe(controller.signal.reason);
+    const timeout = spyOn(AbortSignal, 'timeout').mockReturnValue(controller.signal);
+    const onTokenRefresh = mock();
+    const api = new XataApi({
+      token: {
+        type: 'oidc',
+        client: { issuer: 'https://auth.example', clientId: 'cli', clientSecret: 'fixture-secret' },
+        accessToken: 'expired-access',
+        refreshToken: 'fixture-refresh',
+        expiresAt: new Date(0)
+      },
+      callbacks: { onTokenRefresh },
+      fetch: authFetch
+    });
+    const context = { ...createContext(), refreshToken: api.refreshToken.bind(api) };
+    const reason = new DOMException('Generation stopped', 'TimeoutError');
+    const pending = generateCloneConfigWithXata(context, 'org-a', input);
+    await fetched.promise;
+    expect(requested).toEqual(['https://auth.example/protocol/openid-connect/token']);
+    controller.abort(reason);
+    await expect(pending).rejects.toMatchObject({ name: reason.name });
+    expect(requested).toHaveLength(1);
+    expect(proxyFetch).not.toHaveBeenCalled();
+    expect(onTokenRefresh).not.toHaveBeenCalled();
+    expect(api.token).toMatchObject({ accessToken: 'expired-access', refreshToken: 'fixture-refresh' });
+    expect(timeout).toHaveBeenCalledWith(120_000);
   });
 
   test('surfaces proxy errors without retrying paid inference', async () => {
     const fetch = spyOn(globalThis, 'fetch').mockResolvedValue(
       Response.json({ error: { type: 'forbidden', message: 'AI is not enabled' } }, { status: 403 })
     );
-    await expect(generateSQLWithXata(createContext(), 'org-a', input)).rejects.toThrow('AI is not enabled');
+    await expect(generateCloneConfigWithXata(createContext(), 'org-a', input)).rejects.toThrow('AI is not enabled');
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 });
