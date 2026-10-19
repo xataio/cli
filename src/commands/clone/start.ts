@@ -60,6 +60,12 @@ export function getSourceUrl(context: LocalContext, flags: Pick<Flags, 'source-u
       'No source database given. Pass --source-url <url> or set XATA_CLI_SOURCE_POSTGRES_URL.'
     );
   }
+  if (!sourceUrl.startsWith('postgres://') && !sourceUrl.startsWith('postgresql://')) {
+    return exitWithError(
+      context,
+      'Invalid source database URL. Use postgres:// or postgresql:// (without a driver suffix) in --source-url or XATA_CLI_SOURCE_POSTGRES_URL.'
+    );
+  }
   return sourceUrl;
 }
 

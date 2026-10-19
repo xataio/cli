@@ -68,8 +68,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
   if (!this.isInteractive && flags.mode !== 'auto') {
     return exitWithError(this, 'Only --mode auto runs without a terminal, the other modes need one to prompt.');
   }
-  await checkBranchIsReachable(this, flags);
   const sourceUrl = getSourceUrl(this, flags);
+  await checkBranchIsReachable(this, flags);
   if (this.debug) {
     invariant(sourceUrl, 'sourceUrl must be defined for debug logging');
     const maskedFlags = { ...flags, 'source-url': buildConnectionString(sourceUrl, { mask: true }) };
