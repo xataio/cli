@@ -1,5 +1,17 @@
 # xata-cli
 
+## 1.17.3
+
+### Patch Changes
+
+- [#3416](https://github.com/xataio/frontend/pull/3416) [`bd60df3`](https://github.com/xataio/frontend/commit/bd60df31384f00bca50e6ad3845d8cbcb6b00e8c) Thanks [@divyenduz](https://github.com/divyenduz)! - Accept any whole-minute inactivity period from 1 to 1440 for branch settings, project defaults, and onboarding instead of restricting values to preset durations.
+- Updated dependencies [[`54677c2`](https://github.com/xataio/frontend/commit/54677c2a5a0a81499a0dfa292ac79325c2eb59f5), [`ad7b988`](https://github.com/xataio/frontend/commit/ad7b98871bc9473935c83c3ffd5df9bc15008483)]:
+  - @xata.io/api@0.1.27
+  - @xata.io/sql@0.2.23
+  - @xata.io/utils@0.9.4
+  - @xata.io/ai@0.3.0
+  - @xata.io/config@0.0.28
+
 ## 1.17.2
 
 ### Patch Changes
