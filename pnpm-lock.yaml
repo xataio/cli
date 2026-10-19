@@ -15,8 +15,8 @@ importers:
         specifier: 1.3.0
         version: 1.3.0
       '@vercel/detect-agent':
-        specifier: 1.2.6
-        version: 1.2.6
+        specifier: 1.2.7
+        version: 1.2.7
       '@xata.io/ai':
         specifier: 0.3.0
         version: 0.3.0
@@ -48,8 +48,8 @@ importers:
         specifier: 6.0.1
         version: 6.0.1
       chrono-node:
-        specifier: 2.10.2
-        version: 2.10.2
+        specifier: 2.10.3
+        version: 2.10.3
       ci-info:
         specifier: 4.4.0
         version: 4.4.0
@@ -67,7 +67,7 @@ importers:
         version: 2.4.1
       ink:
         specifier: 8.0.0
-        version: 8.0.0(@types/react@19.3.0)(react-devtools-core@8.0.0)(react@19.3.0)
+        version: 8.0.0(@types/react@19.3.0)(react-devtools-core@8.0.0)(react@19.3.1)
       jose:
         specifier: 6.2.12
         version: 6.2.12
@@ -78,8 +78,8 @@ importers:
         specifier: 3.4.9
         version: 3.4.9
       react:
-        specifier: 19.3.0
-        version: 19.3.0
+        specifier: 19.3.1
+        version: 19.3.1
       react-devtools-core:
         specifier: 8.0.0
         version: 8.0.0
@@ -93,8 +93,8 @@ importers:
         specifier: 1.1.0
         version: 1.1.0
       ts-pattern:
-        specifier: 5.9.0
-        version: 5.9.0
+        specifier: 5.9.2
+        version: 5.9.2
       typescript:
         specifier: 6.0.x
         version: 6.0.3
@@ -102,21 +102,21 @@ importers:
         specifier: 2.9.1
         version: 2.9.1
       zod:
-        specifier: 4.6.5
-        version: 4.6.5
+        specifier: 4.6.7
+        version: 4.6.7
       zod-config:
         specifier: 1.4.0
-        version: 1.4.0(yaml@2.9.1)(zod@4.6.5)
+        version: 1.4.0(yaml@2.9.1)(zod@4.6.7)
     devDependencies:
       '@aws-sdk/client-s3':
-        specifier: 3.1148.0
-        version: 3.1148.0
+        specifier: 3.1152.0
+        version: 3.1152.0
       '@types/bun':
-        specifier: 1.4.2
-        version: 1.4.2
+        specifier: 1.4.3
+        version: 1.4.3
       '@types/node':
-        specifier: 26.6.4
-        version: 26.6.4
+        specifier: 26.6.5
+        version: 26.6.5
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
@@ -153,8 +153,8 @@ packages:
     resolution: {integrity: sha512-CcAkVyEUKGngbEqJdVdSc53Iy52+XzVL5NIcTen2BlK8UByNC1DThVtf5VKSrNzyA+SqyTvs+3S+knVBbOUizQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1148.0':
-    resolution: {integrity: sha512-d2AcfJCZTi4w5zJZD7H/XeVRgJy1vOD5EfO1Y3pKAwfp8pWz2dyJ8Q3vOJFbRiTIQF7c4mB+aptNUyCE4i4kqw==}
+  '@aws-sdk/client-s3@3.1152.0':
+    resolution: {integrity: sha512-oI1+ZaM6pSOwZazu4nAb7rL8ug7LSjg31tDoJqRB9MooRqqWCf/qvkIZqne1mRA3xK3slg6K0RNWXaJYHbWLvg==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.978.3':
@@ -270,11 +270,11 @@ packages:
   '@stricli/core@1.3.0':
     resolution: {integrity: sha512-LnBe2HntygaLDU5trtjiC3J4C/YkmIZuM0XB52IF4qaLqJH09kgD1fnZiS2gaYUnt0nAN2a+1b4PSOBcfPrN4Q==}
 
-  '@types/bun@1.4.2':
-    resolution: {integrity: sha512-GimotNn7+ZV0uVArItBbriZsR1oNf0+WTzPkdcFrzShI7k2norL0uzEaJT8T33dWr7O/c9ZDuAFQrctKCi72oQ==}
+  '@types/bun@1.4.3':
+    resolution: {integrity: sha512-N67Pqy8JXbAY/j0tNraS3V5mubGvc6rrrNDmDCtZLlFzccbUJPDb0tvgUBC5q4m8ybkP93Jcn1QB+RYQ6PvBhw==}
 
-  '@types/node@26.6.4':
-    resolution: {integrity: sha512-ldVPDCzj7fsaGZrLB0NuHuTvJcsNasysBAqMolr/cgxrLd1xbqxIr3XJiPnHHJUCxj5sNF1vnRj9aWnrVh5Jcg==}
+  '@types/node@26.6.5':
+    resolution: {integrity: sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg==}
 
   '@types/qs@6.15.1':
     resolution: {integrity: sha512-GZHUBZR9hckSUhrxmp1nG6NwdpM9fCunJwyThLW1X3AyHgd9IlHb6VANpQQqDr2o/qQp6McZ3y/IA2rVzKzSbw==}
@@ -285,8 +285,8 @@ packages:
   '@types/treeify@1.0.3':
     resolution: {integrity: sha512-hx0o7zWEUU4R2Amn+pjCBQQt23Khy/Dk56gQU5xi5jtPL1h83ACJCeFaB2M/+WO1AntvWrSoVnnCAfI1AQH4Cg==}
 
-  '@vercel/detect-agent@1.2.6':
-    resolution: {integrity: sha512-MpsC5alyelZCSI93gX12Sjd29LFJUNn0auiJ3YZ0fAcmeT7HvaM+GFpoNhrgJuZGSEXysRRUcew9hPqITwKZMg==}
+  '@vercel/detect-agent@1.2.7':
+    resolution: {integrity: sha512-5tWaC9V+u4SHcSMKBz9FQb3Dhl/1A2lQ6QqHovu8uQeb8dTyjEevpJMANm/uQEn/usYB63fpdjWYjkJ8/bGtjA==}
     engines: {node: '>=14'}
 
   '@vercel/oidc@3.2.0':
@@ -366,8 +366,8 @@ packages:
   bowser@2.14.1:
     resolution: {integrity: sha512-tzPjzCxygAKWFOJP011oxFHs57HzIhOEracIgAePE4pqB3LikALKnSzUyU4MGs9/iCEUuHlAJTjTc5M+u7YEGg==}
 
-  bun-types@1.4.2:
-    resolution: {integrity: sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w==}
+  bun-types@1.4.3:
+    resolution: {integrity: sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -381,8 +381,8 @@ packages:
     resolution: {integrity: sha512-/Ce6KNm3vIbWdMlNna6RVIZ/ICQxnJxCicet5LBKK9ZffBkqzDw0xh9EiKSljdRtiIQ1S1z4YgcscUUGzNCWrA==}
     engines: {node: '>=22'}
 
-  chrono-node@2.10.2:
-    resolution: {integrity: sha512-xBCwGGmodF2YVtzE7/8ewNDajbCg72jgZHyOXvhkuQiYhIQ1KbqyXJJJw2fLaQ603LL4oMVhOyjckEBve45S4w==}
+  chrono-node@2.10.3:
+    resolution: {integrity: sha512-MOfrzXgSMZTH4SZ5gyRKQCVwiCrCKY+uYkSJiWoRLXS88DA6WGJm8UjgS+VVEuUQeew/UUXaxrO+SeDn/WCisg==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   ci-info@4.4.0:
@@ -705,8 +705,8 @@ packages:
     peerDependencies:
       react: ^19.3.0
 
-  react@19.3.0:
-    resolution: {integrity: sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==}
+  react@19.3.1:
+    resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
     engines: {node: '>=0.10.0'}
 
   restore-cursor@4.0.0:
@@ -815,8 +815,8 @@ packages:
     resolution: {integrity: sha512-1m4RA7xVAJrSGrrXGs0L3YTwyvBs2S8PbRHaLZAkFw7JR8oIFwYtysxlBZhYIa7xSyiYJKZ3iGrrk55cGA3i9A==}
     engines: {node: '>=0.6'}
 
-  ts-pattern@5.9.0:
-    resolution: {integrity: sha512-6s5V71mX8qBUmlgbrfL33xDUwO0fq48rxAu2LBE11WBeGdpCPOsXksQbZJHvHwhrd3QjUusd3mAOM5Gg0mFBLg==}
+  ts-pattern@5.9.2:
+    resolution: {integrity: sha512-qAf+7M7Jjk7uebZeIo9uEzyintfuRtgHdzM9dqxRKcMi2dt76Ec+FH2wW3bnU9TuGLkZIJLoLs7cCQnU7Tu8ig==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -837,6 +837,9 @@ packages:
     resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
     hasBin: true
+
+  undici-types@8.12.2:
+    resolution: {integrity: sha512-VoMeD2O0KdHhcn+oPqOrpivN+7aDOklVSwOLD7JNjbzV1CboAFek9IFOXnreoufTUtAsCsOK0iETiERPNR/fDA==}
 
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
@@ -915,6 +918,9 @@ packages:
   zod@4.6.5:
     resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
+  zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
+
 snapshots:
 
   '@ai-sdk/gateway@4.0.100(zod@4.6.5)':
@@ -950,7 +956,7 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-s3@3.1148.0':
+  '@aws-sdk/client-s3@3.1152.0':
     dependencies:
       '@aws-sdk/checksums': 3.1001.3
       '@aws-sdk/core': 3.978.3
@@ -1157,11 +1163,11 @@ snapshots:
 
   '@stricli/core@1.3.0': {}
 
-  '@types/bun@1.4.2':
+  '@types/bun@1.4.3':
     dependencies:
-      bun-types: 1.4.2
+      bun-types: 1.4.3
 
-  '@types/node@26.6.4':
+  '@types/node@26.6.5':
     dependencies:
       undici-types: 8.9.0
 
@@ -1173,7 +1179,7 @@ snapshots:
 
   '@types/treeify@1.0.3': {}
 
-  '@vercel/detect-agent@1.2.6': {}
+  '@vercel/detect-agent@1.2.7': {}
 
   '@vercel/oidc@3.2.0': {}
 
@@ -1262,9 +1268,10 @@ snapshots:
 
   bowser@2.14.1: {}
 
-  bun-types@1.4.2:
+  bun-types@1.4.3:
     dependencies:
-      '@types/node': 26.6.4
+      '@types/node': 26.6.5
+      undici-types: 8.12.2
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -1278,7 +1285,7 @@ snapshots:
 
   chalk@6.0.1: {}
 
-  chrono-node@2.10.2: {}
+  chrono-node@2.10.3: {}
 
   ci-info@4.4.0: {}
 
@@ -1439,7 +1446,7 @@ snapshots:
 
   indent-string@5.0.0: {}
 
-  ink@8.0.0(@types/react@19.3.0)(react-devtools-core@8.0.0)(react@19.3.0):
+  ink@8.0.0(@types/react@19.3.0)(react-devtools-core@8.0.0)(react@19.3.1):
     dependencies:
       '@alcalzone/ansi-tokenize': 0.3.1
       ansi-escapes: 7.3.0
@@ -1455,8 +1462,8 @@ snapshots:
       is-in-ci: 2.0.0
       patch-console: 2.0.0
       quick-lru: 7.3.0
-      react: 19.3.0
-      react-reconciler: 0.34.0(react@19.3.0)
+      react: 19.3.1
+      react-reconciler: 0.34.0(react@19.3.1)
       signal-exit: 3.0.7
       stack-utils: 2.0.6
       string-width: 8.3.0
@@ -1569,12 +1576,12 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  react-reconciler@0.34.0(react@19.3.0):
+  react-reconciler@0.34.0(react@19.3.1):
     dependencies:
-      react: 19.3.0
+      react: 19.3.1
       scheduler: 0.28.0
 
-  react@19.3.0: {}
+  react@19.3.1: {}
 
   restore-cursor@4.0.0:
     dependencies:
@@ -1679,7 +1686,7 @@ snapshots:
 
   treeify@1.1.0: {}
 
-  ts-pattern@5.9.0: {}
+  ts-pattern@5.9.2: {}
 
   tslib@2.8.1: {}
 
@@ -1692,6 +1699,8 @@ snapshots:
       tagged-tag: 1.0.0
 
   typescript@6.0.3: {}
+
+  undici-types@8.12.2: {}
 
   undici-types@8.9.0: {}
 
@@ -1724,12 +1733,14 @@ snapshots:
 
   yoga-layout@3.2.1: {}
 
-  zod-config@1.4.0(yaml@2.9.1)(zod@4.6.5):
+  zod-config@1.4.0(yaml@2.9.1)(zod@4.6.7):
     dependencies:
-      zod: 4.6.5
+      zod: 4.6.7
     optionalDependencies:
       yaml: 2.9.1
 
   zod@4.4.3: {}
 
   zod@4.6.5: {}
+
+  zod@4.6.7: {}
