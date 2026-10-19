@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.17.2
+
+### Patch Changes
+
+- [#3411](https://github.com/xataio/frontend/pull/3411) [`838a09f`](https://github.com/xataio/frontend/commit/838a09f8c7f4ab26eecd3cd00b22c6ccd9ca638c) Thanks [@divyenduz](https://github.com/divyenduz)! - Reject unsupported source URL schemes in clone start and clone config before accessing the target, without exposing connection credentials.
+
 ## 1.17.1
 
 ### Patch Changes
