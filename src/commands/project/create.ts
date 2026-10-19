@@ -2,6 +2,7 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { createRootBranch, type RootBranchOptions } from '~/lib/branch-actions';
+import { parseInactivityPeriod } from '~/lib/inactivity-period';
 import { getDescription, getInstanceType, getImage, getRegion, getReplicas, getStorage } from '../branch/create';
 
 type Flags = {
@@ -15,8 +16,8 @@ type Flags = {
   storage?: string;
   'scale-to-zero-base'?: 'true' | 'false';
   'scale-to-zero-child'?: 'true' | 'false';
-  'inactivity-period-base'?: '15' | '30' | '60' | '120' | '180';
-  'inactivity-period-child'?: '15' | '30' | '60' | '120' | '180';
+  'inactivity-period-base'?: number;
+  'inactivity-period-child'?: number;
   'postgres-version'?: string;
 };
 
@@ -40,8 +41,8 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   const scaleToZeroBase = flags['scale-to-zero-base'] ? flags['scale-to-zero-base'] === 'true' : false;
   const scaleToZeroChild = flags['scale-to-zero-child'] ? flags['scale-to-zero-child'] === 'true' : true;
-  const inactivityPeriodBase = flags['inactivity-period-base'] ? parseInt(flags['inactivity-period-base']) : 30;
-  const inactivityPeriodChild = flags['inactivity-period-child'] ? parseInt(flags['inactivity-period-child']) : 30;
+  const inactivityPeriodBase = flags['inactivity-period-base'] ?? 30;
+  const inactivityPeriodChild = flags['inactivity-period-child'] ?? 30;
   const image = await getImage(this, flags, { organizationId, region });
 
   const project = await this.api.projects.createProject({
@@ -172,15 +173,15 @@ export const ProjectCreateCommand = buildCommand({
         optional: true
       },
       'inactivity-period-base': {
-        kind: 'enum',
-        values: ['15', '30', '60', '120', '180'],
-        brief: 'Default inactivity period in minutes for base branches',
+        kind: 'parsed',
+        parse: parseInactivityPeriod,
+        brief: 'Default inactivity period for base branches in whole minutes (1–1440)',
         optional: true
       },
       'inactivity-period-child': {
-        kind: 'enum',
-        values: ['15', '30', '60', '120', '180'],
-        brief: 'Default inactivity period in minutes for child branches',
+        kind: 'parsed',
+        parse: parseInactivityPeriod,
+        brief: 'Default inactivity period for child branches in whole minutes (1–1440)',
         optional: true
       }
     }

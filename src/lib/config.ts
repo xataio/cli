@@ -95,13 +95,4 @@ export const scaleToZeroChoices = [
   { name: 'false', message: 'Disabled' }
 ];
 
-export const timeChoices = [
-  { name: '15', message: '15 minutes' },
-  { name: '30', message: '30 minutes' },
-  { name: '60', message: '60 minutes' },
-  { name: '120', message: '120 minutes' },
-  { name: '180', message: '180 minutes' }
-];
-
 export const validScaleToZeroValues = ['true', 'false'];
-export const validInactivityPeriodValues = timeChoices.map((t) => t.name);

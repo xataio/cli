@@ -1,4 +1,5 @@
 import { ApiError, NetworkError, type Types } from '@xata.io/api';
+import { buildApplication, buildRouteMap, run } from '@stricli/core';
 import { describe, expect, mock, test } from 'bun:test';
 import type { LocalContext } from '~/context';
 import { branchDescriptionMaxLength } from '@xata.io/utils';
@@ -19,7 +20,7 @@ mock.module('~/lib/branch-config', () => {
   return { updateBranchConfig: async () => {} };
 });
 
-const { implementation, getParentBranchId, promptForParentBranchId } = await import('./create');
+const { BranchCreateCommand, implementation, getParentBranchId, promptForParentBranchId } = await import('./create');
 
 const PARENT_ID = 'oansf546nh1bf3blhj75d674gs';
 
@@ -185,6 +186,29 @@ function buildResolverContext({
 
   return { context, stderr, exit, describeBranch: describeBranchMock, listBranches };
 }
+
+describe('branch create inactivity period', () => {
+  test.each([
+    ['1', 1],
+    ['10', 10],
+    ['45', 45],
+    ['180', 180],
+    ['1440', 1440],
+    ['0010', 10]
+  ] as const)('accepts --inactivity-period %s', async (value, expected) => {
+    const { context, stderr, createBranch } = buildContext();
+    const app = buildApplication(buildRouteMap({ docs: { brief: '' }, routes: { create: BranchCreateCommand } }), {
+      name: 'xata'
+    });
+
+    await run(app, ['create', '--name', 'test', '--parent-branch', PARENT_ID, '--inactivity-period', value], context);
+
+    expect(stderr.join('')).toBe('');
+    expect(createBranch.mock.calls[0]?.[0].body).toMatchObject({
+      scaleToZero: { enabled: true, inactivityPeriodMinutes: expected }
+    });
+  });
+});
 
 describe('branch create parent selection', () => {
   test('--no-parent creates a root branch without asking for a parent', async () => {

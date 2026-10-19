@@ -2,7 +2,8 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import { CLI_NAME } from '~/lib/constants';
-import { scaleToZeroChoices, timeChoices, validScaleToZeroValues, validInactivityPeriodValues } from '~/lib/config';
+import { scaleToZeroChoices, validScaleToZeroValues } from '~/lib/config';
+import { inactivityPeriodError } from '~/lib/inactivity-period';
 import type { LocalContext } from '~/context';
 import { exitWithError, printCustom } from '~/lib/cli-utils';
 
@@ -84,17 +85,15 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
         );
       })
       .with('inactivity-period-base', async () => {
-        return await this.enquirer.selectPrompt(
+        return await this.enquirer.inputPrompt(
           this.isInteractive,
-          `Please select the default inactivity period for the base branch (current: ${inactivityPeriodBase} minutes)`,
-          [...timeChoices]
+          `Please enter the default inactivity period for the base branch in whole minutes, 1–1440 (current: ${inactivityPeriodBase} minutes)`
         );
       })
       .with('inactivity-period-child', async () => {
-        return await this.enquirer.selectPrompt(
+        return await this.enquirer.inputPrompt(
           this.isInteractive,
-          `Please select the default inactivity period for the child branches (current: ${inactivityPeriodChild} minutes)`,
-          [...timeChoices]
+          `Please enter the default inactivity period for the child branches in whole minutes, 1–1440 (current: ${inactivityPeriodChild} minutes)`
         );
       })
       .exhaustive();
@@ -126,20 +125,10 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
         );
       }
     })
-    .with('inactivity-period-base', () => {
-      if (!validInactivityPeriodValues.includes(value)) {
-        exitWithError(
-          this,
-          `Invalid inactivity period base value: ${value}. Valid values are: ${validInactivityPeriodValues.join(', ')}`
-        );
-      }
-    })
-    .with('inactivity-period-child', () => {
-      if (!validInactivityPeriodValues.includes(value)) {
-        exitWithError(
-          this,
-          `Invalid inactivity period child value: ${value}. Valid values are: ${validInactivityPeriodValues.join(', ')}`
-        );
+    .with('inactivity-period-base', 'inactivity-period-child', () => {
+      const error = inactivityPeriodError(value);
+      if (error) {
+        exitWithError(this, error);
       }
     })
     .exhaustive();
@@ -177,13 +166,13 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
     baseBranches: {
       enabled: (updateBody as any).scaleToZeroBase ?? scaleToZeroBase,
       inactivityPeriodMinutes: (updateBody as any).inactivityPeriodBase
-        ? parseInt((updateBody as any).inactivityPeriodBase)
+        ? Number((updateBody as any).inactivityPeriodBase)
         : inactivityPeriodBase
     },
     childBranches: {
       enabled: (updateBody as any).scaleToZeroChild ?? scaleToZeroChild,
       inactivityPeriodMinutes: (updateBody as any).inactivityPeriodChild
-        ? parseInt((updateBody as any).inactivityPeriodChild)
+        ? Number((updateBody as any).inactivityPeriodChild)
         : inactivityPeriodChild
     }
   };

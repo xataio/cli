@@ -6,7 +6,7 @@ import { implementation } from './set';
 
 const FLAGS = {};
 
-function buildContext({ description }: { description?: string } = {}) {
+function buildContext({ description, input }: { description?: string; input?: string } = {}) {
   const stdout: string[] = [];
   const stderr: string[] = [];
   const updateBranch = mock(async ({ body }: { body: Record<string, unknown> }) => {
@@ -63,7 +63,7 @@ function buildContext({ description }: { description?: string } = {}) {
         throw new Error(`exit:${code}`);
       })
     },
-    isInteractive: false,
+    isInteractive: input !== undefined,
     outputJson: false,
     printTable,
     getActiveProfile: () => {
@@ -74,6 +74,7 @@ function buildContext({ description }: { description?: string } = {}) {
     getBranch: mock(async () => 'branch-id'),
     enquirer: {
       inputPrompt: mock(async () => {
+        if (input !== undefined) return input;
         throw new Error('should not prompt');
       }),
       selectPrompt: mock(async () => {
@@ -84,6 +85,27 @@ function buildContext({ description }: { description?: string } = {}) {
 
   return { context, stdout, stderr, updateBranch };
 }
+
+describe('branch set inactivity period', () => {
+  test.each([false, true])('accepts 10 minutes, prompted: %s', async (prompted) => {
+    const { context, updateBranch } = buildContext({ input: prompted ? '10' : undefined });
+
+    await implementation.call(context, FLAGS, 'inactivity-period', prompted ? undefined : '10');
+
+    expect(updateBranch.mock.calls[0]?.[0].body).toEqual({
+      scaleToZero: { enabled: false, inactivityPeriodMinutes: 10 }
+    });
+  });
+
+  test.each(['0', '1441', '10min', '1.5'])('rejects %s without updating', async (value) => {
+    const { context, stderr, updateBranch } = buildContext();
+
+    await expect(implementation.call(context, FLAGS, 'inactivity-period', value)).rejects.toThrow('exit:1');
+
+    expect(stderr.join('')).toContain('whole number of minutes between 1 and 1440');
+    expect(updateBranch).not.toHaveBeenCalled();
+  });
+});
 
 describe('branch set description', () => {
   test('updates the description', async () => {

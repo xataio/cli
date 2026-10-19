@@ -14,6 +14,7 @@ import { createChildBranch, createRootBranch } from '~/lib/branch-actions';
 import type { BranchLookupOptions, ProjectOptions } from '~/lib/cli-utils';
 import { exitWithError, exitWithUnknownBranch, groupAndSortRegions, resolveBranchIdOrName } from '~/lib/cli-utils';
 import { config } from '~/lib/config';
+import { parseInactivityPeriod } from '~/lib/inactivity-period';
 import { waitForBranchReady } from './wait-ready';
 
 // Storage is part of the cluster configuration a root branch is built from, and a fork inherits
@@ -34,7 +35,7 @@ type Flags = {
   'postgres-version'?: string;
   storage?: string;
   'scale-to-zero'?: 'true' | 'false';
-  'inactivity-period'?: '15' | '30' | '60' | '120' | '180';
+  'inactivity-period'?: number;
 };
 
 export async function instanceTypes(context: LocalContext, organizationId: string, region: string) {
@@ -329,9 +330,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
 
   const scaleToZero = flags['scale-to-zero'] ? flags['scale-to-zero'] === 'true' : defaultScaleToZero;
 
-  const inactivityPeriodMinutes = flags['inactivity-period']
-    ? parseInt(flags['inactivity-period'])
-    : defaultInactivityPeriod;
+  const inactivityPeriodMinutes = flags['inactivity-period'] ?? defaultInactivityPeriod;
 
   const branch = await match(Boolean(parentBranchId))
     .with(false, async () => {
@@ -509,9 +508,9 @@ export const BranchCreateCommand = buildCommand({
         optional: true
       },
       'inactivity-period': {
-        kind: 'enum',
-        values: ['15', '30', '60', '120', '180'],
-        brief: 'Inactivity period in minutes for the branch',
+        kind: 'parsed',
+        parse: parseInactivityPeriod,
+        brief: 'Inactivity period for the branch in whole minutes (1–1440)',
         optional: true
       }
     }

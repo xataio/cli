@@ -7,6 +7,7 @@ import { implementation as initImplementation } from './project/init';
 import { getUserInfo } from '~/lib/cli-utils';
 import { getDefaultOrganizationName } from '@xata.io/utils';
 import invariant from 'tiny-invariant';
+import { parseInactivityPeriod } from '~/lib/inactivity-period';
 
 type Flags = {
   'organization-name'?: string;
@@ -18,8 +19,8 @@ type Flags = {
   region?: string;
   'scale-to-zero-base'?: 'true' | 'false';
   'scale-to-zero-child'?: 'true' | 'false';
-  'inactivity-period-base'?: '15' | '30' | '60' | '120' | '180';
-  'inactivity-period-child'?: '15' | '30' | '60' | '120' | '180';
+  'inactivity-period-base'?: number;
+  'inactivity-period-child'?: number;
   database?: string;
 };
 
@@ -249,15 +250,15 @@ export const OnboardCommand = buildCommand({
         optional: true
       },
       'inactivity-period-base': {
-        kind: 'enum',
-        values: ['15', '30', '60', '120', '180'],
-        brief: 'Default inactivity period in minutes for base branches',
+        kind: 'parsed',
+        parse: parseInactivityPeriod,
+        brief: 'Default inactivity period for base branches in whole minutes (1–1440)',
         optional: true
       },
       'inactivity-period-child': {
-        kind: 'enum',
-        values: ['15', '30', '60', '120', '180'],
-        brief: 'Default inactivity period in minutes for child branches',
+        kind: 'parsed',
+        parse: parseInactivityPeriod,
+        brief: 'Default inactivity period for child branches in whole minutes (1–1440)',
         optional: true
       },
       database: {

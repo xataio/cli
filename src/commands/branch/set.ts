@@ -12,7 +12,8 @@ import { exitWithError, printCustom } from '~/lib/cli-utils';
 import { CLI_NAME } from '~/lib/constants';
 import { getBranchLimits, replicaChoicesFor, storageValidationError } from '~/lib/branch-limits';
 import { buildInstanceTypeChoices, instanceTypes, shouldShowInstanceTypePricing } from './create';
-import { validScaleToZeroValues, validInactivityPeriodValues, scaleToZeroChoices, timeChoices } from '~/lib/config';
+import { validScaleToZeroValues, scaleToZeroChoices } from '~/lib/config';
+import { inactivityPeriodError } from '~/lib/inactivity-period';
 
 type Flags = {
   organization?: string;
@@ -77,16 +78,13 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
   });
 
   const scaleToZeroBase = project.configuration.scaleToZero.baseBranches.enabled;
-  const inactivityPeriodBase = project.configuration.scaleToZero.baseBranches.inactivityPeriodMinutes;
   const scaleToZeroChild = project.configuration.scaleToZero.childBranches.enabled;
-  const inactivityPeriodChild = project.configuration.scaleToZero.childBranches.inactivityPeriodMinutes;
 
   // Determine if this is a root branch (no parentID means it's a root branch)
   const isRootBranch = !branch.parentID;
 
   // Use appropriate defaults based on branch type
   const defaultScaleToZero = isRootBranch ? scaleToZeroBase : scaleToZeroChild;
-  const defaultInactivityPeriod = isRootBranch ? inactivityPeriodBase : inactivityPeriodChild;
 
   const { maxReplicas, maxAllowedVCPUs, maxStorage } = await getBranchLimits(this, organizationId);
   const replicaChoices = replicaChoicesFor(maxReplicas);
@@ -162,10 +160,9 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
         );
       })
       .with('inactivity-period', async () => {
-        return await this.enquirer.selectPrompt(
+        return await this.enquirer.inputPrompt(
           this.isInteractive,
-          `Please select inactivity period for the branch (current: ${defaultInactivityPeriod} minutes)`,
-          [...timeChoices]
+          `Please enter inactivity period for the branch in whole minutes, 1–1440 (current: ${branch.scaleToZero.inactivityPeriodMinutes} minutes)`
         );
       })
       .with('postgres-version', async () => {
@@ -228,9 +225,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
         : invalidValue('scale to zero value', validScaleToZeroValues);
     })
     .with('inactivity-period', () => {
-      return validInactivityPeriodValues.includes(value)
-        ? null
-        : invalidValue('inactivity period value', validInactivityPeriodValues);
+      return inactivityPeriodError(value);
     })
     .with('postgres-version', () => {
       return upgradeableImageChoices.some((choice) => choice.name === value)
@@ -286,7 +281,7 @@ export async function implementation(this: LocalContext, flags: Flags, fieldArg?
       return {
         scaleToZero: {
           ...branch.scaleToZero,
-          inactivityPeriodMinutes: parseInt(value)
+          inactivityPeriodMinutes: Number(value)
         }
       };
     })
