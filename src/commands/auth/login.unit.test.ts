@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
+import { ApiError } from '@xata.io/api';
 import type { LocalContext } from '~/context';
 import type { Config } from '~/lib/schemas';
 
@@ -31,6 +32,7 @@ class FakeXataApi {
 }
 
 mock.module('@xata.io/api', () => ({
+  ApiError,
   XataApi: FakeXataApi
 }));
 
@@ -214,6 +216,23 @@ describe('auth login --api-key', () => {
     expect(updateConfig).not.toHaveBeenCalled();
     expect(configState.profiles.default).toBeUndefined();
     expect(errors.join('')).toContain('The provided API key is invalid');
+    expect(exit).toHaveBeenCalledWith(1);
+  });
+
+  test('reports a missing org:read scope when the key is forbidden', async () => {
+    getOrganizationsList.mockImplementationOnce(async () => {
+      throw new ApiError(403, {}, 'Forbidden');
+    });
+    const { context, errors, exit, restore } = buildContext();
+
+    try {
+      await implementation.call({ ...context, profile: 'default' }, { force: false, 'api-key': 'xau_scoped' });
+    } finally {
+      restore();
+    }
+
+    expect(updateConfig).not.toHaveBeenCalled();
+    expect(errors.join('')).toContain('lacks the org:read scope');
     expect(exit).toHaveBeenCalledWith(1);
   });
 

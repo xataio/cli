@@ -1,5 +1,5 @@
 import { buildCommand } from '@stricli/core';
-import { XataApi } from '@xata.io/api';
+import { ApiError, XataApi } from '@xata.io/api';
 import chalk from 'chalk';
 import { match } from 'ts-pattern';
 import type { LocalContext } from '~/context';
@@ -158,8 +158,14 @@ async function loginWithApiKey(
   try {
     const xata = new XataApi({ baseUrl, token: apiKey });
     await xata.api.organizations.getOrganizationsList({});
-  } catch {
-    console.error('The provided API key is invalid or could not be verified. No changes were made.');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) {
+      console.error(
+        'The provided API key is valid but lacks the org:read scope, which the CLI requires. No changes were made.'
+      );
+    } else {
+      console.error('The provided API key is invalid or could not be verified. No changes were made.');
+    }
     this.process.exit(1);
     return;
   }
