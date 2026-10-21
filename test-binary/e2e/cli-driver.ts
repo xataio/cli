@@ -46,9 +46,11 @@ function getCliBinaryPath(): string {
   return binaryPath;
 }
 
+// Staging calls can queue behind project locks; stay below the 90 s bun test timeout.
+const CLI_TIMEOUT_MS = 60_000;
+
 export async function runCli(args: string[]): Promise<RunResult> {
   const binaryPath = getCliBinaryPath();
-  const timeoutMs = 10_000;
 
   const proc = Bun.spawn({
     cmd: [binaryPath, ...args],
@@ -65,7 +67,7 @@ export async function runCli(args: string[]): Promise<RunResult> {
     try {
       proc.kill();
     } catch {}
-  }, timeoutMs);
+  }, CLI_TIMEOUT_MS);
 
   const [stdout, stderr, code] = await Promise.all([
     new Response(proc.stdout).text(),
