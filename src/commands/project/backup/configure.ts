@@ -1,23 +1,33 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
 import { printCustom } from '~/lib/cli-utils';
-import { formatCronExpression, parseCronExpression } from '@xata.io/utils';
 import chalk from 'chalk';
-import { dayOfWeekMapReverse } from '@xata.io/utils';
+import {
+  describeSchedule,
+  parseConfigureFlags,
+  resolveSchedule,
+  scheduleFromBackupTime,
+  toBackupTime,
+  type ConfigureFlags
+} from './schedule';
 
-type Flags = {
+type Flags = ConfigureFlags & {
   organization?: string;
   project?: string;
-  retention?: string;
-  cadence?: string;
-  'day-of-week'?: string;
-  time?: string;
+  branch?: string;
 };
 
 export async function implementation(this: LocalContext, flags: Flags, branchName?: string) {
+  const changes = parseConfigureFlags(flags);
+  if ('error' in changes) {
+    this.process.stderr.write(`Error: ${changes.error}\n`);
+    this.process.exit(1);
+    return;
+  }
+
   const organizationId = await this.getOrganization(this, flags, {});
   const projectId = await this.getProject(this, flags, { organizationId });
-  const branchId = await this.getBranch(this, {}, { organizationId, projectId, branchName });
+  const branchId = await this.getBranch(this, flags, { organizationId, projectId, branchName });
 
   const branch = await this.api.branches.describeBranch({
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
@@ -36,25 +46,16 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   const currentConfig = branch.backupConfiguration;
 
-  if (!currentConfig.backupTime) {
-    this.process.stderr.write(`Error: No backup time found for branch "${branchId}"\n`);
-    this.process.exit(1);
-    return;
-  }
-
   if (!currentConfig.retentionPeriod) {
     this.process.stderr.write(`Error: No retention period found for branch "${branchId}"\n`);
     this.process.exit(1);
     return;
   }
 
-  const current = parseCronExpression(currentConfig.backupTime);
-  const currentRetention = currentConfig.retentionPeriod || 2;
+  const currentRetention = currentConfig.retentionPeriod;
+  const current = scheduleFromBackupTime(currentConfig.backupTime);
 
-  const hasConfigChanges = flags.retention || flags.cadence || flags['day-of-week'] || flags.time;
-
-  // If no configuration flags passed, just show current configuration
-  if (!hasConfigChanges) {
+  if (Object.keys(changes).length === 0) {
     printCustom(
       this,
       {
@@ -73,72 +74,24 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
       () => {
         this.process.stdout.write(`\n${chalk.bold('Backup Configuration')} for branch ${chalk.bold(branchId)}\n\n`);
         this.process.stdout.write(`  Retention: ${currentRetention} days\n`);
-        this.process.stdout.write(`  Cadence:   ${current.cadence}`);
-        if (current.cadence === 'weekly') {
-          this.process.stdout.write(` (${current.dayOfWeek})`);
+        this.process.stdout.write(`  Schedule:  ${describeSchedule(current)}\n`);
+        if (currentConfig.backupTime) {
+          this.process.stdout.write(`  Pattern:   ${currentConfig.backupTime} (UTC)\n`);
         }
-        this.process.stdout.write(`\n`);
-        this.process.stdout.write(`  Time:      ${current.time}\n`);
-        this.process.stdout.write(`  Pattern:   ${currentConfig.backupTime}\n\n`);
+        this.process.stdout.write('\n');
       }
     );
     return;
   }
 
-  // Validation. Set defaults to current configuration
-  let newCadence = current.cadence;
-  let newDayOfWeek = current.cadence === 'weekly' ? current.dayOfWeek : 'monday';
-  let newRetention = currentRetention;
-  let newTime = current.time;
-
-  if (flags.cadence) {
-    if (flags.cadence !== 'daily' && flags.cadence !== 'weekly') {
-      this.process.stderr.write('Error: Cadence must be either "daily" or "weekly"\n');
-      this.process.exit(1);
-      return;
-    }
-
-    newCadence = flags.cadence;
-
-    // Cadence is set to weekly, so we need a day of week flag too.
-    if (flags.cadence && flags.cadence === 'weekly') {
-      if (!flags['day-of-week']) {
-        this.process.stderr.write('Error: --day-of-week is required when setting cadence to weekly\n');
-        this.process.exit(1);
-        return;
-      }
-    }
+  const next = resolveSchedule(current, changes);
+  if ('error' in next) {
+    this.process.stderr.write(`Error: ${next.error}\n`);
+    this.process.exit(1);
+    return;
   }
-
-  if (flags['day-of-week']) {
-    newDayOfWeek = flags['day-of-week'];
-    const dayOfWeekIsValid = dayOfWeekMapReverse[newDayOfWeek];
-    if (!dayOfWeekIsValid) {
-      this.process.stderr.write(`Error: Invalid day of week: ${newDayOfWeek}\n`);
-      this.process.exit(1);
-      return;
-    }
-  }
-
-  if (flags.retention) {
-    newRetention = Number(flags.retention);
-    if (newRetention < 2 || newRetention > 40) {
-      this.process.stderr.write(`Error: Retention period must be between 2 and 40 days, got ${flags.retention}\n`);
-      this.process.exit(1);
-      return;
-    }
-    newRetention = Number(flags.retention);
-  }
-
-  if (flags.time) {
-    newTime = flags.time;
-  }
-
-  const newBackupTime = formatCronExpression({
-    cadence: newCadence,
-    dayOfWeek: newDayOfWeek,
-    time: newTime
-  });
+  const newRetention = changes.retention ?? currentRetention;
+  const newBackupTime = toBackupTime(next);
 
   if (!this.outputJson) {
     this.process.stdout.write(
@@ -147,21 +100,11 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
     this.process.stdout.write(chalk.bold('Current settings:\n'));
     this.process.stdout.write(`  Retention: ${currentRetention} days\n`);
-    this.process.stdout.write(`  Cadence:   ${current.cadence}`);
-    if (current.cadence === 'weekly') {
-      this.process.stdout.write(` (${current.dayOfWeek})`);
-    }
-    this.process.stdout.write(`\n`);
-    this.process.stdout.write(`  Time:      ${current.time}\n\n`);
+    this.process.stdout.write(`  Schedule:  ${describeSchedule(current)}\n\n`);
 
     this.process.stdout.write(chalk.bold('New settings:\n'));
     this.process.stdout.write(`  Retention: ${newRetention} days\n`);
-    this.process.stdout.write(`  Cadence:   ${newCadence}`);
-    if (newCadence === 'weekly') {
-      this.process.stdout.write(` (${newDayOfWeek})`);
-    }
-    this.process.stdout.write(`\n`);
-    this.process.stdout.write(`  Time:      ${newTime}\n\n`);
+    this.process.stdout.write(`  Schedule:  ${describeSchedule(next)}\n\n`);
   }
 
   await this.api.branches.updateBranch({
@@ -186,7 +129,12 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
         dayOfWeek: current.cadence === 'weekly' ? current.dayOfWeek : undefined,
         time: current.time
       },
-      current: { retention: newRetention, cadence: newCadence, dayOfWeek: newDayOfWeek, time: newTime }
+      current: {
+        retention: newRetention,
+        cadence: next.cadence,
+        dayOfWeek: next.cadence === 'weekly' ? next.dayOfWeek : undefined,
+        time: next.time
+      }
     },
     () => {
       this.process.stdout.write(`${chalk.green('✔')} Backup configuration updated successfully.\n`);
@@ -212,9 +160,15 @@ export const BackupConfigureCommand = buildCommand({
         parse: String,
         optional: true
       },
+      branch: {
+        kind: 'parsed',
+        brief: 'Branch ID or name to configure backups for',
+        parse: String,
+        optional: true
+      },
       retention: {
         kind: 'parsed',
-        brief: 'Number of days to retain backups (2-40)',
+        brief: 'Number of days to retain backups (2-35)',
         parse: String,
         optional: true
       },
@@ -226,13 +180,13 @@ export const BackupConfigureCommand = buildCommand({
       },
       'day-of-week': {
         kind: 'parsed',
-        brief: 'Day of week for weekly backups (monday, tuesday, etc.)',
+        brief: 'Day of week for weekly backups (monday, tuesday, etc.; optional when the branch is already weekly)',
         parse: String,
         optional: true
       },
       time: {
         kind: 'parsed',
-        brief: 'Backup time in 24-hour HH:MM format (e.g., 02:30)',
+        brief: 'Backup time in 24-hour HH:MM format, UTC (e.g., 02:30)',
         parse: String,
         optional: true
       }
