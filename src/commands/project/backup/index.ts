@@ -3,6 +3,7 @@ import { PRODUCT_NAME } from '~/lib/constants';
 import { BackupStatusCommand } from './status';
 import { BackupConfigureCommand } from './configure';
 import { BackupDescribeCommand } from './describe';
+import { BackupRestoreCommand } from './restore';
 
 export const ProjectBackupRoute = buildRouteMap({
   docs: {
@@ -11,7 +12,8 @@ export const ProjectBackupRoute = buildRouteMap({
   routes: {
     status: BackupStatusCommand,
     describe: BackupDescribeCommand,
-    configure: BackupConfigureCommand
+    configure: BackupConfigureCommand,
+    restore: BackupRestoreCommand
   },
   aliases: {
     list: 'status',
