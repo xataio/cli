@@ -1,5 +1,34 @@
 # xata-cli
 
+## 1.18.0
+
+### Minor Changes
+
+- [#3428](https://github.com/xataio/frontend/pull/3428) [`269c119`](https://github.com/xataio/frontend/commit/269c1192c12ce3e2a57390f452a47aaa1df2a1d9) Thanks [@SferaDev](https://github.com/SferaDev)! - Add `project backup restore`, which creates a new branch from a branch's backups at the latest recovery point or a chosen time.
+
+### Patch Changes
+
+- [#3421](https://github.com/xataio/frontend/pull/3421) [`6f59ae7`](https://github.com/xataio/frontend/commit/6f59ae7a38ea7f5bc296b05c57d0be942c8c85ca) Thanks [@SferaDev](https://github.com/SferaDev)! - Report a missing `org:read` scope when logging in with an API key instead of calling a valid key invalid.
+
+- [#3427](https://github.com/xataio/frontend/pull/3427) [`92b0fa9`](https://github.com/xataio/frontend/commit/92b0fa9838fb3bfcf3681a7afa9e4f53e306667b) Thanks [@SferaDev](https://github.com/SferaDev)! - Validate `project backup configure` flags before calling the API and rename `project backup list` to `status`, which now prints one object with the restore window, retention and schedule.
+
+- [#3435](https://github.com/xataio/frontend/pull/3435) [`b0710ca`](https://github.com/xataio/frontend/commit/b0710ca43f73be5af4d24d49d572239086df28af) Thanks [@SferaDev](https://github.com/SferaDev)! - `project backup describe --json` now prints `backupId` and `branchId` instead of `id` and `branchID` and adds `latestRestore`, and its text label `branch_id` is now `branch`. `project backup restore` fails before any API call outside a terminal without `--yes`, reports a branch without backups, and prints the restore window as RFC 3339 times that `--to` accepts.
+
+- [#3435](https://github.com/xataio/frontend/pull/3435) [`b0710ca`](https://github.com/xataio/frontend/commit/b0710ca43f73be5af4d24d49d572239086df28af) Thanks [@SferaDev](https://github.com/SferaDev)! - `project backup restore` shows a `--to` time with fractional seconds as given, so an error no longer says that a time equal to the latest recovery point is after it.
+
+- [#3434](https://github.com/xataio/frontend/pull/3434) [`1727718`](https://github.com/xataio/frontend/commit/1727718a6a22498c5948be337b83fced27bef383) Thanks [@divyenduz](https://github.com/divyenduz)! - Honor the backup restore wait timeout during status requests, API retry delays and polling sleeps, preserving the created branch ID in timeout errors.
+
+- [#3435](https://github.com/xataio/frontend/pull/3435) [`b0710ca`](https://github.com/xataio/frontend/commit/b0710ca43f73be5af4d24d49d572239086df28af) Thanks [@SferaDev](https://github.com/SferaDev)! - Reject `project backup restore --timeout` values above 24h, since longer ones fire the timer immediately, and keep polling when a status request fails instead of losing the created branch.
+
+- [#3435](https://github.com/xataio/frontend/pull/3435) [`b0710ca`](https://github.com/xataio/frontend/commit/b0710ca43f73be5af4d24d49d572239086df28af) Thanks [@SferaDev](https://github.com/SferaDev)! - `project backup status` and `project backup describe` print restore times as RFC 3339, such as `2026-10-21T06:05:50Z`, so they can be pasted into `restore --to`. `project backup restore --wait` prints its waiting line when the branch status changes instead of every 2 seconds.
+- Updated dependencies [[`f1478eb`](https://github.com/xataio/frontend/commit/f1478eb5694a0a29fc6355fe9872d32ab05a2eaf), [`1e9a4d6`](https://github.com/xataio/frontend/commit/1e9a4d6f29647724f99317f19f5bd8169f024491), [`c659854`](https://github.com/xataio/frontend/commit/c659854b6e684df83b1445d480141a4de6321898), [`a5dfe42`](https://github.com/xataio/frontend/commit/a5dfe4221091e267d109821fc449cc421d003656)]:
+  - @xata.io/utils@0.9.5
+  - @xata.io/lang@0.0.7
+  - @xata.io/api@0.1.28
+  - @xata.io/sql@0.2.24
+  - @xata.io/ai@0.3.0
+  - @xata.io/config@0.0.29
+
 ## 1.17.3
 
 ### Patch Changes
