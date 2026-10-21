@@ -59,15 +59,15 @@ describe('backup status', () => {
     });
   });
 
-  test('prints UTC times and a Xata-chosen schedule', async () => {
+  test('prints RFC 3339 times and a Xata-chosen schedule', async () => {
     const { context, stdout } = buildContext(
       { backupsEnabled: true, backupConfiguration: { retentionPeriod: 7 } },
       false
     );
     await status.call(context, {});
     const output = stripAnsi(stdout.join(''));
-    expect(output).toContain('2026-10-13 04:00:00 UTC');
-    expect(output).toContain('2026-10-20 10:15:30 UTC');
+    expect(output).toContain('2026-10-13T04:00:00Z');
+    expect(output).toContain('2026-10-20T10:15:30Z');
     expect(output).toContain('weekly on Sunday, time chosen by Xata');
   });
 });

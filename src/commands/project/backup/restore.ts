@@ -5,12 +5,13 @@ import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { getDescription } from '~/commands/branch/create';
-import { exitWithError, exitWithErrorDetails } from '~/lib/cli-utils';
-import { formatUtc } from './format';
-import { describeWindow, parseRestoreTime, parseTimeout, windowError } from './restore-utils';
+import { exitWithError, exitWithErrorDetails, getErrorMessage } from '~/lib/cli-utils';
+import { CLI_NAME } from '~/lib/constants';
+import { describeWindow, formatRfc3339, parseRestoreTime, parseTimeout, windowError } from './restore-utils';
 
 const DEFAULT_TIMEOUT = '30m';
 const POLL_INTERVAL_MS = 2000;
+const RESTORE_WINDOW_ERROR = /recovery window|targetTime/i;
 const NO_RECOVERY_POINT_MESSAGE =
   'This branch has no recovery point yet. A branch can be restored once its first backup has been archived, so try again later.';
 
@@ -28,8 +29,18 @@ type Flags = {
 
 type PathParams = { organizationID: string; projectID: string; branchID: string };
 
+const waitReadyCommand = (flags: Flags, branchId: string) =>
+  [
+    `${CLI_NAME} branch wait-ready ${branchId}`,
+    flags.organization ? `--organization ${flags.organization}` : '',
+    flags.project ? `--project ${flags.project}` : ''
+  ]
+    .filter(Boolean)
+    .join(' ');
+
 async function waitForRestoredBranch(
   context: LocalContext,
+  flags: Flags,
   pathParams: PathParams,
   created: Types.BranchShortMetadata,
   timeoutMs: number
@@ -41,21 +52,35 @@ async function waitForRestoredBranch(
   });
   let lastStatus = 'Not yet available';
 
+  let announced: string | undefined;
   try {
     while (Date.now() < deadline) {
-      const branch = await Promise.race([context.api.branches.describeBranch({ pathParams }), expired]);
-      if (!branch || Date.now() >= deadline) break;
-      lastStatus = branch.status.status;
-      if (branch.status.statusType === 'STATUS_TYPE_HEALTHY') {
-        return branch;
+      const polled = await Promise.race([
+        context.api.branches.describeBranch({ pathParams }).catch((error: unknown) => ({ error })),
+        expired
+      ]);
+      if (!polled) break;
+      if ('error' in polled) {
+        lastStatus = `Status request failed: ${getErrorMessage(polled.error)}`;
+      } else {
+        lastStatus = polled.status.status;
+        if (Date.now() >= deadline) break;
+        if (polled.status.statusType === 'STATUS_TYPE_HEALTHY') {
+          return polled;
+        }
       }
 
-      context.process.stderr.write(chalk.yellow(`Waiting for branch ${branch.name} to be ready...\n`));
+      if (lastStatus !== announced) {
+        announced = lastStatus;
+        context.process.stderr.write(
+          chalk.yellow(`Waiting for branch ${created.name} to be ready (${lastStatus})...\n`)
+        );
+      }
       await delay(Math.min(POLL_INTERVAL_MS, Math.max(0, deadline - Date.now())));
     }
     return exitWithErrorDetails(
       context,
-      `Timed out waiting for the restored branch ${created.name} (${created.id}). Last status: ${lastStatus}. The restore may still be in progress, check it with \`branch wait-ready ${created.id}\`.`,
+      `Timed out waiting for the restored branch ${created.name} (${created.id}). Last status: ${lastStatus}. The restore may still be in progress, check it with \`${waitReadyCommand(flags, created.id)}\`.`,
       { branchId: created.id, name: created.name }
     );
   } finally {
@@ -78,7 +103,13 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   const timeout = flags.timeout ?? DEFAULT_TIMEOUT;
   const timeoutMs = parseTimeout(timeout);
   if (!timeoutMs) {
-    return exitWithError(this, `Invalid --timeout value "${timeout}". Use a positive duration such as 90s, 30m or 2h.`);
+    return exitWithError(
+      this,
+      `Invalid --timeout value "${timeout}". Use a positive duration of at most 24h, such as 90s, 30m or 2h.`
+    );
+  }
+  if (!flags.yes && !this.isInteractive) {
+    return exitWithError(this, 'Cannot restore a branch without confirmation. Pass --yes to confirm.');
   }
   const description = getDescription(this, flags);
 
@@ -95,9 +126,16 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   const sourcePathParams = { organizationID: organizationId, projectID: projectId, branchID: sourceBranchId };
   const source = await this.api.branches.describeBranch({ pathParams: sourcePathParams });
-  const backup = await this.api.projects.getBackup({
-    pathParams: { organizationID: organizationId, projectID: projectId, backupID: sourceBranchId }
-  });
+  const backup = await this.api.projects
+    .getBackup({
+      pathParams: { organizationID: organizationId, projectID: projectId, backupID: sourceBranchId }
+    })
+    .catch((error: unknown) => {
+      if (error instanceof ApiError && error.status === 404) {
+        return exitWithError(this, `Branch "${source.name}" has no backups. Backups may not be enabled in its region.`);
+      }
+      throw error;
+    });
   const { earliestRestore, latestRestore } = backup;
   if (!earliestRestore) {
     return exitWithError(this, NO_RECOVERY_POINT_MESSAGE);
@@ -115,7 +153,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     `${[
       `Restore branch ${chalk.bold(source.name)} (${source.id})`,
       `  Window:       ${describeWindow(window)}`,
-      `  Target:       ${targetTime ? formatUtc(targetTime) : 'latest'}`,
+      `  Target:       ${targetTime ? formatRfc3339(targetTime) : 'latest'}`,
       `  New branch:   ${name}`,
       `  Config:       instance type, storage and Postgres settings are copied from ${source.name}; backups and scale to zero use the defaults`,
       ''
@@ -123,9 +161,6 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   );
 
   if (!flags.yes) {
-    if (!this.isInteractive) {
-      return exitWithError(this, 'Cannot restore a branch without confirmation. Pass --yes to confirm.');
-    }
     const confirmed = await this.enquirer.confirmPrompt(this.isInteractive, `Create branch ${name} from this restore?`);
     if (!confirmed) {
       return exitWithError(this, 'Aborted as there was no confirmation. No branch was created.');
@@ -142,7 +177,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
         const rejected = `The restore request was rejected: ${error.message}`;
         return exitWithError(
           this,
-          targetTime ? `${rejected}\nThe restore window is ${describeWindow(window)}.` : rejected
+          targetTime && RESTORE_WINDOW_ERROR.test(error.message)
+            ? `${rejected}\nThe restore window is ${describeWindow(window)}.`
+            : rejected
         );
       }
       if (error instanceof ApiError && error.status === 404) {
@@ -154,6 +191,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
   const branch = flags.wait
     ? await waitForRestoredBranch(
         this,
+        flags,
         { organizationID: organizationId, projectID: projectId, branchID: created.id },
         created,
         timeoutMs
@@ -169,7 +207,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
 
   if (!flags.wait && !this.outputJson) {
     this.process.stderr.write(
-      `The branch is being restored. Run \`branch wait-ready ${branch.id}\` to wait for it, or pass --wait next time.\n`
+      `The branch is being restored. Run \`${waitReadyCommand(flags, branch.id)}\` to wait for it, or pass --wait next time.\n`
     );
   }
 }

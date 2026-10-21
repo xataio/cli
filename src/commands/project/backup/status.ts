@@ -1,6 +1,6 @@
 import { buildCommand } from '@stricli/core';
 import type { LocalContext } from '~/context';
-import { formatUtc } from './format';
+import { formatEarliestRestore, formatLatestRestore } from './restore-utils';
 import { describeSchedule, scheduleFromBackupTime } from './schedule';
 
 type Flags = {
@@ -42,8 +42,8 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     [
       ['backup_id', backup.id],
       ['branch', backup.branchID],
-      ['earliest_restore', formatUtc(backup.earliestRestore)],
-      ['latest_restore', formatUtc(backup.latestRestore)],
+      ['earliest_restore', formatEarliestRestore(backup.earliestRestore)],
+      ['latest_restore', formatLatestRestore(backup.latestRestore)],
       ['retention_days', retentionDays === undefined ? 'unknown' : String(retentionDays)],
       ['schedule', scheduleText]
     ]
