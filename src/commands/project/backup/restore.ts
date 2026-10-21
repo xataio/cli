@@ -1,4 +1,6 @@
-import { ApiError } from '@xata.io/api';
+import { clearTimeout, setTimeout } from 'node:timers';
+import { setTimeout as delay } from 'node:timers/promises';
+import { ApiError, type Types } from '@xata.io/api';
 import { buildCommand } from '@stricli/core';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
@@ -26,24 +28,38 @@ type Flags = {
 
 type PathParams = { organizationID: string; projectID: string; branchID: string };
 
-async function waitForRestoredBranch(context: LocalContext, pathParams: PathParams, timeoutMs: number) {
+async function waitForRestoredBranch(
+  context: LocalContext,
+  pathParams: PathParams,
+  created: Types.BranchShortMetadata,
+  timeoutMs: number
+) {
   const deadline = Date.now() + timeoutMs;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const expired = new Promise<undefined>((resolve) => {
+    timeout = setTimeout(() => resolve(undefined), timeoutMs);
+  });
+  let lastStatus = 'Not yet available';
 
-  while (true) {
-    const branch = await context.api.branches.describeBranch({ pathParams });
-    if (branch.status.statusType === 'STATUS_TYPE_HEALTHY') {
-      return branch;
-    }
-    if (Date.now() >= deadline) {
-      return exitWithErrorDetails(
-        context,
-        `Timed out waiting for the restored branch ${branch.name} (${branch.id}). Last status: ${branch.status.status}. The restore may still be in progress, check it with \`branch wait-ready ${branch.id}\`.`,
-        { branchId: branch.id, name: branch.name }
-      );
-    }
+  try {
+    while (Date.now() < deadline) {
+      const branch = await Promise.race([context.api.branches.describeBranch({ pathParams }), expired]);
+      if (!branch || Date.now() >= deadline) break;
+      lastStatus = branch.status.status;
+      if (branch.status.statusType === 'STATUS_TYPE_HEALTHY') {
+        return branch;
+      }
 
-    context.process.stderr.write(chalk.yellow(`Waiting for branch ${branch.name} to be ready...\n`));
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+      context.process.stderr.write(chalk.yellow(`Waiting for branch ${branch.name} to be ready...\n`));
+      await delay(Math.min(POLL_INTERVAL_MS, Math.max(0, deadline - Date.now())));
+    }
+    return exitWithErrorDetails(
+      context,
+      `Timed out waiting for the restored branch ${created.name} (${created.id}). Last status: ${lastStatus}. The restore may still be in progress, check it with \`branch wait-ready ${created.id}\`.`,
+      { branchId: created.id, name: created.name }
+    );
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -139,6 +155,7 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     ? await waitForRestoredBranch(
         this,
         { organizationID: organizationId, projectID: projectId, branchID: created.id },
+        created,
         timeoutMs
       )
     : created;

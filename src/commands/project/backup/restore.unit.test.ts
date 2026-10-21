@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test';
+import { setTimeout as delay } from 'node:timers/promises';
 import { ApiError } from '@xata.io/api';
 import type { LocalContext } from '~/context';
 import { implementation } from './restore';
@@ -229,10 +230,31 @@ describe('restore implementation', () => {
 
   test('reports the branch id and last status when --wait times out', async () => {
     const { context, stderr } = buildContext({ statuses: [FAULT] });
+    const startedAt = Date.now();
 
     await expect(implementation.call(context, { ...baseFlags, wait: true, timeout: '1s' })).rejects.toThrow('exit:1');
+    expect(Date.now() - startedAt).toBeLessThan(2000);
     const output = JSON.parse(stderr.at(-1) ?? '');
     expect(output).toMatchObject({ success: false, branchId: 'new-id', name: 'restored' });
     expect(output.error).toContain('Setting up cluster');
+  });
+
+  test('times out before a pending status request returns healthy', async () => {
+    const { context, stderr, stdout } = buildContext();
+    const describeBranch = context.api.branches.describeBranch;
+    context.api.branches.describeBranch = async (args) => {
+      if (args.pathParams.branchID === 'new-id') await delay(3000);
+      return describeBranch(args);
+    };
+    const startedAt = Date.now();
+
+    await expect(implementation.call(context, { ...baseFlags, wait: true, timeout: '1s' })).rejects.toThrow('exit:1');
+
+    expect(Date.now() - startedAt).toBeLessThan(2000);
+    expect(stdout).toEqual([]);
+    const output = JSON.parse(stderr.at(-1) ?? '');
+    expect(output).toMatchObject({ success: false, branchId: 'new-id', name: 'restored' });
+    expect(output.error).toContain('Timed out waiting');
+    expect(output.error).toContain('Last status: Not yet available');
   });
 });
