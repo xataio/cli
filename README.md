@@ -40,18 +40,18 @@ The agent picker is searchable too: type to filter, press Space to toggle a sele
 
 Project installations use the current directory, or the existing project root passed with `--directory`. Use `--global` for user-wide installation instead; these options cannot be combined.
 
-| Agent | Project directory | User directory |
-| --- | --- | --- |
-| Claude Code | `.claude/skills` | `~/.claude/skills` (honors `CLAUDE_CONFIG_DIR`) |
-| Codex | `.agents/skills` | `~/.agents/skills` |
-| Cursor | `.agents/skills` | `~/.cursor/skills` |
-| Amp | `.agents/skills` | `~/.config/agents/skills` (honors `XDG_CONFIG_HOME`) |
-| GitHub Copilot / VS Code (`github-copilot`) | `.agents/skills` | `~/.copilot/skills` |
-| Antigravity CLI (`antigravity-cli`) | `.agents/skills` | `~/.gemini/antigravity-cli/skills` |
-| OpenCode (`opencode`) | `.agents/skills` | `~/.config/opencode/skills` (honors `XDG_CONFIG_HOME`) |
-| Windsurf (`windsurf`) | `.windsurf/skills` | `~/.codeium/windsurf/skills` |
-| Zed (`zed`) | `.agents/skills` | `~/.agents/skills` |
-| Cline (`cline`) | `.cline/skills` | `~/.cline/skills` |
+| Agent                                       | Project directory  | User directory                                         |
+| ------------------------------------------- | ------------------ | ------------------------------------------------------ |
+| Claude Code                                 | `.claude/skills`   | `~/.claude/skills` (honors `CLAUDE_CONFIG_DIR`)        |
+| Codex                                       | `.agents/skills`   | `~/.agents/skills`                                     |
+| Cursor                                      | `.agents/skills`   | `~/.cursor/skills`                                     |
+| Amp                                         | `.agents/skills`   | `~/.config/agents/skills` (honors `XDG_CONFIG_HOME`)   |
+| GitHub Copilot / VS Code (`github-copilot`) | `.agents/skills`   | `~/.copilot/skills`                                    |
+| Antigravity CLI (`antigravity-cli`)         | `.agents/skills`   | `~/.gemini/antigravity-cli/skills`                     |
+| OpenCode (`opencode`)                       | `.agents/skills`   | `~/.config/opencode/skills` (honors `XDG_CONFIG_HOME`) |
+| Windsurf (`windsurf`)                       | `.windsurf/skills` | `~/.codeium/windsurf/skills`                           |
+| Zed (`zed`)                                 | `.agents/skills`   | `~/.agents/skills`                                     |
+| Cline (`cline`)                             | `.cline/skills`    | `~/.cline/skills`                                      |
 
 These targets cover the local skill-capable harnesses in the [MCP setup guide](https://xata.io/docs/platform/mcp). Claude web/desktop and ChatGPT use their own skill import or connector flows rather than this filesystem installer. Zed installs target the native Zed Agent; for an external agent running inside Zed, select that agent instead.
 

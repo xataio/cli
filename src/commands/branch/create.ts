@@ -264,7 +264,7 @@ export async function getImage(
 
     const defaultImage = pickLatestPostgresImage(sortedImages);
     const defaultIndex = defaultImage ? sortedImages.indexOf(defaultImage) : -1;
-    const initial = defaultIndex >= 0 ? defaultIndex : 0;
+    const initial = Math.max(defaultIndex, 0);
 
     const image = (await context.enquirer.selectPrompt(context.isInteractive, title, imageChoices, {
       initial
