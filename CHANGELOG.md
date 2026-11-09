@@ -1,5 +1,21 @@
 # xata-cli
 
+## 1.18.1
+
+### Patch Changes
+
+- [#3440](https://github.com/xataio/frontend/pull/3440) [`85a063b`](https://github.com/xataio/frontend/commit/85a063bc76f96be51b8163721d004717e3e7e125) Thanks [@SferaDev](https://github.com/SferaDev)! - [Test utils]: Ride out busy staging projects in e2e tests ([#3440](https://github.com/xataio/frontend/issues/3440))
+
+- [#3450](https://github.com/xataio/frontend/pull/3450) [`92e9c19`](https://github.com/xataio/frontend/commit/92e9c193cc05b6af827d79dab04c9669482c96d0) Thanks [@xata-bot](https://github.com/xata-bot)! - Update dependencies, regenerate the API client with kubb 5.12, and format the generated pgroll and pgstream definitions with Biome
+- Updated dependencies [[`fcd0527`](https://github.com/xataio/frontend/commit/fcd0527b0f71ffd09a8d188376f2761dc0436317), [`22b9b39`](https://github.com/xataio/frontend/commit/22b9b39f3fb5b89574bba3910c1e4e55154ba568), [`92e9c19`](https://github.com/xataio/frontend/commit/92e9c193cc05b6af827d79dab04c9669482c96d0)]:
+  - @xata.io/utils@0.9.6
+  - @xata.io/api@0.1.29
+  - @xata.io/pgroll@0.9.2
+  - @xata.io/pgstream@0.2.5
+  - @xata.io/sql@0.2.25
+  - @xata.io/ai@0.3.0
+  - @xata.io/config@0.0.30
+
 ## 1.18.0
 
 ### Minor Changes
