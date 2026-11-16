@@ -6,7 +6,7 @@
   "module": "src/app.ts",
   "type": "module",
   "devDependencies": {
-    "@aws-sdk/client-s3": "3.1163.0",
+    "@aws-sdk/client-s3": "3.1168.0",
     "@types/bun": "1.4.4",
     "@types/node": "26.6.6",
     "@types/react": "19.3.0",
@@ -31,15 +31,15 @@
     "@xata.io/utils": "0.9.7",
     "chalk": "6.0.1",
     "chrono-node": "2.10.3",
-    "ci-info": "4.4.0",
+    "ci-info": "4.5.0",
     "cli-table3": "0.6.5",
     "clipboardy": "5.3.2",
     "dedent": "1.7.2",
     "enquirer": "2.4.1",
     "ink": "8.0.0",
-    "jose": "6.2.15",
+    "jose": "6.2.17",
     "pg-connection-string": "2.14.1",
-    "postgres": "4.1.0",
+    "postgres": "4.1.1",
     "react": "19.3.1",
     "react-devtools-core": "8.0.0",
     "strip-ansi": "7.2.0",
@@ -48,7 +48,7 @@
     "ts-pattern": "5.9.2",
     "yaml": "2.9.1",
     "zod": "4.6.7",
-    "zod-config": "1.4.0"
+    "zod-config": "1.5.0"
   },
   "scripts": {
     "dev": "bun src/bin/cli.ts",
