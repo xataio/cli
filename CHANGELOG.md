@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.18.4
+
+### Patch Changes
+
+- [#3448](https://github.com/xataio/frontend/pull/3448) [`9bd0180`](https://github.com/xataio/frontend/commit/9bd0180cd715bd3b32660b04010c1a741f8f14d7) Thanks [@divyenduz](https://github.com/divyenduz)! - Fix self-upgrades to replace the running CLI executable instead of installing into the current HOME directory. Preserve symlinks and reject self-upgrades when running from source.
+
 ## 1.18.3
 
 ### Patch Changes
