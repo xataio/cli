@@ -1,12 +1,6 @@
-import path from 'node:path';
-import { getConfigDir } from '~/lib/config';
 import { version } from '../../package.json';
-import { CLI_NAME } from './constants';
 
 export const BUCKET_NAME = 'xata-cli-versions';
-export const CONFIG_DIR = getConfigDir();
-export const BIN_DIR = path.join(CONFIG_DIR, 'bin');
-export const CLI_PATH = path.join(BIN_DIR, CLI_NAME);
 
 export function getCLIVersion() {
   return version;

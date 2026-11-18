@@ -8,7 +8,7 @@ import path from 'node:path';
 import { match } from 'ts-pattern';
 import { CLI_NAME, PRODUCT_NAME } from '~/lib/constants';
 import { downloadToBuffer } from '~/lib/download';
-import { BUCKET_NAME, CLI_PATH } from '~/lib/updates';
+import { BUCKET_NAME } from '~/lib/updates';
 import { getPgRoll } from '~/lib/pgroll/binary';
 import { getPgStream } from '~/lib/pgstream/binary';
 
@@ -24,14 +24,20 @@ function getPlatform() {
   return target;
 }
 
-function verifyChecksum(data: Buffer, sha256sum: string) {
+const replaceBinary = (binaryPath: string, data: Buffer, sha256sum: string) => {
   const hash = crypto.createHash('sha256');
   hash.update(data);
   const calculatedHash = hash.digest('hex');
   if (calculatedHash !== sha256sum) {
     throw new Error('SHA256 checksum verification failed');
   }
-}
+
+  const destDir = path.dirname(binaryPath);
+  const tempPath = path.join(destDir, `.cli-${process.pid}-${Date.now()}`);
+  fs.writeFileSync(tempPath, data);
+  fs.chmodSync(tempPath, '755');
+  fs.renameSync(tempPath, binaryPath);
+};
 
 async function ensureSubBinaries(context: LocalContext): Promise<void> {
   await getPgRoll(context).catch((error) => {
@@ -55,7 +61,19 @@ async function checkExistingBinaryChecksum(filePath: string, expectedChecksum: s
   return calculatedHash === expectedChecksum;
 }
 
+const getExecutablePath = () => {
+  const isStandalone =
+    Bun.isStandaloneExecutable ??
+    (Bun.main.startsWith('/$bunfs/') || Bun.main.startsWith('B:/~BUN/') || Bun.main.startsWith('B:\\~BUN\\'));
+  if (!isStandalone) {
+    throw new Error('Self-upgrade is only supported by the compiled Xata CLI, not when running from source.');
+  }
+
+  return fs.realpathSync(process.execPath);
+};
+
 export async function implementation(this: LocalContext, flags: Flags) {
+  const cliPath = getExecutablePath();
   const platform = getPlatform();
   const version = flags.version;
   const channel = flags.channel;
@@ -73,7 +91,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   const target = checksumResponseJson.targets[platform];
   const sha256sum = target.sha256sum;
 
-  const existingChecksum = await checkExistingBinaryChecksum(CLI_PATH, sha256sum);
+  const existingChecksum = await checkExistingBinaryChecksum(cliPath, sha256sum);
   if (existingChecksum) {
     console.log('CLI is already up to date.');
     await ensureSubBinaries(this);
@@ -84,15 +102,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
     label: `Downloading ${CLI_NAME} CLI`,
     output: this.process.stderr
   });
-  verifyChecksum(binaryData, sha256sum);
-
-  const destDir = path.dirname(CLI_PATH);
-  fs.mkdirSync(destDir, { recursive: true });
-  const tempPath = path.join(destDir, `.cli-${process.pid}-${Date.now()}`);
-  fs.writeFileSync(tempPath, binaryData);
-
-  fs.renameSync(tempPath, CLI_PATH);
-  fs.chmodSync(CLI_PATH, '755');
+  replaceBinary(cliPath, binaryData, sha256sum);
 
   await ensureSubBinaries(this);
   console.log('CLI has been upgraded successfully.');
