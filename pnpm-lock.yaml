@@ -21,11 +21,11 @@ importers:
         specifier: 0.3.0
         version: 0.3.0
       '@xata.io/api':
-        specifier: 0.1.31
-        version: 0.1.31
+        specifier: 0.1.32
+        version: 0.1.32
       '@xata.io/config':
-        specifier: 0.0.32
-        version: 0.0.32
+        specifier: 0.0.33
+        version: 0.0.33
       '@xata.io/lang':
         specifier: 0.0.7
         version: 0.0.7
@@ -36,14 +36,14 @@ importers:
         specifier: 0.2.5
         version: 0.2.5
       '@xata.io/sql':
-        specifier: 0.2.27
-        version: 0.2.27
+        specifier: 0.2.28
+        version: 0.2.28
       '@xata.io/tsconfig':
         specifier: 0.0.2
         version: 0.0.2
       '@xata.io/utils':
-        specifier: 0.9.8
-        version: 0.9.8
+        specifier: 0.9.9
+        version: 0.9.9
       chalk:
         specifier: 6.0.1
         version: 6.0.1
@@ -69,8 +69,8 @@ importers:
         specifier: 8.0.0
         version: 8.0.0(@types/react@19.3.0)(react-devtools-core@8.0.0)(react@19.3.1)
       jose:
-        specifier: 6.2.17
-        version: 6.2.17
+        specifier: 6.2.18
+        version: 6.2.18
       pg-connection-string:
         specifier: 2.14.1
         version: 2.14.1
@@ -105,15 +105,15 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
       zod-config:
-        specifier: 1.5.0
-        version: 1.5.0(yaml@2.9.1)(zod@4.6.7)
+        specifier: 1.5.1
+        version: 1.5.1(yaml@2.9.1)(zod@4.6.7)
     devDependencies:
       '@aws-sdk/client-s3':
-        specifier: 3.1168.0
-        version: 3.1168.0
+        specifier: 3.1173.0
+        version: 3.1173.0
       '@types/bun':
-        specifier: 1.4.4
-        version: 1.4.4
+        specifier: 1.4.5
+        version: 1.4.5
       '@types/node':
         specifier: 26.6.6
         version: 26.6.6
@@ -124,8 +124,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@xata.io/test-utils':
-        specifier: 0.0.39
-        version: 0.0.39
+        specifier: 0.0.40
+        version: 0.0.40
 
 packages:
 
@@ -145,16 +145,16 @@ packages:
     resolution: {integrity: sha512-ryVZSSfmpEsr4bM8rbt9cSBWal+KGYRrm57C+k/hiPQHMiMahaqg2bPF0MpxSUWY8mGpt7s/ajM6PAqNTMKqPQ==}
     engines: {node: '>=22'}
 
-  '@alcalzone/ansi-tokenize@0.3.1':
-    resolution: {integrity: sha512-cUD0PT0YX+rImRhfn7BfMRduP/tX/Zqt/N0dHlAyn2RlcJssCb5KsCJkhln61eh9vuJDkH8wKn3L8zJzzWXPFg==}
+  '@alcalzone/ansi-tokenize@0.3.2':
+    resolution: {integrity: sha512-GZdcaU9RV2Gn9SAg1hcsSoQ4nIWZfutPqIvxayUYsOzfBPJioJ+aQIXnMJiGDz+35Gg2pskkPxioYnSblPELEw==}
     engines: {node: '>=18'}
 
   '@aws-sdk/checksums@3.1002.5':
     resolution: {integrity: sha512-OHlfkNzDFjYnwNPABhwAkDTUi0HPjfsKUHJDR0bSMORpCXNzRpInPCNCIT08xKDhjaPlcLJ+2Av+Sk7hHnuC8A==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1168.0':
-    resolution: {integrity: sha512-7NcVxqy7Vc6I8A3KOZFORGh+zfMCd4S5aje55tBNBfshddz+F1NZwxLXblt44TC6nw0Hgx5os3AM2d/P0McELQ==}
+  '@aws-sdk/client-s3@3.1173.0':
+    resolution: {integrity: sha512-eFlCOczCvpv1CN37d0BzUxoHmw2ARrMtqQ4JC0pkh5kx/SU9oUKlNtWkqrNg+QRNob0MAi3+SbQQnP5FCcKpHg==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.981.0':
@@ -193,8 +193,8 @@ packages:
     resolution: {integrity: sha512-duLeE3xlf0viHeH+1RM4z5duR3b32BCZTWVMu+MbxFPjQBxy7hmIGEqt5hekuFPRuXoyhMovjNl+PNNsb5oiGQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/middleware-sdk-s3@3.972.89':
-    resolution: {integrity: sha512-Lem2/ZT1eOicVATBukPRPm2S4JAmrTEkP3/dnJE9iTeyqIKqsJF2j04f5L0o+rrZIrwR13swiQMdzcE5jXRzNA==}
+  '@aws-sdk/middleware-sdk-s3@3.972.90':
+    resolution: {integrity: sha512-UtdPoeKTfUyk4WI6iGirvuN+2MkVMNiWyYwHlwbdOBIonD66+Jm8qR4zdlJJDLqTIDmtvULTH0ZUyEyf/BGTsA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/nested-clients@3.998.3':
@@ -228,8 +228,8 @@ packages:
   '@date-fns/tz@1.5.0':
     resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
 
-  '@neondatabase/serverless@1.2.0':
-    resolution: {integrity: sha512-tnaqgixUengZQNd9ZrS3ytQfamJzLKY8QxgqWQTNHHtB+KrFQWk77JTbbpg4RD+J3qE4eO2lVytvGDX5Kj6FdQ==}
+  '@neondatabase/serverless@1.2.1':
+    resolution: {integrity: sha512-PI2JjuyEFE7oZDTkV/s6WP4KEceCwnjQHClfunhysuIATtvcVTBLdA4UgHTnJo7C0mkK+OZ6U7SV1NDnYa0HgA==}
     engines: {node: '>=19.0.0'}
 
   '@sec-ant/readable-stream@0.4.1':
@@ -239,8 +239,8 @@ packages:
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
 
-  '@smithy/core@3.40.0':
-    resolution: {integrity: sha512-DssGno52pzZ5m6RlDtyKuBIpZNPg9pqgs0CnNDKz9IatxCsmvNmJNn5Zn6rf77MthZo9wf89OvZFhTY/RwxhxQ==}
+  '@smithy/core@3.41.0':
+    resolution: {integrity: sha512-fuZ34H1uizS3WgcX9VXG7Uy8od5A5/kCc+CR3NkHLNm2H/BE9AUHG02VIdu8ZB7FYhLqsr/RZbqAoXuOCg/Oxg==}
     engines: {node: '>=18.0.0'}
 
   '@smithy/credential-provider-imds@4.5.2':
@@ -273,8 +273,8 @@ packages:
   '@stricli/core@1.3.0':
     resolution: {integrity: sha512-LnBe2HntygaLDU5trtjiC3J4C/YkmIZuM0XB52IF4qaLqJH09kgD1fnZiS2gaYUnt0nAN2a+1b4PSOBcfPrN4Q==}
 
-  '@types/bun@1.4.4':
-    resolution: {integrity: sha512-9wkRDXUXK124pEnAutE6n/l18j+i9GC5IAHK8TmX/2nlySETmky0OU6yL5U8pW1AoKh++AN9auDCr647BfurjQ==}
+  '@types/bun@1.4.5':
+    resolution: {integrity: sha512-DpgwNI9z0L1S0gtb45QLCWgwCUcMLnsHYMJHQvpNj7erGiCGBvpggltAIeARrtobNMKMuy0UP7i56tKKgwFs/Q==}
 
   '@types/node@26.6.6':
     resolution: {integrity: sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==}
@@ -302,11 +302,11 @@ packages:
   '@xata.io/ai@0.3.0':
     resolution: {integrity: sha512-c95Aetgcw/kKZ4XT72QbNYPy2Zyled6RBJpIKZQc8KWN8E+aSAXLLPNdwPgK5Z+7BxzoCLmXbA9OuRDNWDy6gw==}
 
-  '@xata.io/api@0.1.31':
-    resolution: {integrity: sha512-4sZGR9BIchaNR04iRPr1qo4qBTfOLk1hgysSYrZI1xdcuU0FxxYvtGxUaCQaRtxgEUF9jYbWbIwEvCvilVYZrg==}
+  '@xata.io/api@0.1.32':
+    resolution: {integrity: sha512-0jXX0sG9Oql+C02/eSHY9LtGlkSScpJr2CcQWfsX59UUPKgJ9ipa0ZDEKqpPYGyuS55y5uvcnrbh6W7pV1MOnQ==}
 
-  '@xata.io/config@0.0.32':
-    resolution: {integrity: sha512-7EmIuiI71ggmehkMnxltuL5Yve6ktTig+JH3qLZEwwSu1IE2uo3ycydwm4Jg/LmQgXUbW+G3GOUvQx+s76BCAA==}
+  '@xata.io/config@0.0.33':
+    resolution: {integrity: sha512-6awMGEVXiXEGzXqIPP7sOL9tj48sODj17tOh73wXTWM5mKehKImgTrBaxoGzD85UwFw+vzKGoIeWKMQLy8GFeQ==}
 
   '@xata.io/lang@0.0.7':
     resolution: {integrity: sha512-4tohSKWJuRdHKBzxC1+f0a8NSWnIRlAT/4EolVJipe7XuoHIluxqZgy8bFIRz/9LoP2ag6b/E7Syx3lAxYq+2A==}
@@ -320,17 +320,17 @@ packages:
   '@xata.io/pii@0.0.2':
     resolution: {integrity: sha512-gmdJt/wdMhQib/z2epjBTFXKu5ZfLzeIc2S5j6EBE12y6RnwR3f+byXySHkWyf1XatacJSZnXMKXOjv/fU+uzQ==}
 
-  '@xata.io/sql@0.2.27':
-    resolution: {integrity: sha512-V2SQeXg8GRbTflqqW3CbXMtqci6yu51kAHy6hkxRwokqEzXkeCwnAN3P+VfYzVRJpCuuu7tOWKlZNKIFnZ5PlA==}
+  '@xata.io/sql@0.2.28':
+    resolution: {integrity: sha512-rOmhZtYj3NyO8/EQKTiAyrwCoRN0F/YoBIZxnT6WgruDnt9pWUyyoL/62liXZhA/bTfYOguG4rY6Vh9hkRd8uA==}
 
-  '@xata.io/test-utils@0.0.39':
-    resolution: {integrity: sha512-mNAdnAveBlXCP7xbINVxhTBcbhw5vI8G0AZ2SyyB8B2FDOCYHqNUmP25dr21Jz6NY4ogiaZCu+zm4Fgn9KXADQ==}
+  '@xata.io/test-utils@0.0.40':
+    resolution: {integrity: sha512-VWYX3NPeykOWtNclQK/Ot+qHXuLzo6vbMovZw0AHNDqzhWAW/SCM0TILtoEr5AHVcYDoyzTaeumqOrbaR/VJ6A==}
 
   '@xata.io/tsconfig@0.0.2':
     resolution: {integrity: sha512-7uY1tUBZbA1g7PTSrJ+DWEo1qOxIpN3DU1W94ttWL7Ns76+DmL1JVYtXOw6i9Ta7SYeEii3pxQZnaOQRLe/EAw==}
 
-  '@xata.io/utils@0.9.8':
-    resolution: {integrity: sha512-6mYa1NALOPrfMmcM1NMlujI/ulFQ7lLxv6eoeiYfwHqt+oFXMBx+GjWzbntFc/unq35RerWVYomNiV4Mm5MUJg==}
+  '@xata.io/utils@0.9.9':
+    resolution: {integrity: sha512-YpSmmfJkO7lSIi1lfFULcoFsJ3VOPGVjtw36Z3Fv1sfvygUM9LdVyu9qwcSTrXq5V0wVAjFybamqSyYfYhcakg==}
 
   ai@7.0.122:
     resolution: {integrity: sha512-Un4yVROG+BMd6Q62xUxb9yV+wlTrUGeXhRtg5ltEFDV0p3lOYQaQHK9ozB6rdPdqlH3LyaszfbFdUkZ1p00nIQ==}
@@ -369,8 +369,8 @@ packages:
   bowser@2.15.0:
     resolution: {integrity: sha512-xic6KSZglg/I4ymp45fdM4GWfYpBK79Fxd/TOvJktlaPgQqqDxvmGwOPZl2V0dyeS3Lj5c180bLhXF43iyAjZQ==}
 
-  bun-types@1.4.4:
-    resolution: {integrity: sha512-yjrJh5oGX7mMPKGd19YXyIjmEuj4G4zNC30bs7PM9Az7NQ3ndF3j6hbeRdvJTRQEhJ/FYQwW0a2moweEi2hMxQ==}
+  bun-types@1.4.5:
+    resolution: {integrity: sha512-ECHn+9dhL3wv0G6u0+7dQvrnaimXiRDxxerYBmhTaLyJEEuvTPWk2Fye3XIf5Y++JIIiHKfQw4Z7V5D8KuiXbg==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -433,8 +433,8 @@ packages:
     resolution: {integrity: sha512-x8dy3RnvYdlUcPOjkEHqozhiwzKNSq7GcPuXFbnyMOCHxX8V3OgIg/pYuabl2sbUPfIJaeAQB7PMOK8DFIdoRA==}
     engines: {node: '>=12'}
 
-  csstype@3.2.3:
-    resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+  csstype@3.2.4:
+    resolution: {integrity: sha512-PoKaoPzQapnEoqUSnHx1u6W6ku8CVEgKsnpmmzU3m1nwkidpPBQ8V/Zq2+bWNrsOKoKLwTGdbx6xF7BXP1zLVQ==}
 
   date-fns@4.4.0:
     resolution: {integrity: sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==}
@@ -622,8 +622,8 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  jose@6.2.17:
-    resolution: {integrity: sha512-wOuK9V1yujQFH5S0ZWmLcDZN7+IKh9bUCC2ZPCf2HDlol3WWHy+PPyNjEI75FXRLMp3vDKQcupP59xhVU95hcg==}
+  jose@6.2.18:
+    resolution: {integrity: sha512-doV4thUwgkrycJH4yLeqwTGIIZphHl+pk7CPReuMIhYhncmgzdko85MaCG4YQFTxqMFr1/oEH32tZuKKovcDEg==}
 
   json-schema@0.4.0:
     resolution: {integrity: sha512-es94M3nTIfsEPisRafak+HDLfHXnKBhV3vU5eqPcS3flIWqcxJWgXHXiey3YrpaNsanY5ei1VoYEbOzijuq9BA==}
@@ -655,8 +655,8 @@ packages:
     resolution: {integrity: sha512-9qny7Z9DsQU8Ou39ERsPU4OZQlSTP47ShQzuKZ6PRXpYLtIFgl/DEBYEXKlvcEa+9tHVcK8CF81Y2V72qaZhWA==}
     engines: {node: '>=18'}
 
-  object-inspect@1.13.4:
-    resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
+  object-inspect@1.14.0:
+    resolution: {integrity: sha512-IVgHNlp/jwQX271+Xzoq9LZNTWXxZK+cEOrGBOBxXNbn7fapnZ+Ts6TVMgNOuAezwG2wdtnMX97tTPK6VEnuOQ==}
     engines: {node: '>= 0.4'}
 
   onetime@5.1.2:
@@ -844,8 +844,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-types@8.12.4:
-    resolution: {integrity: sha512-GNCQH3MbVGB8OAVAoTiLH8pu4wx5Ni3DWKpnBzGj3WDsi8EwmK0aOVBooNEt+g5YL1eHPxcS9XUTouwFU6j1kQ==}
+  undici-types@8.13.0:
+    resolution: {integrity: sha512-oE6ybuLS2aUIbVCR2zAjiidK4cFOf1FqSWBekci5p6baThYI4HffutuV+d1Y5jLLAmZfE+VhTwTBDoYGWRkWeA==}
 
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
@@ -899,8 +899,8 @@ packages:
   yoga-layout@3.2.1:
     resolution: {integrity: sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ==}
 
-  zod-config@1.5.0:
-    resolution: {integrity: sha512-UDZC4ao+NkqxwUnoDz4T4G837jQPSCm5Su6BIw3lY+8+a/IlN+T92dmvhkSYVEs0TUvfk0LO9mpSSEwC2gvKSw==}
+  zod-config@1.5.1:
+    resolution: {integrity: sha512-y+KDfZwSsollr2M6vH+nq8leSVN4bQb7iIJGo/RAz3yYUMFJZBMe016biXKYv3bbwb5TBm0edh/G31kfZCFDjA==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@aws-sdk/client-secrets-manager': ^3.428.0
@@ -952,7 +952,7 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
-  '@alcalzone/ansi-tokenize@0.3.1':
+  '@alcalzone/ansi-tokenize@0.3.2':
     dependencies:
       ansi-styles: 6.2.3
       is-fullwidth-code-point: 5.1.0
@@ -961,19 +961,19 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
-  '@aws-sdk/client-s3@3.1168.0':
+  '@aws-sdk/client-s3@3.1173.0':
     dependencies:
       '@aws-sdk/checksums': 3.1002.5
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/credential-provider-node': 3.972.97
-      '@aws-sdk/middleware-sdk-s3': 3.972.89
+      '@aws-sdk/middleware-sdk-s3': 3.972.90
       '@aws-sdk/signature-v4-multi-region': 3.996.52
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/fetch-http-handler': 5.8.1
       '@smithy/node-http-handler': 4.14.2
       '@smithy/types': 4.20.0
@@ -984,7 +984,7 @@ snapshots:
       '@aws-sdk/types': 3.975.1
       '@aws-sdk/xml-builder': 3.972.43
       '@aws/lambda-invoke-store': 0.3.0
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/signature-v4': 5.7.5
       '@smithy/types': 4.20.0
       bowser: 2.15.0
@@ -994,7 +994,7 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
@@ -1002,7 +1002,7 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/fetch-http-handler': 5.8.1
       '@smithy/node-http-handler': 4.14.2
       '@smithy/types': 4.20.0
@@ -1019,7 +1019,7 @@ snapshots:
       '@aws-sdk/credential-provider-web-identity': 3.972.90
       '@aws-sdk/nested-clients': 3.998.3
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/credential-provider-imds': 4.5.2
       '@smithy/types': 4.20.0
       tslib: 2.9.1
@@ -1029,7 +1029,7 @@ snapshots:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/nested-clients': 3.998.3
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
@@ -1042,7 +1042,7 @@ snapshots:
       '@aws-sdk/credential-provider-sso': 3.973.28
       '@aws-sdk/credential-provider-web-identity': 3.972.90
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/credential-provider-imds': 4.5.2
       '@smithy/types': 4.20.0
       tslib: 2.9.1
@@ -1051,7 +1051,7 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
@@ -1061,7 +1061,7 @@ snapshots:
       '@aws-sdk/nested-clients': 3.998.3
       '@aws-sdk/token-providers': 3.1166.0
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
@@ -1070,16 +1070,16 @@ snapshots:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/nested-clients': 3.998.3
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
-  '@aws-sdk/middleware-sdk-s3@3.972.89':
+  '@aws-sdk/middleware-sdk-s3@3.972.90':
     dependencies:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/signature-v4-multi-region': 3.996.52
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
@@ -1088,7 +1088,7 @@ snapshots:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/signature-v4-multi-region': 3.996.52
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/fetch-http-handler': 5.8.1
       '@smithy/node-http-handler': 4.14.2
       '@smithy/types': 4.20.0
@@ -1106,7 +1106,7 @@ snapshots:
       '@aws-sdk/core': 3.981.0
       '@aws-sdk/nested-clients': 3.998.3
       '@aws-sdk/types': 3.975.1
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
@@ -1127,38 +1127,38 @@ snapshots:
 
   '@date-fns/tz@1.5.0': {}
 
-  '@neondatabase/serverless@1.2.0': {}
+  '@neondatabase/serverless@1.2.1': {}
 
   '@sec-ant/readable-stream@0.4.1': {}
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
-  '@smithy/core@3.40.0':
+  '@smithy/core@3.41.0':
     dependencies:
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
   '@smithy/credential-provider-imds@4.5.2':
     dependencies:
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
   '@smithy/fetch-http-handler@5.8.1':
     dependencies:
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
   '@smithy/node-http-handler@4.14.2':
     dependencies:
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
   '@smithy/signature-v4@5.7.5':
     dependencies:
-      '@smithy/core': 3.40.0
+      '@smithy/core': 3.41.0
       '@smithy/types': 4.20.0
       tslib: 2.9.1
 
@@ -1174,9 +1174,9 @@ snapshots:
 
   '@stricli/core@1.3.0': {}
 
-  '@types/bun@1.4.4':
+  '@types/bun@1.4.5':
     dependencies:
-      bun-types: 1.4.4
+      bun-types: 1.4.5
 
   '@types/node@26.6.6':
     dependencies:
@@ -1186,7 +1186,7 @@ snapshots:
 
   '@types/react@19.3.0':
     dependencies:
-      csstype: 3.2.3
+      csstype: 3.2.4
 
   '@types/treeify@1.0.3': {}
 
@@ -1201,15 +1201,15 @@ snapshots:
       ai: 7.0.122(zod@4.6.5)
       zod: 4.6.5
 
-  '@xata.io/api@0.1.31':
+  '@xata.io/api@0.1.32':
     dependencies:
       '@xata.io/lang': 0.0.7
       zod: 4.6.7
 
-  '@xata.io/config@0.0.32':
+  '@xata.io/config@0.0.33':
     dependencies:
       '@xata.io/pii': 0.0.2
-      '@xata.io/sql': 0.2.27
+      '@xata.io/sql': 0.2.28
 
   '@xata.io/lang@0.0.7':
     dependencies:
@@ -1228,29 +1228,29 @@ snapshots:
 
   '@xata.io/pii@0.0.2': {}
 
-  '@xata.io/sql@0.2.27':
+  '@xata.io/sql@0.2.28':
     dependencies:
-      '@neondatabase/serverless': 1.2.0
+      '@neondatabase/serverless': 1.2.1
       '@types/qs': 6.15.1
-      '@xata.io/api': 0.1.31
+      '@xata.io/api': 0.1.32
       '@xata.io/pgroll': 0.9.2
       kysely: 0.29.9
       qs: 6.17.1
       zod: 4.6.7
 
-  '@xata.io/test-utils@0.0.39':
+  '@xata.io/test-utils@0.0.40':
     dependencies:
-      '@neondatabase/serverless': 1.2.0
-      '@xata.io/api': 0.1.31
+      '@neondatabase/serverless': 1.2.1
+      '@xata.io/api': 0.1.32
       '@xata.io/lang': 0.0.7
-      '@xata.io/sql': 0.2.27
-      '@xata.io/utils': 0.9.8
+      '@xata.io/sql': 0.2.28
+      '@xata.io/utils': 0.9.9
 
   '@xata.io/tsconfig@0.0.2': {}
 
-  '@xata.io/utils@0.9.8':
+  '@xata.io/utils@0.9.9':
     dependencies:
-      '@xata.io/api': 0.1.31
+      '@xata.io/api': 0.1.32
       '@xata.io/lang': 0.0.7
       tiny-invariant: 1.3.3
       zod: 4.6.7
@@ -1280,10 +1280,10 @@ snapshots:
 
   bowser@2.15.0: {}
 
-  bun-types@1.4.4:
+  bun-types@1.4.5:
     dependencies:
       '@types/node': 26.6.6
-      undici-types: 8.12.4
+      undici-types: 8.13.0
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -1347,7 +1347,7 @@ snapshots:
     dependencies:
       type-fest: 1.4.0
 
-  csstype@3.2.3: {}
+  csstype@3.2.4: {}
 
   date-fns@4.4.0: {}
 
@@ -1462,7 +1462,7 @@ snapshots:
 
   ink@8.0.0(@types/react@19.3.0)(react-devtools-core@8.0.0)(react@19.3.1):
     dependencies:
-      '@alcalzone/ansi-tokenize': 0.3.1
+      '@alcalzone/ansi-tokenize': 0.3.2
       ansi-escapes: 7.3.0
       ansi-styles: 7.0.0
       auto-bind: 5.0.1
@@ -1526,7 +1526,7 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  jose@6.2.17: {}
+  jose@6.2.18: {}
 
   json-schema@0.4.0: {}
 
@@ -1551,7 +1551,7 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
-  object-inspect@1.13.4: {}
+  object-inspect@1.14.0: {}
 
   onetime@5.1.2:
     dependencies:
@@ -1624,27 +1624,27 @@ snapshots:
   side-channel-list@1.0.1:
     dependencies:
       es-errors: 1.3.0
-      object-inspect: 1.13.4
+      object-inspect: 1.14.0
 
   side-channel-map@1.0.1:
     dependencies:
       call-bound: 1.0.4
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
-      object-inspect: 1.13.4
+      object-inspect: 1.14.0
 
   side-channel-weakmap@1.0.2:
     dependencies:
       call-bound: 1.0.4
       es-errors: 1.3.0
       get-intrinsic: 1.3.0
-      object-inspect: 1.13.4
+      object-inspect: 1.14.0
       side-channel-map: 1.0.1
 
   side-channel@1.1.1:
     dependencies:
       es-errors: 1.3.0
-      object-inspect: 1.13.4
+      object-inspect: 1.14.0
       side-channel-list: 1.0.1
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
@@ -1714,7 +1714,7 @@ snapshots:
 
   typescript@6.0.3: {}
 
-  undici-types@8.12.4: {}
+  undici-types@8.13.0: {}
 
   undici-types@8.9.0: {}
 
@@ -1747,7 +1747,7 @@ snapshots:
 
   yoga-layout@3.2.1: {}
 
-  zod-config@1.5.0(yaml@2.9.1)(zod@4.6.7):
+  zod-config@1.5.1(yaml@2.9.1)(zod@4.6.7):
     dependencies:
       zod: 4.6.7
     optionalDependencies:
