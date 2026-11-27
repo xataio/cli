@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { DEFAULT_DATABASE_NAME } from './constants';
 
 const CustomConfigSchema = z.object({
   issuer: z.string().optional(),
@@ -74,6 +73,6 @@ export type ProjectConfig = z.infer<typeof ProjectConfigSchema>;
 export const BranchConfigSchema = z.object({
   branchId: z.string().default(''),
   branchName: z.string().default(''),
-  databaseName: z.string().default(DEFAULT_DATABASE_NAME)
+  databaseName: z.string().optional()
 });
 export type BranchConfig = z.infer<typeof BranchConfigSchema>;

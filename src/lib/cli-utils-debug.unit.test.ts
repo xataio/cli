@@ -138,13 +138,23 @@ describe('debug source naming', () => {
     expect(lines()).toContain('DEBUG: branch = only-branch (from the only branch in this project)');
   });
 
-  test('names the default the database falls back to', async () => {
-    branchConfig.databaseName = 'xata';
+  test('names the branch credentials when no database is configured', async () => {
+    branchConfig.databaseName = undefined;
     const context = buildContext('only-branch');
 
     await resolveContext(context, { organization: 'org-flag', project: 'project-flag' });
 
-    expect(lines()).toContain('DEBUG: database = xata (from the xata default)');
+    expect(lines()).toContain('DEBUG: database = (branch default) (from the branch credentials)');
+  });
+
+  test('names the config file the database came from', async () => {
+    branchConfig.databaseName = 'app';
+    const context = buildContext('only-branch');
+
+    await resolveContext(context, { organization: 'org-flag', project: 'project-flag' });
+
+    expect(lines()).toContain('DEBUG: database = app (from ');
+    expect(lines()).toContain('branch.json)');
   });
 
   test('names the flag the database came from', async () => {
@@ -156,7 +166,7 @@ describe('debug source naming', () => {
   });
 
   test('covers all four values in one resolution', async () => {
-    branchConfig.databaseName = 'xata';
+    branchConfig.databaseName = 'app';
     const context = buildContext('only-branch');
 
     await resolveContext(context, { organization: 'org-flag', project: 'project-flag' });

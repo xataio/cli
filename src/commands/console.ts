@@ -65,7 +65,7 @@ async function runHandoff(context: LocalContext, handoff: ConsoleHandoff) {
     context.process.stderr.write(
       chalk.gray(`Connecting psql to ${handoff.branchName}. Quit psql (\\q) to return to the console.\n`)
     );
-    await runInteractivePostgresCommand(context, psql, [], handoff.connectionString, handoff.database);
+    await runInteractivePostgresCommand(context, psql, [], handoff.connectionString);
     return;
   }
 

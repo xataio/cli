@@ -2,7 +2,6 @@ import type { Types } from '@xata.io/api';
 import { fetchBranchCredentials } from '@xata.io/sql';
 import type { LocalContext } from '~/context';
 import { branchConfig } from '~/lib/branch-config';
-import { DEFAULT_DATABASE_NAME } from '~/lib/constants';
 import { hasProjectContext, projectConfig } from '~/lib/project-config';
 import type { ConsoleData, ConsoleFlags, ConsoleScope, ConsoleScopeBase } from './types';
 
@@ -51,10 +50,10 @@ export function resolveDatabaseName(flags: Pick<ConsoleFlags, 'database'>) {
   }
 
   if (isConsoleConfigInitialized()) {
-    return branchConfig.databaseName;
+    return branchConfig.databaseName || undefined;
   }
 
-  return DEFAULT_DATABASE_NAME;
+  return undefined;
 }
 
 export function buildScope(base: ConsoleScopeBase, branchId?: string): ConsoleScope {
@@ -224,5 +223,5 @@ function pickBranch(branches: Types.BranchListMetadata[], branchId?: string): Ty
 }
 
 function isConsoleConfigInitialized() {
-  return hasProjectContext() && Boolean(branchConfig.branchId && branchConfig.branchName && branchConfig.databaseName);
+  return hasProjectContext() && Boolean(branchConfig.branchId && branchConfig.branchName);
 }

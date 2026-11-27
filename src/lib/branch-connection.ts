@@ -54,7 +54,7 @@ export function getReplicaConnectionWarning(type: BranchConnectionType, branch: 
 
 export function buildBranchConnectionString(
   credentials: Pick<Types.BranchCredentials, 'connectionString'>,
-  options: { database: string; type: BranchConnectionType; mask?: boolean; searchPath?: string }
+  options: { database?: string; type: BranchConnectionType; mask?: boolean; searchPath?: string }
 ) {
   return buildCredentialsConnectionString(credentials, {
     database: options.database,

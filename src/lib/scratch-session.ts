@@ -1,3 +1,4 @@
+import { parseConnectionString } from '@xata.io/sql';
 import chalk from 'chalk';
 import { randomUUID } from 'node:crypto';
 import { parse } from 'pg-connection-string';
@@ -45,7 +46,7 @@ export function resolveExecutable(context: LocalContext, binary: string) {
   return null;
 }
 
-export function buildPostgresEnvironment(connectionString: string, database: string) {
+export function buildPostgresEnvironment(connectionString: string) {
   const parsed = parse(withoutSslMode(connectionString));
 
   return {
@@ -55,7 +56,7 @@ export function buildPostgresEnvironment(connectionString: string, database: str
     PGPORT: parsed.port || '5432',
     PGUSER: parsed.user,
     PGPASSWORD: parsed.password,
-    PGDATABASE: database,
+    PGDATABASE: parseConnectionString(connectionString).database || undefined,
     PGSSLMODE: 'require'
   };
 }
@@ -120,8 +121,7 @@ export async function runInteractivePostgresCommand(
   context: LocalContext,
   binary: string,
   args: string[],
-  connectionString: string,
-  database: string
+  connectionString: string
 ) {
   const ignoreSignal = () => {};
   context.process.on('SIGINT', ignoreSignal);
@@ -134,7 +134,7 @@ export async function runInteractivePostgresCommand(
     const subprocess = Bun.spawn([binary, ...args], {
       env: {
         ...Bun.env,
-        ...buildPostgresEnvironment(connectionString, database)
+        ...buildPostgresEnvironment(connectionString)
       },
       stdin: 'inherit',
       stdout: 'inherit',

@@ -104,11 +104,11 @@ async function executeSQL(context: LocalContext, query: string, connectionString
   }
 }
 
-function spawnBinary(binary: string, args: string[], connectionString: string, database: string) {
+function spawnBinary(binary: string, args: string[], connectionString: string) {
   const subprocess = Bun.spawn([binary, ...args], {
     env: {
       ...Bun.env,
-      ...buildPostgresEnvironment(connectionString, database)
+      ...buildPostgresEnvironment(connectionString)
     },
     stdin: 'inherit',
     stdout: 'inherit',
@@ -177,10 +177,6 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
   }
 
   const database = await this.getDatabase(flags);
-  if (!database) {
-    this.process.stderr.write(chalk.red('Expected input for flag --database\n'));
-    this.process.exit(1);
-  }
 
   const branchName = newScratchBranchName();
   let scratchBranch: ScratchBranch | undefined;
@@ -286,7 +282,7 @@ export async function implementation(this: LocalContext, flags: Flags, ...comman
           `Running ${binary} with DATABASE_URL, XATA_DATABASE_URL, and standard PG* environment variables set.\n`
         )
       );
-      currentSubprocess = spawnBinary(resolvedBinary, binaryArgs, connectionString, database);
+      currentSubprocess = spawnBinary(resolvedBinary, binaryArgs, connectionString);
       binaryExitCode = await currentSubprocess.exited;
     }
   } finally {

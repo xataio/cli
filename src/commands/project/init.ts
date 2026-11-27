@@ -1,5 +1,5 @@
 import { buildCommand } from '@stricli/core';
-import { buildConnectionString, fetchBranchConnectionString } from '@xata.io/sql';
+import { buildConnectionString, buildCredentialsConnectionString, fetchBranchCredentials } from '@xata.io/sql';
 import chalk from 'chalk';
 import type { LocalContext } from '~/context';
 import { contextFlags, getErrorMessage, resolveContext, type ContextFlags } from '~/lib/cli-utils';
@@ -72,11 +72,17 @@ export async function implementation(this: LocalContext, flags: Flags) {
   }
 
   const { organizationId, projectId, branchId, database } = await resolveContext(this, flags);
+  const credentials = await fetchBranchCredentials(this.api, {
+    organizationID: organizationId,
+    projectID: projectId,
+    branchID: branchId
+  });
+  const placeholder = database ?? credentials.dbname;
   const databaseName =
     (await this.enquirer.inputPrompt(this.isInteractive, 'Please enter the database name', {
       flag: flags.database,
-      placeholder: database
-    })) || database;
+      placeholder
+    })) || placeholder;
 
   let branch = await this.api.branches.describeBranch({
     pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
@@ -100,11 +106,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
       pathParams: { organizationID: organizationId, projectID: projectId, branchID: branchId }
     });
   }
-  const connectionString = await fetchBranchConnectionString(this.api, {
-    organizationID: organizationId,
-    projectID: projectId,
-    branchID: branchId
-  });
+  const connectionString = buildCredentialsConnectionString(credentials);
   await ensureDatabase(this, connectionString, databaseName);
 
   await updateProjectConfig({
@@ -115,7 +117,7 @@ export async function implementation(this: LocalContext, flags: Flags) {
   await updateBranchConfig({
     branchId,
     branchName: branch.name,
-    databaseName
+    databaseName: databaseName === credentials.dbname ? undefined : databaseName
   });
 
   if (!this.outputJson) {

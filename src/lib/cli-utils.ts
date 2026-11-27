@@ -3,7 +3,7 @@ import invariant from 'tiny-invariant';
 import { decodeJwt } from 'jose';
 import { ApiError, type Types } from '@xata.io/api';
 import type { LocalContext } from '~/context';
-import { branchConfig, branchConfigFileDeclares, getBranchConfigPath } from './branch-config';
+import { branchConfig, getBranchConfigPath } from './branch-config';
 import { config } from './config';
 import { CLI_NAME } from './constants';
 import { envNameFor } from './env';
@@ -328,18 +328,18 @@ export const getCheckedOutBranch = async () => {
   return branchConfig.branchId || null;
 };
 
-export const getDatabase = async (flags: { database?: string }) => {
-  return flags.database || branchConfig.databaseName;
+export const getDatabase = async (flags: { database?: string }): Promise<string | undefined> => {
+  return flags.database || branchConfig.databaseName || undefined;
 };
 
 const databaseSource = (flags: { database?: string }) => {
   if (flags.database) {
     return '--database';
   }
-  return (
-    envNameFor('databaseName') ??
-    (branchConfigFileDeclares('databaseName') ? getBranchConfigPath() : `the ${CLI_NAME} default`)
-  );
+  if (!branchConfig.databaseName) {
+    return 'the branch credentials';
+  }
+  return envNameFor('databaseName') ?? getBranchConfigPath();
 };
 
 export type ContextFlags = {
@@ -353,7 +353,7 @@ export type ResolvedContext = {
   organizationId: string;
   projectId: string;
   branchId: string;
-  database: string;
+  database?: string;
 };
 
 export const contextFlags = {
@@ -369,7 +369,7 @@ export const resolveContext = async (context: LocalContext, flags: ContextFlags)
   const projectId = await context.getProject(context, flags, { organizationId });
   const branchId = await context.getBranch(context, flags, { organizationId, projectId });
   const database = await context.getDatabase(flags);
-  debugResolved(context, 'database', database, databaseSource(flags));
+  debugResolved(context, 'database', database ?? '(branch default)', databaseSource(flags));
 
   return { organizationId, projectId, branchId, database };
 };

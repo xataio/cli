@@ -40,7 +40,7 @@ function buildContext({ checkedOut, target }: { checkedOut: string; target: stri
     getProject: mock(async () => 'project-id'),
     getCheckedOutBranch: mock(async () => checkedOut),
     getBranch: mock(async () => target),
-    getDatabase: mock(async () => 'xata'),
+    getDatabase: mock(async () => 'app'),
     printCustom,
     printDetails: mock(() => {})
   } as unknown as LocalContext;
@@ -89,6 +89,6 @@ describe('branch checkout of the branch already checked out', () => {
     await run({ ...context, outputJson: false }, 'dev');
 
     expect(exit).not.toHaveBeenCalled();
-    expect(updateBranchConfig).toHaveBeenCalledWith({ branchId: DEV_ID, branchName: 'dev', databaseName: 'xata' });
+    expect(updateBranchConfig).toHaveBeenCalledWith({ branchId: DEV_ID, branchName: 'dev', databaseName: 'app' });
   });
 });

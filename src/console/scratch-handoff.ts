@@ -145,7 +145,7 @@ export async function runScratchHandoff(context: LocalContext, handoff: ScratchH
     );
     childActive = true;
     try {
-      await runInteractivePostgresCommand(context, psql, [], connectionString, handoff.database);
+      await runInteractivePostgresCommand(context, psql, [], connectionString);
     } finally {
       childActive = false;
     }

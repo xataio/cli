@@ -37,7 +37,7 @@ export function OverviewView({ scope, data, columns }: { scope: ConsoleScope; da
         <Text bold color="blue">
           connection
         </Text>
-        <DetailRow label="database" value={scope.database} />
+        <DetailRow label="database" value={scope.database ?? data.branchCredentials?.dbname ?? '—'} />
         <DetailRow label="type" value={scope.type} />
         <DetailRow label="instance" value={branch.configuration.instanceType} />
         <DetailRow label="replicas" value={String(branch.configuration.replicas)} />

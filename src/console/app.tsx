@@ -455,7 +455,6 @@ export function ConsoleApp({ context, flags, initialView, onHandoff }: ConsoleAp
             database: scope.database,
             type: scope.type
           }),
-          database: scope.database,
           branchName: branchDetail.name
         },
         resume
@@ -495,7 +494,7 @@ export function ConsoleApp({ context, flags, initialView, onHandoff }: ConsoleAp
       await writeClipboardWithTimeout(connectionString);
 
       const warning = getReplicaConnectionWarning(state.scope.type, branchDetail);
-      const copiedMessage = `Copied ${state.scope.type} connection string for ${state.scope.database}`;
+      const copiedMessage = `Copied ${state.scope.type} connection string for ${state.scope.database ?? branchCredentials.dbname}`;
       dispatch({
         type: 'notice',
         notice: warning ? `${copiedMessage}. ${warning}` : copiedMessage

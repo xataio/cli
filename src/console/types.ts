@@ -12,7 +12,7 @@ export type ConsoleFlags = {
 export type ConsoleScopeBase = {
   organizationId: string;
   projectId: string;
-  database: string;
+  database?: string;
   type: BranchConnectionType;
 };
 
@@ -55,21 +55,21 @@ export type PickerItem = {
 };
 
 export type ConsoleHandoff =
-  | { kind: 'psql'; connectionString: string; database: string; branchName: string }
+  | { kind: 'psql'; connectionString: string; branchName: string }
   | {
       kind: 'scratch-psql';
       organizationId: string;
       projectId: string;
       parentBranchId: string;
       parentBranchName: string;
-      database: string;
+      database?: string;
     };
 
 export type ConsoleResume = {
   organizationId: string;
   projectId: string;
   branchId?: string;
-  database: string;
+  database?: string;
   type: BranchConnectionType;
   view: ViewId;
 };

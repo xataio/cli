@@ -1,4 +1,5 @@
 import { buildCommand } from '@stricli/core';
+import { fetchBranchCredentials } from '@xata.io/sql';
 import chalk from 'chalk';
 
 import type { LocalContext } from '~/context';
@@ -6,6 +7,19 @@ import { branchConfig } from '~/lib/branch-config';
 import { CLI_NAME } from '~/lib/constants';
 import { getProjectConfigPath, hasProjectConfigFile, projectConfig } from '~/lib/project-config';
 import { printCustom } from '~/lib/cli-utils';
+
+async function fetchBranchDatabase(context: LocalContext, organizationId: string, projectId: string, branchId: string) {
+  try {
+    const credentials = await fetchBranchCredentials(context.api, {
+      organizationID: organizationId,
+      projectID: projectId,
+      branchID: branchId
+    });
+    return credentials.dbname;
+  } catch {
+    return undefined;
+  }
+}
 
 export async function implementation(this: LocalContext) {
   const organizationId = projectConfig.organizationId;
@@ -48,18 +62,20 @@ export async function implementation(this: LocalContext) {
     this.process.stdout.write(`Current project config based on ${source}:\n`);
   }
 
+  const database = branchConfig.databaseName || (await fetchBranchDatabase(this, organizationId, projectId, branchId));
+
   const status = {
     organization: organization.name,
     project: `${project.name} (${project.id})`,
     branch: `${branch.name} (${branch.id})`,
-    database: branchConfig.databaseName
+    database
   };
 
   this.printDetails(this, status, [
     ['organization', status.organization],
     ['project', status.project],
     ['branch', status.branch],
-    ['database', status.database]
+    ['database', status.database ?? '(branch default)']
   ]);
 }
 

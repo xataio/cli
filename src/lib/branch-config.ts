@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { loadConfigSync } from 'zod-config';
@@ -31,13 +30,4 @@ export async function updateBranchConfig(newConfig: BranchConfig) {
 
 export function getBranchConfigPath() {
   return path.resolve(getLocalConfigDir(), 'branch.json');
-}
-
-/** `databaseName` has a schema default, so only the file itself says whether it was configured. */
-export function branchConfigFileDeclares(key: keyof BranchConfig) {
-  try {
-    return key in JSON.parse(readFileSync(getBranchConfigPath(), 'utf8'));
-  } catch {
-    return false;
-  }
 }

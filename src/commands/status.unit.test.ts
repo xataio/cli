@@ -23,13 +23,13 @@ mock.module('~/lib/branch-config', () => {
 const { implementation } = await import('./status');
 const { printDetails } = await import('~/lib/cli-utils');
 
-function buildContext() {
+function buildContext(getBranchCredentials?: () => Promise<{ dbname: string }>) {
   const stdout: string[] = [];
   const context = {
     api: {
       organizations: { getOrganization: async () => ({ name: 'Test organization' }) },
       projects: { getProject: async () => ({ id: 'project', name: 'Test project' }) },
-      branches: { describeBranch: async () => ({ id: 'branch', name: 'Test branch' }) }
+      branches: { describeBranch: async () => ({ id: 'branch', name: 'Test branch' }), getBranchCredentials }
     },
     printDetails,
     process: { stdout: { write: (value: string) => stdout.push(value) }, stderr: { write: () => {} } }
@@ -59,6 +59,39 @@ describe('status with a configured database', () => {
     } else {
       expect(output).toMatch(/database\s+app_reporting/);
     }
+  });
+});
+
+describe('status without a configured database', () => {
+  test.each([true, false])('reports the database of the branch with outputJson=%s', async (outputJson) => {
+    projectConfig.organizationId = 'org';
+    projectConfig.projectId = 'project';
+    branchConfig.branchId = 'branch';
+    branchConfig.databaseName = undefined;
+    const { context, stdout } = buildContext(async () => ({ dbname: 'defaultdb' }));
+
+    await implementation.call({ ...context, outputJson });
+
+    const output = stdout.join('');
+    if (outputJson) {
+      expect(JSON.parse(output).database).toBe('defaultdb');
+    } else {
+      expect(output).toMatch(/database\s+defaultdb/);
+    }
+  });
+
+  test('omits the database from JSON when the credentials cannot be read', async () => {
+    projectConfig.organizationId = 'org';
+    projectConfig.projectId = 'project';
+    branchConfig.branchId = 'branch';
+    branchConfig.databaseName = undefined;
+    const { context, stdout } = buildContext(async () => {
+      throw new Error('forbidden');
+    });
+
+    await implementation.call({ ...context, outputJson: true });
+
+    expect(JSON.parse(stdout.join(''))).not.toHaveProperty('database');
   });
 });
 
