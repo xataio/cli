@@ -1,7 +1,11 @@
 import { buildCommand } from '@stricli/core';
 import { buildCredentialsConnectionString, fetchBranchCredentials } from '@xata.io/sql';
 import type { LocalContext } from '~/context';
-import { mapTypeToConnectionSuffix, validateBranchStatusForUrl } from '~/lib/branch-connection';
+import {
+  getReplicaConnectionWarning,
+  mapTypeToConnectionSuffix,
+  validateBranchStatusForUrl
+} from '~/lib/branch-connection';
 import { DEFAULT_MIGRATIONS_DIRECTORY } from '~/lib/constants';
 import { getPgRoll } from '~/lib/pgroll/binary';
 import { checkMigrationsDirectory } from './migrate';
@@ -64,10 +68,9 @@ export async function implementation(this: LocalContext, flags: Flags, branchNam
     searchPath: latestSchema,
     endpointType
   });
-  if (flags.type === 'replica' && (!branch.configuration?.replicas || branch.configuration.replicas === 0)) {
-    this.process.stderr.write(
-      `Warning: Using read-only endpoint but the branch has no replicas. This endpoint will only work if the branch has 1 or more replicas.\n\n`
-    );
+  const warning = getReplicaConnectionWarning(flags.type, branch);
+  if (warning) {
+    this.process.stderr.write(`${warning}\n\n`);
   }
 
   this.process.stdout.write(connectionString);
@@ -113,7 +116,7 @@ export const RollURLCommand = buildCommand({
         kind: 'enum',
         values: ['primary', 'primary-or-replica', 'replica'],
         brief:
-          'Connection type: primary (direct access to the primary), primary-or-replica (routed access to primary or replicas), replica (read-only access to replicas only)',
+          'Connection type: primary (direct access to the primary), primary-or-replica (routed access to primary or replicas, requires at least one replica), replica (read-only access to replicas only, requires at least one replica)',
         default: 'primary'
       }
     },

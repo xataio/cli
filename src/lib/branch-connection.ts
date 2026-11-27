@@ -44,8 +44,9 @@ export function validateBranchStatusForUrl(ctx: LocalContext, branch: Types.Bran
 }
 
 export function getReplicaConnectionWarning(type: BranchConnectionType, branch: Types.BranchMetadata): string | null {
-  if (type === 'replica' && (!branch.configuration?.replicas || branch.configuration.replicas === 0)) {
-    return 'Warning: Using read-only endpoint but the branch has no replicas. This endpoint will only work if the branch has 1 or more replicas.';
+  const needsReplica = type === 'replica' || type === 'primary-or-replica';
+  if (needsReplica && !branch.configuration?.replicas) {
+    return `Warning: The ${type} endpoint needs a replica but the branch has none. It will only work once the branch has 1 or more replicas.`;
   }
 
   return null;
