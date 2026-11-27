@@ -1,5 +1,11 @@
 # xata-cli
 
+## 1.18.7
+
+### Patch Changes
+
+- [#3485](https://github.com/xataio/frontend/pull/3485) [`1a21786`](https://github.com/xataio/frontend/commit/1a217861fea16e7c0a61017e00eb9c548d7a8e6a) Thanks [@divyenduz](https://github.com/divyenduz)! - Use the database name the branch reports instead of assuming `xata` when no `--database`, `XATA_DATABASE_NAME`, or configured database is set
+
 ## 1.18.6
 
 ### Patch Changes
