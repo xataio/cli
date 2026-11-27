@@ -1,5 +1,17 @@
 # xata-cli
 
+## 1.18.6
+
+### Patch Changes
+
+- [#3483](https://github.com/xataio/frontend/pull/3483) [`1ea0d87`](https://github.com/xataio/frontend/commit/1ea0d870d4f652bf0396878008eed51c64c6e051) Thanks [@mnove](https://github.com/mnove)! - Warn when a `primary-or-replica` connection string is requested for a branch with no replicas, and note in `--type` help that it needs a replica
+- Updated dependencies [[`995fce5`](https://github.com/xataio/frontend/commit/995fce5d5f7f2bee80a87131f9f8e9985791ef19)]:
+  - @xata.io/api@0.1.33
+  - @xata.io/sql@0.2.29
+  - @xata.io/utils@0.9.10
+  - @xata.io/ai@0.3.0
+  - @xata.io/config@0.0.34
+
 ## 1.18.5
 
 ### Patch Changes
